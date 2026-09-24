@@ -22,9 +22,16 @@ import CustomerLeads from './pages/admin/CustomerLeads';
 import AttendanceList from './pages/admin/AttendanceList';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import FollowUpsList from './pages/admin/FollowUpsList';
+import Settings from './pages/admin/Settings';
 
 function App() {
   useEffect(() => {
+    // Load global theme color
+    const savedColor = localStorage.getItem('themeColor');
+    if (savedColor) {
+      document.documentElement.style.setProperty('--primary-blue', savedColor);
+    }
+
     // Background task: Auto-assign unassigned follow-ups after 10 minutes
     const interval = setInterval(() => {
       const storedFollowUps = localStorage.getItem('followUps');
@@ -112,7 +119,7 @@ function App() {
             <Route path="tasks/*" element={<div style={{padding:'2rem'}}><h2>Tasks Module</h2><p>Coming soon...</p></div>} />
             <Route path="followups" element={<FollowUpsList />} />
             <Route path="reports/*" element={<div style={{padding:'2rem'}}><h2>Reports Module</h2><p>Coming soon...</p></div>} />
-            <Route path="settings/*" element={<div style={{padding:'2rem'}}><h2>Settings Module</h2><p>Coming soon...</p></div>} />
+            <Route path="settings/*" element={<Settings />} />
           </Route>
           {/* Employee Layout */}
           <Route path="/employee" element={<EmployeeLayout />}>
