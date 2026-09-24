@@ -73,7 +73,7 @@ export class BrevoNotificationService implements NotificationService {
       <p>Best regards,<br/>Build Approval ERP Team</p>
     `;
 
-    await this.sendEmail(customer.email, customer.name, subject, htmlContent);
+    await this.sendEmail(customer.email as string, customer.name, subject, htmlContent);
   }
 
   async notifyInspectionScheduled(caseId: string, date?: string): Promise<void> {
@@ -92,7 +92,7 @@ export class BrevoNotificationService implements NotificationService {
       <p>Best regards,<br/>Build Approval ERP Team</p>
     `;
 
-    await this.sendEmail(customer.email, customer.name, subject, htmlContent);
+    await this.sendEmail(customer.email as string, customer.name, subject, htmlContent);
   }
 
   async notifyApproved(caseId: string, approvalNumber: string): Promise<void> {
@@ -111,7 +111,7 @@ export class BrevoNotificationService implements NotificationService {
       <p>Best regards,<br/>Build Approval ERP Team</p>
     `;
 
-    await this.sendEmail(customer.email, customer.name, subject, htmlContent);
+    await this.sendEmail(customer.email as string, customer.name, subject, htmlContent);
   }
 
   async notifyLeadThanks(email: string, name: string): Promise<void> {
