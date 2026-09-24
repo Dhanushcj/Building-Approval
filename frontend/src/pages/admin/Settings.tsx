@@ -8,7 +8,8 @@ const Settings: React.FC = () => {
     sidebarText: '#cbd5e1',
     sidebarIcon: '#94a3b8',
     topbarBg: '#FFFFFF',
-    topbarText: '#0F2747'
+    topbarText: '#0F2747',
+    appBg: '#FFFFFF'
   });
   const [saved, setSaved] = useState(false);
 
@@ -40,6 +41,7 @@ const Settings: React.FC = () => {
     document.documentElement.style.setProperty('--sidebar-icon', colors.sidebarIcon);
     document.documentElement.style.setProperty('--topbar-bg', colors.topbarBg);
     document.documentElement.style.setProperty('--topbar-text', colors.topbarText);
+    document.documentElement.style.setProperty('--bg-primary', colors.appBg);
     
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -52,7 +54,8 @@ const Settings: React.FC = () => {
       sidebarText: '#cbd5e1',
       sidebarIcon: '#94a3b8',
       topbarBg: '#FFFFFF',
-      topbarText: '#0F2747'
+      topbarText: '#0F2747',
+      appBg: '#FFFFFF'
     };
     setColors(defaultColors);
     localStorage.setItem('themeColors', JSON.stringify(defaultColors));
@@ -64,6 +67,7 @@ const Settings: React.FC = () => {
     document.documentElement.style.setProperty('--sidebar-icon', defaultColors.sidebarIcon);
     document.documentElement.style.setProperty('--topbar-bg', defaultColors.topbarBg);
     document.documentElement.style.setProperty('--topbar-text', defaultColors.topbarText);
+    document.documentElement.style.setProperty('--bg-primary', defaultColors.appBg);
   };
 
   const ColorInput = ({ label, value, onChangeKey, desc }: { label: string, value: string, onChangeKey: keyof typeof colors, desc?: string }) => (
@@ -105,6 +109,7 @@ const Settings: React.FC = () => {
           <div>
             <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Global & Branding</h4>
             <ColorInput label="Primary Theme Color" value={colors.primary} onChangeKey="primary" desc="Applied to buttons, links, and active states globally." />
+            <ColorInput label="Application Background" value={colors.appBg} onChangeKey="appBg" desc="Main background color of the dashboard." />
           </div>
           
           <div>

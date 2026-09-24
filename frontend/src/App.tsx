@@ -37,6 +37,9 @@ function App() {
         document.documentElement.style.setProperty('--sidebar-icon', colors.sidebarIcon);
         document.documentElement.style.setProperty('--topbar-bg', colors.topbarBg);
         document.documentElement.style.setProperty('--topbar-text', colors.topbarText);
+        if (colors.appBg) {
+          document.documentElement.style.setProperty('--bg-primary', colors.appBg);
+        }
       } catch (e) {}
     } else {
       const savedColor = localStorage.getItem('themeColor');
