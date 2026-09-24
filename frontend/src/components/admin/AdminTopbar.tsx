@@ -12,7 +12,7 @@ const AdminTopbar: React.FC = () => {
   return (
     <header style={{
       height: '70px',
-      backgroundColor: 'var(--white)',
+      backgroundColor: 'var(--topbar-bg, var(--white))',
       borderBottom: '1px solid var(--border-color)',
       display: 'flex',
       alignItems: 'center',
@@ -24,7 +24,7 @@ const AdminTopbar: React.FC = () => {
     }}>
       {/* Left side: Title & Breadcrumb */}
       <div>
-        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '0.1rem' }}>{currentPage}</h1>
+        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--topbar-text, var(--dark-navy))', marginBottom: '0.1rem' }}>{currentPage}</h1>
         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
           Dashboard / {currentPage}
         </div>
@@ -73,7 +73,7 @@ const AdminTopbar: React.FC = () => {
           <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 600, fontSize: '0.875rem' }}>
             AD
           </div>
-          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)' }}>Admin</div>
+          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--topbar-text, var(--dark-navy))' }}>Admin</div>
           <ChevronDown size={16} color="var(--text-secondary)" />
         </div>
       </div>

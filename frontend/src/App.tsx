@@ -26,10 +26,23 @@ import Settings from './pages/admin/Settings';
 
 function App() {
   useEffect(() => {
-    // Load global theme color
-    const savedColor = localStorage.getItem('themeColor');
-    if (savedColor) {
-      document.documentElement.style.setProperty('--primary-blue', savedColor);
+    // Load global theme colors
+    const savedColorsStr = localStorage.getItem('themeColors');
+    if (savedColorsStr) {
+      try {
+        const colors = JSON.parse(savedColorsStr);
+        document.documentElement.style.setProperty('--primary-blue', colors.primary);
+        document.documentElement.style.setProperty('--sidebar-bg', colors.sidebarBg);
+        document.documentElement.style.setProperty('--sidebar-text', colors.sidebarText);
+        document.documentElement.style.setProperty('--sidebar-icon', colors.sidebarIcon);
+        document.documentElement.style.setProperty('--topbar-bg', colors.topbarBg);
+        document.documentElement.style.setProperty('--topbar-text', colors.topbarText);
+      } catch (e) {}
+    } else {
+      const savedColor = localStorage.getItem('themeColor');
+      if (savedColor) {
+        document.documentElement.style.setProperty('--primary-blue', savedColor);
+      }
     }
 
     // Background task: Auto-assign unassigned follow-ups after 10 minutes

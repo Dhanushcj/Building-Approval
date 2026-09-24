@@ -22,8 +22,8 @@ const AdminSidebar: React.FC = () => {
   return (
     <aside className="admin-sidebar" style={{
       width: '260px',
-      backgroundColor: 'var(--dark-navy)',
-      color: 'var(--white)',
+      backgroundColor: 'var(--sidebar-bg, var(--dark-navy))',
+      color: 'var(--sidebar-text, var(--white))',
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
@@ -56,7 +56,7 @@ const AdminSidebar: React.FC = () => {
                   alignItems: 'center',
                   gap: '1rem',
                   padding: '0.75rem 1.5rem',
-                  color: isActive ? 'var(--white)' : '#cbd5e1',
+                  color: isActive ? 'var(--white)' : 'var(--sidebar-text, #cbd5e1)',
                   backgroundColor: isActive ? 'rgba(11, 99, 206, 0.2)' : 'transparent',
                   borderLeft: isActive ? '4px solid var(--primary-blue)' : '4px solid transparent',
                   textDecoration: 'none',
@@ -67,7 +67,7 @@ const AdminSidebar: React.FC = () => {
               >
                 {({ isActive }) => (
                   <>
-                    <span style={{ color: isActive ? 'var(--primary-blue)' : '#94a3b8' }}>
+                    <span style={{ color: isActive ? 'var(--primary-blue)' : 'var(--sidebar-icon, #94a3b8)' }}>
                       {item.icon}
                     </span>
                     {item.title}
@@ -96,7 +96,7 @@ const AdminSidebar: React.FC = () => {
           style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.5rem', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
           title="Logout"
           onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)' }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.backgroundColor = 'transparent' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--sidebar-icon, #94a3b8)'; e.currentTarget.style.backgroundColor = 'transparent' }}
         >
           <LogOut size={18} />
         </button>
