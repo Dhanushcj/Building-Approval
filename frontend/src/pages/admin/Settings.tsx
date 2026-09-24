@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Palette, CheckCircle, RefreshCcw } from 'lucide-react';
 
+const ColorInput = ({ label, value, onChangeKey, desc, handleChange }: { label: string, value: string, onChangeKey: string, desc?: string, handleChange: (key: string, value: string) => void }) => (
+  <div style={{ marginBottom: '1.5rem' }}>
+    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>{label}</label>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <input 
+        type="color" 
+        value={value} 
+        onChange={(e) => handleChange(onChangeKey, e.target.value)}
+        style={{ width: '50px', height: '50px', padding: '0', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}
+      />
+      <input 
+        type="text" 
+        value={value} 
+        onChange={(e) => handleChange(onChangeKey, e.target.value)}
+        style={{ padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.375rem', fontSize: '0.875rem' }}
+      />
+    </div>
+    {desc && <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{desc}</p>}
+  </div>
+);
+
 const Settings: React.FC = () => {
   const [colors, setColors] = useState({
     primary: '#0B63CE',
@@ -70,26 +91,6 @@ const Settings: React.FC = () => {
     document.documentElement.style.setProperty('--bg-primary', defaultColors.appBg);
   };
 
-  const ColorInput = ({ label, value, onChangeKey, desc }: { label: string, value: string, onChangeKey: keyof typeof colors, desc?: string }) => (
-    <div style={{ marginBottom: '1.5rem' }}>
-      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>{label}</label>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <input 
-          type="color" 
-          value={value} 
-          onChange={(e) => handleChange(onChangeKey, e.target.value)}
-          style={{ width: '50px', height: '50px', padding: '0', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}
-        />
-        <input 
-          type="text" 
-          value={value} 
-          onChange={(e) => handleChange(onChangeKey, e.target.value)}
-          style={{ padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.375rem', fontSize: '0.875rem' }}
-        />
-      </div>
-      {desc && <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{desc}</p>}
-    </div>
-  );
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -108,21 +109,21 @@ const Settings: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
           <div>
             <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Global & Branding</h4>
-            <ColorInput label="Primary Theme Color" value={colors.primary} onChangeKey="primary" desc="Applied to buttons, links, and active states globally." />
-            <ColorInput label="Application Background" value={colors.appBg} onChangeKey="appBg" desc="Main background color of the dashboard." />
+            <ColorInput label="Primary Theme Color" value={colors.primary} onChangeKey="primary" desc="Applied to buttons, links, and active states globally." handleChange={(k, v) => handleChange(k as any, v)} />
+            <ColorInput label="Application Background" value={colors.appBg} onChangeKey="appBg" desc="Main background color of the dashboard." handleChange={(k, v) => handleChange(k as any, v)} />
           </div>
           
           <div>
             <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Sidebar Navigation</h4>
-            <ColorInput label="Sidebar Background" value={colors.sidebarBg} onChangeKey="sidebarBg" />
-            <ColorInput label="Sidebar Text" value={colors.sidebarText} onChangeKey="sidebarText" />
-            <ColorInput label="Sidebar Icons" value={colors.sidebarIcon} onChangeKey="sidebarIcon" />
+            <ColorInput label="Sidebar Background" value={colors.sidebarBg} onChangeKey="sidebarBg" handleChange={(k, v) => handleChange(k as any, v)} />
+            <ColorInput label="Sidebar Text" value={colors.sidebarText} onChangeKey="sidebarText" handleChange={(k, v) => handleChange(k as any, v)} />
+            <ColorInput label="Sidebar Icons" value={colors.sidebarIcon} onChangeKey="sidebarIcon" handleChange={(k, v) => handleChange(k as any, v)} />
           </div>
 
           <div>
             <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Top Navbar</h4>
-            <ColorInput label="Navbar Background" value={colors.topbarBg} onChangeKey="topbarBg" />
-            <ColorInput label="Navbar Text & Icons" value={colors.topbarText} onChangeKey="topbarText" />
+            <ColorInput label="Navbar Background" value={colors.topbarBg} onChangeKey="topbarBg" handleChange={(k, v) => handleChange(k as any, v)} />
+            <ColorInput label="Navbar Text & Icons" value={colors.topbarText} onChangeKey="topbarText" handleChange={(k, v) => handleChange(k as any, v)} />
           </div>
         </div>
 
