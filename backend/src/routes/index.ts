@@ -3,6 +3,7 @@ import authRoutes from './auth.routes';
 import propertyRoutes from './property.routes';
 import caseRoutes from './case.routes';
 import documentRoutes from './document.routes';
+import notificationRoutes from './notification.routes';
 import templateRoutes from './template.routes';
 import feeRoutes from './fee.routes';
 import dashboardRoutes from './dashboard.routes';
@@ -19,5 +20,6 @@ router.use('/documents', documentRoutes);
 router.use('/checklist-templates', templateRoutes);
 router.use('/fees', feeRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/notifications', notificationRoutes);
 
 export default router;

@@ -113,4 +113,31 @@ export class BrevoNotificationService implements NotificationService {
 
     await this.sendEmail(customer.email, customer.name, subject, htmlContent);
   }
+
+  async notifyLeadThanks(email: string, name: string): Promise<void> {
+    const subject = `Thank you for applying with Build Approval ERP`;
+    const htmlContent = `
+      <h3>Hello ${name},</h3>
+      <p>Thank you for submitting your building approval application!</p>
+      <p>Our team has successfully received your details and will get in touch with you shortly to assist you further.</p>
+      <br/>
+      <p>Best regards,<br/>Build Approval ERP Team</p>
+    `;
+    await this.sendEmail(email, name, subject, htmlContent);
+  }
+
+  async notifyUploadLink(email: string, name: string, uploadLink: string): Promise<void> {
+    const subject = `Document Upload Required - Build Approval ERP`;
+    const htmlContent = `
+      <h3>Hello ${name},</h3>
+      <p>We need some additional documents to process your building application.</p>
+      <p>Please click the link below to securely upload your documents:</p>
+      <p><a href="${uploadLink}" style="display:inline-block;padding:10px 20px;background-color:#0B63CE;color:white;text-decoration:none;border-radius:5px;font-weight:bold;">Upload Documents</a></p>
+      <p>If the button doesn't work, you can copy and paste this URL into your browser:</p>
+      <p>${uploadLink}</p>
+      <br/>
+      <p>Best regards,<br/>Build Approval ERP Team</p>
+    `;
+    await this.sendEmail(email, name, subject, htmlContent);
+  }
 }

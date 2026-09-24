@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Edit, FileText, CheckCircle2, User, Building, 
-  MapPin, Clock, Upload, MoreVertical, Link as LinkIcon, Download, X, Copy
+  MapPin, Clock, Upload, MoreVertical, Link as LinkIcon, Download, X, Copy, Mail
 } from 'lucide-react';
 import StatusBadge from '../../components/admin/StatusBadge';
 import { recentApplications } from '../../data/mockData';
@@ -298,6 +298,33 @@ const ApplicationDetail: React.FC = () => {
 
   const handleShareLink = () => {
     setShowShareModal(true);
+  };
+
+  const [isEmailingLink, setIsEmailingLink] = useState(false);
+  const handleEmailShareLink = async () => {
+    if (!app.email) {
+      alert('No email address available for this customer.');
+      return;
+    }
+    
+    setIsEmailingLink(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      const response = await fetch(`${apiUrl}/notifications/upload-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: app.email, name: app.customer, uploadLink: shareLink })
+      });
+      
+      if (!response.ok) throw new Error('Failed to send email');
+      alert('Upload link successfully emailed to the customer!');
+      setShowShareModal(false);
+    } catch (error) {
+      console.error('Error sending link via email:', error);
+      alert('Failed to send email. Please try copying the link instead.');
+    } finally {
+      setIsEmailingLink(false);
+    }
   };
 
 
@@ -820,10 +847,17 @@ const ApplicationDetail: React.FC = () => {
                   navigator.clipboard.writeText(shareLink);
                   setShowShareModal(false);
                 }}
-                className="btn-primary" 
-                style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}
+                style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}
               >
                 <Copy size={16} /> Copy
+              </button>
+              <button 
+                onClick={handleEmailShareLink}
+                disabled={isEmailingLink}
+                className="btn-primary" 
+                style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: isEmailingLink ? 'not-allowed' : 'pointer', opacity: isEmailingLink ? 0.7 : 1 }}
+              >
+                <Mail size={16} /> {isEmailingLink ? 'Sending...' : 'Send via Email'}
               </button>
             </div>
 

@@ -47,7 +47,7 @@ const ApplyNow: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // In a real app, send to backend
     // Here we save to localStorage to show in admin dashboard
@@ -65,6 +65,21 @@ const ApplyNow: React.FC = () => {
     
     try {
       localStorage.setItem('customerLeads', JSON.stringify([newLead, ...existingLeads]));
+
+      // Send Thanks Email via Backend API
+      if (formData.email) {
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+          await fetch(`${apiUrl}/notifications/lead-thanks`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: formData.email, name: formData.name })
+          });
+        } catch (mailError) {
+          console.error("Failed to send thanks email", mailError);
+        }
+      }
+
       alert('Thank you! Your application details have been submitted. Our team will contact you shortly.');
       navigate('/');
     } catch (error) {
