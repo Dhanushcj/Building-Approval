@@ -42,20 +42,29 @@ export class BrevoNotificationService implements NotificationService {
     const caseData = await prisma.case.findUnique({
       where: { id: caseId },
       include: {
-        customer: true,
         property: true
       }
     });
-    return caseData;
+
+    if (!caseData || !caseData.property) return null;
+
+    // Look up the customer User by the property's owner_phone
+    const customer = await prisma.user.findUnique({
+      where: { phone: caseData.property.owner_phone }
+    });
+
+    return { caseData, customer };
   }
 
   async notifyStatusChange(caseId: string, oldStatus: CaseStatus, newStatus: CaseStatus): Promise<void> {
-    const caseData = await this.getCustomerDetails(caseId);
-    if (!caseData || !caseData.customer.email) return;
+    const result = await this.getCustomerDetails(caseId);
+    if (!result || !result.customer || !result.customer.email) return;
+
+    const { caseData, customer } = result;
 
     const subject = `Update on your Building Application (${caseId.substring(0,8)})`;
     const htmlContent = `
-      <h3>Hello ${caseData.customer.name},</h3>
+      <h3>Hello ${customer.name},</h3>
       <p>The status of your building application at <strong>${caseData.property.address}</strong> has changed.</p>
       <p><strong>Old Status:</strong> ${oldStatus.replace(/_/g, ' ')}<br/>
       <strong>New Status:</strong> <span style="color: #0B63CE; font-weight: bold;">${newStatus.replace(/_/g, ' ')}</span></p>
@@ -64,16 +73,18 @@ export class BrevoNotificationService implements NotificationService {
       <p>Best regards,<br/>Build Approval ERP Team</p>
     `;
 
-    await this.sendEmail(caseData.customer.email, caseData.customer.name, subject, htmlContent);
+    await this.sendEmail(customer.email, customer.name, subject, htmlContent);
   }
 
   async notifyInspectionScheduled(caseId: string, date?: string): Promise<void> {
-    const caseData = await this.getCustomerDetails(caseId);
-    if (!caseData || !caseData.customer.email) return;
+    const result = await this.getCustomerDetails(caseId);
+    if (!result || !result.customer || !result.customer.email) return;
+
+    const { caseData, customer } = result;
 
     const subject = `Inspection Scheduled - Application (${caseId.substring(0,8)})`;
     const htmlContent = `
-      <h3>Hello ${caseData.customer.name},</h3>
+      <h3>Hello ${customer.name},</h3>
       <p>An inspection has been scheduled for your property at <strong>${caseData.property.address}</strong>.</p>
       ${date ? `<p><strong>Date:</strong> ${date}</p>` : ''}
       <p>Please ensure someone is available at the property during the inspection.</p>
@@ -81,16 +92,18 @@ export class BrevoNotificationService implements NotificationService {
       <p>Best regards,<br/>Build Approval ERP Team</p>
     `;
 
-    await this.sendEmail(caseData.customer.email, caseData.customer.name, subject, htmlContent);
+    await this.sendEmail(customer.email, customer.name, subject, htmlContent);
   }
 
   async notifyApproved(caseId: string, approvalNumber: string): Promise<void> {
-    const caseData = await this.getCustomerDetails(caseId);
-    if (!caseData || !caseData.customer.email) return;
+    const result = await this.getCustomerDetails(caseId);
+    if (!result || !result.customer || !result.customer.email) return;
+
+    const { caseData, customer } = result;
 
     const subject = `🎉 Congratulations! Your Application is Approved (${caseId.substring(0,8)})`;
     const htmlContent = `
-      <h3>Hello ${caseData.customer.name},</h3>
+      <h3>Hello ${customer.name},</h3>
       <p>Great news! Your building application for <strong>${caseData.property.address}</strong> has been officially approved.</p>
       <p><strong>Approval Number:</strong> <span style="font-size: 1.2rem; color: #22A06B; font-weight: bold;">${approvalNumber}</span></p>
       <p>You can now log in to download your official approval documents.</p>
@@ -98,6 +111,6 @@ export class BrevoNotificationService implements NotificationService {
       <p>Best regards,<br/>Build Approval ERP Team</p>
     `;
 
-    await this.sendEmail(caseData.customer.email, caseData.customer.name, subject, htmlContent);
+    await this.sendEmail(customer.email, customer.name, subject, htmlContent);
   }
 }
