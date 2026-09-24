@@ -1,5 +1,6 @@
 import { CaseStatus, PrismaClient } from '@prisma/client';
 import prisma from '../prisma';
+import { BrevoNotificationService } from './BrevoNotificationService';
 
 export interface NotificationService {
   notifyStatusChange(caseId: string, oldStatus: CaseStatus, newStatus: CaseStatus): Promise<void>;
@@ -118,4 +119,4 @@ export class CaseStateService {
   }
 }
 
-export const caseStateService = new CaseStateService(new ConsoleNotificationService());
+export const caseStateService = new CaseStateService(new BrevoNotificationService());
