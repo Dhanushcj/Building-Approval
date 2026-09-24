@@ -18,20 +18,14 @@ const menuItems = [
   { title: 'Settings', icon: <Settings size={20} />, path: '/admin/settings' },
 ];
 
-const AdminSidebar: React.FC = () => {
+interface AdminSidebarProps {
+  isOpen?: boolean;
+  setIsOpen?: (open: boolean) => void;
+}
+
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
   return (
-    <aside className="admin-sidebar" style={{
-      width: '260px',
-      backgroundColor: 'var(--sidebar-bg, var(--dark-navy))',
-      color: 'var(--sidebar-text, var(--white))',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      position: 'fixed',
-      left: 0,
-      top: 0,
-      zIndex: 100,
-    }}>
+    <aside className={`admin-sidebar sidebar-container ${isOpen ? 'sidebar-open' : ''}`}>
       {/* Logo Area */}
       <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -64,6 +58,7 @@ const AdminSidebar: React.FC = () => {
                   fontWeight: isActive ? 600 : 500,
                   transition: 'all 0.2s'
                 })}
+                onClick={() => setIsOpen && setIsOpen(false)}
               >
                 {({ isActive }) => (
                   <>

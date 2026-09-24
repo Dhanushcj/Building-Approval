@@ -93,7 +93,7 @@ const ApplicationsList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
         <div>
           <h2 className="heading-2" style={{ marginBottom: '0.25rem' }}>All Applications</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Manage and track all building approval applications.</p>
@@ -112,7 +112,7 @@ const ApplicationsList: React.FC = () => {
       />
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
+        <div className="table-responsive">
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>

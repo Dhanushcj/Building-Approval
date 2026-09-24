@@ -4,15 +4,23 @@ import EmployeeSidebar from '../components/employee/EmployeeSidebar';
 import EmployeeTopbar from '../components/employee/EmployeeTopbar';
 
 const EmployeeLayout: React.FC = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
-      <EmployeeSidebar />
-      <div style={{ flex: 1, marginLeft: '260px', display: 'flex', flexDirection: 'column' }}>
-        <EmployeeTopbar />
-        <main style={{ flex: 1, padding: '2rem' }}>
+    <div className="layout-wrapper">
+      <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      <div className="layout-content">
+        <EmployeeTopbar toggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
+        <main className="main-content-padding" style={{ flex: 1, padding: '2rem' }}>
           <Outlet />
         </main>
       </div>
+      
+      {/* Mobile Overlay */}
+      <div 
+        className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`} 
+        onClick={() => setIsSidebarOpen(false)}
+      ></div>
     </div>
   );
 };
