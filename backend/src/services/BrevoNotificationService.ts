@@ -4,10 +4,15 @@ import { NotificationService } from './CaseStateService';
 
 export class BrevoNotificationService implements NotificationService {
   private apiKey: string;
-  private sender = { name: 'Build Approval ERP', email: 'no-reply@buildapprovalerp.com' };
+  private sender: { name: string, email: string };
 
   constructor() {
     this.apiKey = process.env.BREVO_API_KEY || '';
+    // Brevo requires the sender email to be verified in your account
+    this.sender = { 
+      name: 'Build Approval ERP', 
+      email: process.env.BREVO_SENDER_EMAIL || 'contact@building-approval.com' 
+    };
   }
 
   private async sendEmail(toEmail: string, toName: string, subject: string, htmlContent: string) {
