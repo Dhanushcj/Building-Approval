@@ -226,7 +226,8 @@ const ApplicationDetail: React.FC = () => {
       formData.append('document_type', docType);
 
       try {
-        const response = await fetch('https://building-approval.onrender.com/api/documents/upload', {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+        const response = await fetch(`${apiUrl}/documents/upload`, {
           method: 'POST',
           body: formData,
         });
