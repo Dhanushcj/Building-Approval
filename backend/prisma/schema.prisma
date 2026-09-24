@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -62,7 +62,7 @@ enum FeeType {
 }
 
 model User {
-  id             String          @id @default(uuid())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
   name           String
   phone          String          @unique
   email          String?         @unique
@@ -74,7 +74,7 @@ model User {
 }
 
 model Property {
-  id            String       @id @default(uuid())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
   owner_name    String
   owner_phone   String
   address       String
@@ -89,19 +89,19 @@ model Property {
 }
 
 model Case {
-  id                 String       @id @default(uuid())
-  property_id        String
-  parent_case_id     String?
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  property_id String @db.ObjectId
+  parent_case_id String? @db.ObjectId
   approval_type      ApprovalType
   status             CaseStatus   @default(INTAKE)
   application_number String?
   approval_number    String?
-  assigned_staff_id  String?
+  assigned_staff_id String? @db.ObjectId
   created_at         DateTime     @default(now())
   updated_at         DateTime     @updatedAt
 
   property           Property     @relation(fields: [property_id], references: [id])
-  parent_case        Case?        @relation("ParentChildCase", fields: [parent_case_id], references: [id])
+  parent_case        Case?        @relation("ParentChildCase", fields: [parent_case_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   child_cases        Case[]       @relation("ParentChildCase")
   assigned_staff     User?        @relation("AssignedStaff", fields: [assigned_staff_id], references: [id])
 
@@ -111,21 +111,21 @@ model Case {
 }
 
 model StatusHistory {
-  id         String     @id @default(uuid())
-  case_id    String
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  case_id String @db.ObjectId
   from_status CaseStatus
   to_status   CaseStatus
-  changed_by String
+  changed_by String @db.ObjectId
   note       String?
   changed_at DateTime   @default(now())
 
-  case       Case       @relation(fields: [case_id], references: [id])
-  user       User       @relation("ChangedBy", fields: [changed_by], references: [id])
+  case       Case       @relation(fields: [case_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       User       @relation("ChangedBy", fields: [changed_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Document {
-  id            String       @id @default(uuid())
-  case_id       String
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  case_id String @db.ObjectId
   document_type DocumentType
   file_key      String
   version       Int          @default(1)
@@ -133,14 +133,14 @@ model Document {
   verified      Boolean      @default(false)
   uploaded_at   DateTime     @default(now())
 
-  case          Case         @relation(fields: [case_id], references: [id])
+  case          Case         @relation(fields: [case_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   // Inverse relation for fee receipts
   fee_receipts  Fee[]        @relation("ReceiptDocument")
 }
 
 model ChecklistTemplate {
-  id                       String         @id @default(uuid())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
   approval_type            ApprovalType
   jurisdiction             Jurisdiction
   required_document_types  DocumentType[]
@@ -149,14 +149,14 @@ model ChecklistTemplate {
 }
 
 model Fee {
-  id                  String   @id @default(uuid())
-  case_id             String
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  case_id String @db.ObjectId
   fee_type            FeeType
   amount              Float
   paid                Boolean  @default(false)
-  receipt_document_id String?
+  receipt_document_id String? @db.ObjectId
   created_at          DateTime @default(now())
 
-  case                Case     @relation(fields: [case_id], references: [id])
-  receipt_document    Document? @relation("ReceiptDocument", fields: [receipt_document_id], references: [id])
+  case                Case     @relation(fields: [case_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  receipt_document    Document? @relation("ReceiptDocument", fields: [receipt_document_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
