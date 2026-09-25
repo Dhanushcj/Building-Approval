@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, User, Phone, Mail, MapPin } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const ApplyNow: React.FC = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const ApplyNow: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) { // 2MB limit for local storage
-        alert('File size should be less than 2MB');
+        toast.success('File size should be less than 2MB');
         return;
       }
       const reader = new FileReader();
@@ -80,10 +81,10 @@ const ApplyNow: React.FC = () => {
         }
       }
 
-      alert('Thank you! Your application details have been submitted. Our team will contact you shortly.');
+      toast.success('Thank you! Your application details have been submitted. Our team will contact you shortly.');
       navigate('/');
     } catch (error) {
-      alert('Failed to submit application. Uploaded files might be too large.');
+      toast.error('Failed to submit application. Uploaded files might be too large.');
     }
   };
 

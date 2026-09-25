@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +18,7 @@ const Login: React.FC = () => {
         navigate('/admin');
         return;
       } else {
-        alert('Invalid admin password');
+        toast.error('Invalid admin password');
         return;
       }
     }
@@ -35,13 +36,13 @@ const Login: React.FC = () => {
           navigate('/employee');
           return;
         } else {
-          alert('Invalid password');
+          toast.error('Invalid password');
           return;
         }
       }
     }
 
-    alert('User not found. Please check your credentials.');
+    toast.success('User not found. Please check your credentials.');
   };
 
   return (

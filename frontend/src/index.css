@@ -86,6 +86,18 @@ button {
   outline: none;
 }
 
+.nav-link {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--accent) !important;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
@@ -129,7 +141,7 @@ button {
 
 .btn-primary {
   background-color: var(--accent);
-  color: var(--bg-surface);
+  color: #FFFFFF !important;
   padding: 0.875rem 1.75rem;
   border-radius: var(--border-radius-sm);
   font-weight: 600;
@@ -204,6 +216,13 @@ button {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(18, 55, 42, 0.1);
+}
+
+/* Global Form Elements */
+input[type="text"], input[type="email"], input[type="tel"], input[type="password"], input[type="number"], input[type="date"], textarea, select {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 /* Utilities */
@@ -386,11 +405,21 @@ body.dark-mode {
   --border-color: #363F3A;
   
   --sidebar-bg: #0A120E;
+  --sidebar-text: #F0F4F2;
   --topbar-bg: #1C2420;
   
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.6);
+
+  /* Override brand colors for readability */
+  --primary-dark: #F0F4F2 !important;
+  --primary: #AEE2C9 !important;
+}
+
+body.dark-mode img[alt="Buildwise Logo"] {
+  filter: brightness(0) invert(1);
+  mix-blend-mode: normal !important;
 }
 
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Phone, Mail, FileText, CheckCircle, FilePlus, XCircle, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const CustomerLeads: React.FC = () => {
   const [leads, setLeads] = useState<any[]>([]);
@@ -73,7 +74,7 @@ const CustomerLeads: React.FC = () => {
     // Trigger storage event so other tabs/components update
     window.dispatchEvent(new Event('storage'));
     
-    alert(`Application ${newAppId} created successfully!`);
+    toast.success(`Application ${newAppId} created successfully!`);
   };
 
   return (

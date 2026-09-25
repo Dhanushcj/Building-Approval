@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, CheckCircle, XCircle, MapPin } from 'lucide-react';
 import { recentApplications } from '../../data/mockData';
+import toast from 'react-hot-toast';
 
 const FollowUpsList: React.FC = () => {
   const [followUps, setFollowUps] = useState<any[]>([]);
@@ -62,7 +63,7 @@ const FollowUpsList: React.FC = () => {
         
         apps.unshift(newApp);
         localStorage.setItem('recentApplications', JSON.stringify(apps));
-        alert(`Successfully converted into application ${newId}! Remaining details can be completed via Edit.`);
+        toast.success(`Successfully converted into application ${newId}! Remaining details can be completed via Edit.`);
       }
 
       localStorage.setItem('followUps', JSON.stringify(data));

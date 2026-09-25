@@ -7,6 +7,7 @@ import {
 import StatusBadge from '../../components/admin/StatusBadge';
 import { recentApplications } from '../../data/mockData';
 import JSZip from 'jszip';
+import toast from 'react-hot-toast';
 
 const ApplicationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -274,7 +275,7 @@ const ApplicationDetail: React.FC = () => {
         }
       } catch (error) {
         console.error("Upload error:", error);
-        alert("Failed to upload document to Cloudinary via backend.");
+        toast.error("Failed to upload document to Cloudinary via backend.");
       }
     }
   };
@@ -288,7 +289,7 @@ const ApplicationDetail: React.FC = () => {
         localStorage.setItem(`customerDocs_${id}`, JSON.stringify(newDocs));
         window.dispatchEvent(new Event('storage'));
       } catch (e) {
-        alert("Storage limit exceeded.");
+        toast.success("Storage limit exceeded.");
       }
     }
   };
@@ -303,7 +304,7 @@ const ApplicationDetail: React.FC = () => {
   const [isEmailingLink, setIsEmailingLink] = useState(false);
   const handleEmailShareLink = async () => {
     if (!app.email) {
-      alert('No email address available for this customer.');
+      toast.success('No email address available for this customer.');
       return;
     }
     
@@ -317,11 +318,11 @@ const ApplicationDetail: React.FC = () => {
       });
       
       if (!response.ok) throw new Error('Failed to send email');
-      alert('Upload link successfully emailed to the customer!');
+      toast.success('Upload link successfully emailed to the customer!');
       setShowShareModal(false);
     } catch (error) {
       console.error('Error sending link via email:', error);
-      alert('Failed to send email. Please try copying the link instead.');
+      toast.error('Failed to send email. Please try copying the link instead.');
     } finally {
       setIsEmailingLink(false);
     }
@@ -347,7 +348,7 @@ const ApplicationDetail: React.FC = () => {
       element.click();
       document.body.removeChild(element);
     } else {
-      alert('File data is not available for download.');
+      toast.success('File data is not available for download.');
     }
   };
 
@@ -377,7 +378,7 @@ const ApplicationDetail: React.FC = () => {
     });
 
     if (!hasFiles) {
-      alert("No documents available to download.");
+      toast.success("No documents available to download.");
       return;
     }
 
@@ -529,7 +530,7 @@ const ApplicationDetail: React.FC = () => {
                             try {
                               localStorage.setItem(`receipt_${id}`, JSON.stringify({ data, name: file.name }));
                             } catch {
-                              alert('File too large to store.');
+                              toast.success('File too large to store.');
                             }
                           };
                           reader.readAsDataURL(file);

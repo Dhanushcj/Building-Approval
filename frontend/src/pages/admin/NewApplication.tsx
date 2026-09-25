@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Save, User, Building, FileText, Upload } from 'lucide-react';
 import { recentApplications } from '../../data/mockData';
+import toast from 'react-hot-toast';
 
 const getStaffList = () => {
   const saved = localStorage.getItem('staffMembers');
@@ -39,7 +40,7 @@ const NewApplication: React.FC = () => {
     e.preventDefault();
     
     if (!formData.customerName || !formData.mobile || !formData.propertyType || !formData.location || !formData.appType) {
-      alert("Please fill all required fields before saving.");
+      toast.success("Please fill all required fields before saving.");
       return;
     }
 

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Upload, CheckCircle2, FileText, ShieldCheck, AlertCircle, X, HelpCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const CustomerUpload: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -65,7 +66,7 @@ const CustomerUpload: React.FC = () => {
             localStorage.setItem(`customerDocs_${id}`, JSON.stringify(newDocs));
             window.dispatchEvent(new Event('storage'));
           } catch (error) {
-            alert('File is too large to store in local storage. Please try a smaller file.');
+            toast.success('File is too large to store in local storage. Please try a smaller file.');
             console.error('Storage error:', error);
           }
           return newDocs;
@@ -95,7 +96,7 @@ const CustomerUpload: React.FC = () => {
     // Check if at least one document is uploaded
     const hasUploads = documents.some(doc => doc.fileName !== null);
     if (!hasUploads) {
-      alert("Please upload at least one document before submitting.");
+      toast.success("Please upload at least one document before submitting.");
       return;
     }
     

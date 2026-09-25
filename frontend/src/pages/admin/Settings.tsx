@@ -45,6 +45,16 @@ const Settings: React.FC = () => {
     if (savedPic) {
       setProfilePic(savedPic);
     }
+    
+    // Cleanup to revert preview if not saved
+    return () => {
+      const actualMode = localStorage.getItem('themeMode') || 'light';
+      if (actualMode === 'dark') {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+    };
   }, []);
 
   const handleChange = (key: keyof typeof colors, value: string) => {
@@ -53,6 +63,11 @@ const Settings: React.FC = () => {
 
   const handleModeChange = (mode: 'light' | 'dark') => {
     setThemeMode(mode);
+    if (mode === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
   };
 
   const handlePicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -203,7 +218,8 @@ const Settings: React.FC = () => {
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
           <button 
             onClick={saveSettings}
-            style={{ padding: '0.75rem 1.5rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', borderRadius: '0.375rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            className="btn-primary"
+            style={{ borderRadius: '0.375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             {saved ? <CheckCircle size={18} /> : null} {saved ? 'Saved Successfully' : 'Save Settings'}
           </button>

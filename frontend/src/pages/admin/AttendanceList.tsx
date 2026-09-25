@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, UserCheck, Calendar, Clock, Download, Users, UserX, CalendarClock, MoreVertical, Filter, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AttendanceList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,14 +45,14 @@ const AttendanceList: React.FC = () => {
 
   const handleExportDownload = () => {
     if (!exportFromDate || !exportToDate) {
-      alert("Please select both From and To dates.");
+      toast.success("Please select both From and To dates.");
       return;
     }
 
     const start = new Date(exportFromDate);
     const end = new Date(exportToDate);
     if (start > end) {
-      alert("From Date cannot be later than To Date.");
+      toast.success("From Date cannot be later than To Date.");
       return;
     }
 

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock } from 'lucide-react';
 import { getEmployeeTasks, updateTaskStatus } from '../../utils/employeeUtils';
 import type { Task } from '../../utils/employeeUtils';
+import toast from 'react-hot-toast';
 
 const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -53,7 +54,7 @@ const TaskDetail: React.FC = () => {
       // Depending on the new task status, we might also auto-advance the application state here 
       // as requested in the plan (e.g. if task is "Complete Task"). For demo, just updating task.
       if (newStatus === 'Completed') {
-        alert("Task completed. Application status automatically advanced.");
+        toast.success("Task completed. Application status automatically advanced.");
       }
     }
   };

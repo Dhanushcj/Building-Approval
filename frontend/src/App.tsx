@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar'; 
 import Footer from './components/Footer';
 import Landing from './pages/Landing';
@@ -93,6 +94,19 @@ function App() {
   }, []);
   return (
     <Router>
+      <Toaster 
+        position="top-right" 
+        toastOptions={{
+          style: {
+            background: 'var(--bg-surface)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-color)',
+            boxShadow: 'var(--shadow-md)',
+            borderRadius: '0.75rem',
+            padding: '1rem 1.5rem',
+          },
+        }}
+      />
       <div className="app-container">
         <Routes>
           {/* Main Website Routes with Navbar & Footer */}

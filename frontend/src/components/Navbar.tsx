@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Building2, Menu, X, Search, ArrowRight } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (path: string, hash: string) => {
+    if (path === '/' && hash === '') {
+      return location.pathname === '/' && location.hash === '';
+    }
+    return location.pathname === path && location.hash === hash;
+  };
+
+  const getLinkStyle = (path: string, hash: string) => {
+    if (isActive(path, hash)) {
+      return { borderBottom: '2px solid var(--accent)', paddingBottom: '0.2rem', color: 'var(--primary-dark)' };
+    }
+    return {};
+  };
 
   return (
     <header style={{ 
@@ -16,7 +31,7 @@ const Navbar: React.FC = () => {
       <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
         
         {/* Logo */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
+        <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
           <div style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center' }}>
             <img src="/assets/logo_icon.png" alt="Buildwise Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
           </div>
@@ -33,24 +48,18 @@ const Navbar: React.FC = () => {
         {/* Desktop Navigation */}
         <nav style={{ display: 'none' }} className="desktop-nav">
           <ul style={{ display: 'flex', gap: '2rem', listStyle: 'none', margin: 0, padding: 0 }}>
-            <li><Link to="/" style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none', borderBottom: '2px solid var(--accent)', paddingBottom: '0.2rem' }}>Home</Link></li>
-            <li><a href="#services" style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none' }}>Services</a></li>
-            <li><a href="#process" style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none' }}>Process</a></li>
-            <li><a href="#documents" style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none' }}>Documents</a></li>
-            <li><a href="#about" style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none' }}>About Us</a></li>
-            <li><a href="#faq" style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none' }}>FAQ</a></li>
+            <li><Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="nav-link" style={getLinkStyle('/', '')}>Home</Link></li>
+            <li><a href="/#services" className="nav-link" style={getLinkStyle('/', '#services')}>Services</a></li>
+            <li><a href="/#process" className="nav-link" style={getLinkStyle('/', '#process')}>Process</a></li>
+            <li><a href="/#documents" className="nav-link" style={getLinkStyle('/', '#documents')}>Documents</a></li>
+            <li><a href="/#about" className="nav-link" style={getLinkStyle('/', '#about')}>About Us</a></li>
+            <li><a href="/#faq" className="nav-link" style={getLinkStyle('/', '#faq')}>FAQ</a></li>
           </ul>
         </nav>
 
         {/* Action Buttons */}
         <div style={{ display: 'none', gap: '1rem', alignItems: 'center' }} className="desktop-nav">
-          <Link to="/login" style={{ 
-            color: 'var(--text-secondary)',
-            fontWeight: 600,
-            fontSize: '0.875rem',
-            textDecoration: 'none',
-            padding: '0.6rem 0.5rem'
-          }}>
+          <Link to="/login" className="nav-link" style={{ padding: '0.6rem 0.5rem' }}>
             Login
           </Link>
           <Link to="/apply" style={{ 
@@ -89,12 +98,12 @@ const Navbar: React.FC = () => {
           boxShadow: 'var(--shadow-md)'
         }}>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', listStyle: 'none', marginBottom: '2rem', padding: 0 }}>
-            <li><Link to="/" onClick={() => setIsMenuOpen(false)} style={{ color: 'var(--primary-dark)', fontWeight: 600, display: 'block', textDecoration: 'none' }}>Home</Link></li>
-            <li><a href="#services" onClick={() => setIsMenuOpen(false)} style={{ color: 'var(--primary-dark)', fontWeight: 600, display: 'block', textDecoration: 'none' }}>Services</a></li>
-            <li><a href="#process" onClick={() => setIsMenuOpen(false)} style={{ color: 'var(--primary-dark)', fontWeight: 600, display: 'block', textDecoration: 'none' }}>Process</a></li>
-            <li><a href="#documents" onClick={() => setIsMenuOpen(false)} style={{ color: 'var(--primary-dark)', fontWeight: 600, display: 'block', textDecoration: 'none' }}>Documents</a></li>
-            <li><a href="#about" onClick={() => setIsMenuOpen(false)} style={{ color: 'var(--primary-dark)', fontWeight: 600, display: 'block', textDecoration: 'none' }}>About Us</a></li>
-            <li><a href="#faq" onClick={() => setIsMenuOpen(false)} style={{ color: 'var(--primary-dark)', fontWeight: 600, display: 'block', textDecoration: 'none' }}>FAQ</a></li>
+            <li><Link to="/" onClick={() => { setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="nav-link" style={{ display: 'block', ...getLinkStyle('/', '') }}>Home</Link></li>
+            <li><a href="/#services" onClick={() => setIsMenuOpen(false)} className="nav-link" style={{ display: 'block', ...getLinkStyle('/', '#services') }}>Services</a></li>
+            <li><a href="/#process" onClick={() => setIsMenuOpen(false)} className="nav-link" style={{ display: 'block', ...getLinkStyle('/', '#process') }}>Process</a></li>
+            <li><a href="/#documents" onClick={() => setIsMenuOpen(false)} className="nav-link" style={{ display: 'block', ...getLinkStyle('/', '#documents') }}>Documents</a></li>
+            <li><a href="/#about" onClick={() => setIsMenuOpen(false)} className="nav-link" style={{ display: 'block', ...getLinkStyle('/', '#about') }}>About Us</a></li>
+            <li><a href="/#faq" onClick={() => setIsMenuOpen(false)} className="nav-link" style={{ display: 'block', ...getLinkStyle('/', '#faq') }}>FAQ</a></li>
           </ul>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <Link to="/track-application" onClick={() => setIsMenuOpen(false)} style={{ 
