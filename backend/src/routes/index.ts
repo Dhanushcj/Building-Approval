@@ -7,6 +7,7 @@ import notificationRoutes from './notification.routes';
 import templateRoutes from './template.routes';
 import feeRoutes from './fee.routes';
 import dashboardRoutes from './dashboard.routes';
+import leadRoutes from './lead.routes';
 import { authController } from '../controllers/AuthController';
 
 const router = Router();
@@ -21,5 +22,6 @@ router.use('/checklist-templates', templateRoutes);
 router.use('/fees', feeRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/leads', leadRoutes);
 
 export default router;

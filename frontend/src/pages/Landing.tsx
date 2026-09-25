@@ -30,27 +30,16 @@ const Landing: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    const existingLeads = JSON.parse(localStorage.getItem('customerLeads') || '[]');
-    const newLead = {
-      id: `ENQ-${Math.floor(1000 + Math.random() * 9000)}`,
-      ...formData,
-      projectType: 'General Enquiry',
-      propertyDetails: 'General Enquiry via Popup',
-      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      status: 'New'
-    };
-    
     try {
-      localStorage.setItem('customerLeads', JSON.stringify([newLead, ...existingLeads]));
-
-      if (formData.email) {
-        // Send email in background without blocking the UI
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
-        fetch(`${apiUrl}/notifications/lead-thanks`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: formData.email, name: formData.name })
-        }).catch(err => console.error('Background email fetch failed:', err));
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      const response = await fetch(`${apiUrl}/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit');
       }
 
       toast.success('Thank you! Your enquiry has been submitted. Our team will contact you shortly.');

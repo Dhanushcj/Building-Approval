@@ -4,12 +4,11 @@ import { CheckCircle2, Users, Clock, FileText, Bell, Check } from 'lucide-react'
 
 const HeroSection: React.FC = () => {
   return (
-    <section className="section" style={{ 
+    <section className="section hero-section" style={{ 
       paddingTop: '3rem', 
       paddingBottom: '3rem', 
       display: 'flex',
-      alignItems: 'center',
-      background: `linear-gradient(to right, var(--bg-primary) 35%, rgba(245, 243, 237, 0.8) 50%, transparent 65%), url('/assets/hero_building_wide_1790316604179.jpg') center right / cover no-repeat`
+      alignItems: 'center'
     }}>
       <div className="container" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap', width: '100%' }}>
         

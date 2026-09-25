@@ -71,6 +71,7 @@ model User {
   
   assignedCases  Case[]          @relation("AssignedStaff")
   statusChanges  StatusHistory[] @relation("ChangedBy")
+  assignedFollowUps FollowUp[]   @relation("FollowUpAssigned")
 }
 
 model Property {
@@ -159,4 +160,34 @@ model Fee {
 
   case                Case     @relation(fields: [case_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   receipt_document    Document? @relation("ReceiptDocument", fields: [receipt_document_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Lead {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  phone           String
+  email           String?
+  location        String?
+  projectType     String?
+  propertyDetails String?
+  status          String    @default("New")
+  assignedTo      String?
+  notes           String?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+}
+
+model FollowUp {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  leadId         String?   @db.ObjectId
+  caseId         String?   @db.ObjectId
+  type           String
+  notes          String
+  scheduledDate  DateTime
+  status         String    @default("Pending")
+  assignedTo     String?   @db.ObjectId
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  assigned_user  User?     @relation("FollowUpAssigned", fields: [assignedTo], references: [id])
 }

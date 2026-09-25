@@ -115,8 +115,20 @@ button {
 .text-lead { font-size: 1.125rem; color: var(--text-secondary); line-height: 1.6; font-weight: 500; }
 
 @media (max-width: 768px) {
-  .heading-1 { font-size: 2.5rem; }
-  .heading-2 { font-size: 2rem; }
+  .heading-1 { font-size: 2.25rem; }
+  .heading-2 { font-size: 1.75rem; }
+  .heading-3 { font-size: 1.5rem; }
+  .text-lead { font-size: 1rem; }
+  
+  .hero-section {
+    background: linear-gradient(to right, var(--bg-primary) 60%, rgba(245, 243, 237, 0.8) 85%, transparent 100%), url('/assets/hero_building_wide_1790316604179.jpg') center right / cover no-repeat !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hero-section {
+    background: linear-gradient(to right, var(--bg-primary) 35%, rgba(245, 243, 237, 0.8) 50%, transparent 65%), url('/assets/hero_building_wide_1790316604179.jpg') center right / cover no-repeat;
+  }
 }
 
 /* Components */

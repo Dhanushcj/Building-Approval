@@ -9,47 +9,92 @@ const CustomerLeads: React.FC = () => {
   const [viewingLead, setViewingLead] = useState<any | null>(null);
 
   useEffect(() => {
-    // Load leads from local storage (simulated DB)
-    const loadLeads = () => {
-      const storedLeads = localStorage.getItem('customerLeads');
-      if (storedLeads) {
-        setLeads(JSON.parse(storedLeads));
-      } else {
-        // Mock data
-        setLeads([
-          { id: 'L-2041', name: 'Raj Kumar', phone: '9876543210', email: 'raj@example.com', projectType: 'Residential', location: 'Chennai', date: '24 Sep 2026', status: 'New', notes: 'Looking to construct 2 floors.' },
-          { id: 'L-3921', name: 'Priya Sharma', phone: '8765432109', email: 'priya@example.com', projectType: 'Commercial', location: 'Coimbatore', date: '23 Sep 2026', status: 'Contacted', notes: 'Needs approval for a shop.' }
-        ]);
+    const loadLeads = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+        const res = await fetch(`${apiUrl}/leads`);
+        if (res.ok) {
+          const data = await res.json();
+          const formattedLeads = data.map((lead: any) => ({
+            id: lead.id,
+            name: lead.name,
+            phone: lead.phone,
+            email: lead.email || '',
+            location: lead.location || '',
+            projectType: lead.projectType || 'General Enquiry',
+            propertyDetails: lead.propertyDetails || 'General Enquiry via Popup',
+            date: new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+            status: lead.status,
+            assignedTo: lead.assignedTo || ''
+          }));
+          setLeads(formattedLeads);
+        } else {
+          // Fallback to empty if API fails
+          setLeads([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch leads:", error);
+        setLeads([]);
       }
     };
     
     loadLeads();
     
-    // Setup event listener to catch updates from the ApplyNow form
-    window.addEventListener('storage', loadLeads);
-    return () => window.removeEventListener('storage', loadLeads);
+    // Periodically refresh (since localStorage event won't fire across devices)
+    const interval = setInterval(loadLeads, 10000);
+    return () => clearInterval(interval);
   }, []);
 
-  const markAsContacted = (id: string) => {
+  const markAsContacted = async (id: string) => {
     const updatedLeads = leads.map(lead => lead.id === id ? { ...lead, status: 'Contacted' } : lead);
     setLeads(updatedLeads);
-    localStorage.setItem('customerLeads', JSON.stringify(updatedLeads));
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      await fetch(`${apiUrl}/leads/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Contacted' })
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!rejectingLeadId || !rejectionRemarks.trim()) return;
     const updatedLeads = leads.map(lead => lead.id === rejectingLeadId ? { ...lead, status: 'Rejected', rejectionRemarks } : lead);
     setLeads(updatedLeads);
-    localStorage.setItem('customerLeads', JSON.stringify(updatedLeads));
+    const id = rejectingLeadId;
     setRejectingLeadId(null);
     setRejectionRemarks('');
+    
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      await fetch(`${apiUrl}/leads/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Rejected' })
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const handleCreateApplication = (lead: any) => {
+  const handleCreateApplication = async (lead: any) => {
     // 1. Mark lead as Application Created
     const updatedLeads = leads.map(l => l.id === lead.id ? { ...l, status: 'Application Created' } : l);
     setLeads(updatedLeads);
-    localStorage.setItem('customerLeads', JSON.stringify(updatedLeads));
+    
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      await fetch(`${apiUrl}/leads/${lead.id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Application Created' })
+      });
+    } catch (e) {
+      console.error(e);
+    }
 
     // 2. Create Application
     const newAppId = `BPA-2026-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -70,8 +115,6 @@ const CustomerLeads: React.FC = () => {
     };
     
     localStorage.setItem('recentApplications', JSON.stringify([newApp, ...recentApps]));
-    
-    // Trigger storage event so other tabs/components update
     window.dispatchEvent(new Event('storage'));
     
     toast.success(`Application ${newAppId} created successfully!`);
