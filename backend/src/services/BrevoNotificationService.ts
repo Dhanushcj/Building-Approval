@@ -11,7 +11,7 @@ export class BrevoNotificationService implements NotificationService {
     // Brevo requires the sender email to be verified in your account
     this.sender = { 
       name: 'Build Approval ERP', 
-      email: process.env.BREVO_SENDER_EMAIL || 'contact@building-approval.com' 
+      email: process.env.BREVO_SENDER_EMAIL || 'forgeindiaconnectfic@gmail.com' 
     };
   }
 
