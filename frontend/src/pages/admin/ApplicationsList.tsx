@@ -132,7 +132,7 @@ const ApplicationsList: React.FC = () => {
                   <tr key={index} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
                     <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Link to={`/admin/applications/${app.id}`} style={{ fontWeight: 600, color: 'var(--primary-blue)', textDecoration: 'none' }}>
+                        <Link to={`/admin/applications/${app.id}`} style={{ fontWeight: 600, color: 'var(--primary)', textDecoration: 'none' }}>
                           {app.id}
                         </Link>
                         <button 
@@ -151,20 +151,20 @@ const ApplicationsList: React.FC = () => {
                       </div>
                     </td>
                     <td style={{ padding: '1rem 1.5rem' }}>
-                      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)' }}>{app.customer}</div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>{app.customer}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{app.mobile || '—'}</div>
                     </td>
                     <td style={{ padding: '1rem 1.5rem' }}>
-                      <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.location}</div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.location}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{app.type} - {app.appType}</div>
                     </td>
                     <td style={{ padding: '1rem 1.5rem' }}>
                       <StatusBadge type="status" value={app.status} />
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--dark-navy)' }}>
+                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--primary-dark)' }}>
                       {app.staff && app.staff !== 'Unassigned' ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontWeight: 500 }}>
-                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-blue)' }}></div>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></div>
                           {app.staff}
                         </div>
                       ) : (
@@ -198,7 +198,7 @@ const ApplicationsList: React.FC = () => {
                       <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
                         <FileText size={32} color="var(--text-secondary)" />
                       </div>
-                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>No applications found</h3>
+                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>No applications found</h3>
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '400px', marginBottom: '1.5rem' }}>
                         There are currently no applications matching your criteria. Create a new application to get started.
                       </p>
@@ -215,11 +215,11 @@ const ApplicationsList: React.FC = () => {
         <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
           <div>Showing {filteredApplications.length > 0 ? 1 : 0} to {filteredApplications.length} of {filteredApplications.length} entries</div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', cursor: 'pointer' }}>Previous</button>
-            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--primary-blue)', backgroundColor: 'var(--primary-blue)', color: 'white', cursor: 'pointer' }}>1</button>
-            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', cursor: 'pointer' }}>2</button>
-            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', cursor: 'pointer' }}>3</button>
-            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', cursor: 'pointer' }}>Next</button>
+            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer' }}>Previous</button>
+            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--primary)', backgroundColor: 'var(--primary)', color: 'white', cursor: 'pointer' }}>1</button>
+            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer' }}>2</button>
+            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer' }}>3</button>
+            <button style={{ padding: '0.25rem 0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer' }}>Next</button>
           </div>
         </div>
       </div>

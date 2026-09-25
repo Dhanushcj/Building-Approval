@@ -35,15 +35,15 @@ const STATUS_TO_STAGE_INDEX: Record<string, number> = {
 
 const STATUS_COLORS: Record<string, string> = {
   'New':                '#94a3b8',
-  'Action Required':    '#f59e0b',
-  'Documents Pending':  '#f59e0b',
-  'Verification':       '#3b82f6',
-  'Under Review':       '#6366f1',
-  'Submitted':          '#0ea5e9',
-  'Gov Verification':   '#0B63CE',
-  'Site Inspection':    '#eab308',
-  'Approved':           '#22A06B',
-  'Rejected':           '#ef4444',
+  'Action Required':    'var(--warning-gold)',
+  'Documents Pending':  'var(--warning-gold)',
+  'Verification':       'var(--primary)',
+  'Under Review':       'var(--primary)',
+  'Submitted':          'var(--info-green)',
+  'Gov Verification':   'var(--primary-dark)',
+  'Site Inspection':    'var(--warning-gold)',
+  'Approved':           'var(--success-green)',
+  'Rejected':           'var(--error-red)',
 };
 
 const DOC_LABELS: Record<string, string> = {
@@ -109,9 +109,9 @@ const TrackApplication: React.FC = () => {
   const statusColor = STATUS_COLORS[currentStatus] || '#94a3b8';
 
   const getDocStatusColor = (status: string) => {
-    if (status === 'Verified') return '#22A06B';
-    if (status === 'Needs Reupload') return '#ef4444';
-    if (status === 'Pending' || status === 'Missing') return '#f59e0b';
+    if (status === 'Verified') return 'var(--success-green)';
+    if (status === 'Needs Reupload') return 'var(--error-red)';
+    if (status === 'Pending' || status === 'Missing') return 'var(--warning-gold)';
     return '#94a3b8';
   };
 
@@ -161,7 +161,7 @@ const TrackApplication: React.FC = () => {
         </div>
 
         {error && (
-          <div style={{ textAlign: 'center', color: '#ef4444', marginBottom: '1rem', padding: '1rem', backgroundColor: '#fee2e2', borderRadius: '0.5rem', maxWidth: '800px', margin: '0 auto 2rem' }}>
+          <div style={{ textAlign: 'center', color: 'var(--error-red)', marginBottom: '1rem', padding: '1rem', backgroundColor: '#fee2e2', borderRadius: '0.5rem', maxWidth: '800px', margin: '0 auto 2rem' }}>
             {error}
           </div>
         )}
@@ -171,7 +171,7 @@ const TrackApplication: React.FC = () => {
           <div className="card" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0', overflow: 'hidden' }}>
             
             {/* Header Banner */}
-            <div style={{ backgroundColor: isRejected ? '#ef4444' : 'var(--primary-blue)', color: 'white', padding: '2rem' }}>
+            <div style={{ backgroundColor: isRejected ? 'var(--error-red)' : 'var(--primary)', color: 'white', padding: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '0.875rem', opacity: 0.8, marginBottom: '0.25rem' }}>APPLICATION NUMBER</div>
@@ -179,7 +179,7 @@ const TrackApplication: React.FC = () => {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '0.875rem', opacity: 0.8, marginBottom: '0.25rem' }}>CURRENT STATUS</div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'white', color: 'var(--dark-navy)', padding: '0.5rem 1rem', borderRadius: '2rem', fontWeight: 700 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'white', color: 'var(--primary-dark)', padding: '0.5rem 1rem', borderRadius: '2rem', fontWeight: 700 }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: statusColor }}></div>
                     {currentStatus}
                   </div>
@@ -192,40 +192,40 @@ const TrackApplication: React.FC = () => {
                 
                 {/* Details + Documents */}
                 <div style={{ flex: '1 1 300px' }}>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Application Details</h3>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Application Details</h3>
                   
                   <div style={{ display: 'grid', gap: '1.25rem' }}>
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>APPLICANT NAME</div>
-                      <div style={{ fontWeight: 500, color: 'var(--dark-navy)' }}>{appData.customer}</div>
+                      <div style={{ fontWeight: 500, color: 'var(--primary-dark)' }}>{appData.customer}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>PROJECT TYPE</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, color: 'var(--dark-navy)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, color: 'var(--primary-dark)' }}>
                         <Building2 size={16} /> {appData.appType}
                       </div>
                     </div>
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>LOCATION</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, color: 'var(--dark-navy)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, color: 'var(--primary-dark)' }}>
                         <MapPin size={16} /> {appData.location}
                       </div>
                     </div>
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>SUBMITTED DATE</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, color: 'var(--dark-navy)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, color: 'var(--primary-dark)' }}>
                         <Calendar size={16} /> {appData.date}
                       </div>
                     </div>
                   </div>
 
                   {/* Customer Documents */}
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1.5rem', marginTop: '2.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Uploaded Documents</h3>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', marginTop: '2.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Uploaded Documents</h3>
                   <div style={{ display: 'grid', gap: '0.75rem' }}>
                     {customerDocs.length > 0 ? customerDocs.map((doc, i) => (
                       <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '0.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>
-                          <FileText size={16} color="var(--primary-blue)" />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>
+                          <FileText size={16} color="var(--primary)" />
                           {DOC_LABELS[doc.id] || doc.name || doc.id}
                         </div>
                         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: getDocStatusColor(doc.status) }}>
@@ -242,12 +242,12 @@ const TrackApplication: React.FC = () => {
 
                 {/* Progress Timeline */}
                 <div style={{ flex: '1 1 300px' }}>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Application Progress</h3>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Application Progress</h3>
                   
                   {isRejected ? (
                     <div style={{ padding: '2rem', backgroundColor: '#fee2e2', borderRadius: '0.75rem', textAlign: 'center' }}>
-                      <XCircle size={48} color="#ef4444" style={{ marginBottom: '1rem' }} />
-                      <div style={{ fontSize: '1.125rem', fontWeight: 700, color: '#ef4444', marginBottom: '0.5rem' }}>Application Rejected</div>
+                      <XCircle size={48} color="var(--error-red)" style={{ marginBottom: '1rem' }} />
+                      <div style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--error-red)', marginBottom: '0.5rem' }}>Application Rejected</div>
                       <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
                         Your application has been rejected. Please contact our office for more details.
                       </div>
@@ -266,16 +266,16 @@ const TrackApplication: React.FC = () => {
                           <div key={stage.key} style={{ position: 'relative', paddingBottom: '1.5rem', opacity: isPending ? 0.45 : 1, transition: 'opacity 0.3s' }}>
                             <div style={{ position: 'absolute', left: '-1.5rem', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 0' }}>
                               {isDone ? (
-                                <CheckCircle2 color="#22A06B" size={20} style={{ backgroundColor: 'white' }} />
+                                <CheckCircle2 color="var(--success-green)" size={20} style={{ backgroundColor: 'white' }} />
                               ) : isCurrent ? (
-                                <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '4px solid var(--primary-blue)', boxSizing: 'border-box', marginLeft: '2px' }}></div>
+                                <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '4px solid var(--primary)', boxSizing: 'border-box', marginLeft: '2px' }}></div>
                               ) : (
                                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', border: '2px solid var(--text-secondary)', boxSizing: 'border-box', marginLeft: '4px' }}></div>
                               )}
                             </div>
-                            <div style={{ fontWeight: 600, color: isCurrent ? 'var(--primary-blue)' : isDone ? 'var(--dark-navy)' : 'var(--text-secondary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ fontWeight: 600, color: isCurrent ? 'var(--primary)' : isDone ? 'var(--primary-dark)' : 'var(--text-secondary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               {stage.label}
-                              {isCurrent && <span style={{ fontSize: '0.65rem', backgroundColor: 'rgba(11,99,206,0.1)', color: 'var(--primary-blue)', padding: '0.1rem 0.5rem', borderRadius: '1rem', fontWeight: 700 }}>CURRENT</span>}
+                              {isCurrent && <span style={{ fontSize: '0.65rem', backgroundColor: 'rgba(18, 55, 42, 0.05)', color: 'var(--primary)', padding: '0.1rem 0.5rem', borderRadius: '1rem', fontWeight: 700 }}>CURRENT</span>}
                             </div>
                             <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{stage.description}</div>
                             {isDone && (
@@ -284,7 +284,7 @@ const TrackApplication: React.FC = () => {
                               </div>
                             )}
                             {isCurrent && (
-                              <div style={{ fontSize: '0.75rem', color: 'var(--primary-blue)', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--primary)', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <Clock size={12} /> In Progress
                               </div>
                             )}

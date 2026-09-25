@@ -127,22 +127,22 @@ const CustomerUpload: React.FC = () => {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{ width: '40px', height: '40px', backgroundColor: 'var(--primary-blue)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '40px', height: '40px', backgroundColor: 'var(--primary)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Building size={24} color="white" />
             </div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--dark-navy)', margin: 0, letterSpacing: '-0.025em' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', margin: 0, letterSpacing: '-0.025em' }}>
               BuildApprove
             </h1>
           </div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Secure Document Portal</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Application Reference: <strong style={{ color: 'var(--dark-navy)' }}>{id}</strong></p>
+          <h2 style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Secure Document Portal</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Application Reference: <strong style={{ color: 'var(--primary-dark)' }}>{id}</strong></p>
         </div>
 
         {isSubmitted && documents.some(d => d.status === 'Needs Reupload') && (
-          <div style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '1px solid #F59E0B', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-            <AlertCircle size={24} color="#F59E0B" style={{ flexShrink: 0 }} />
+          <div style={{ backgroundColor: 'rgba(214, 167, 86, 0.1)', border: '1px solid var(--warning-gold)', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+            <AlertCircle size={24} color="var(--warning-gold)" style={{ flexShrink: 0 }} />
             <div>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', margin: '0 0 0.25rem 0' }}>Action Required: Reupload Documents</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', margin: '0 0 0.25rem 0' }}>Action Required: Reupload Documents</h3>
               <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.875rem' }}>Some of your documents need to be reuploaded. Please check the list below and provide the corrected files.</p>
             </div>
           </div>
@@ -152,33 +152,33 @@ const CustomerUpload: React.FC = () => {
           <div style={{ backgroundColor: 'rgba(34, 160, 107, 0.1)', border: '1px solid var(--success-green)', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
             <ShieldCheck size={24} color="var(--success-green)" style={{ flexShrink: 0 }} />
             <div>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', margin: '0 0 0.25rem 0' }}>Documents Submitted Successfully</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', margin: '0 0 0.25rem 0' }}>Documents Submitted Successfully</h3>
               <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.875rem' }}>Your documents have been securely transmitted to our agency. You can no longer upload or modify files, but you may view or download your submitted documents below.</p>
             </div>
           </div>
         )}
 
         {!isSubmitted && (
-          <div style={{ backgroundColor: 'rgba(11, 99, 206, 0.05)', border: '1px solid rgba(11, 99, 206, 0.2)', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-            <AlertCircle size={24} color="var(--primary-blue)" style={{ flexShrink: 0 }} />
+          <div style={{ backgroundColor: 'rgba(18, 55, 42, 0.05)', border: '1px solid rgba(11, 99, 206, 0.2)', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+            <AlertCircle size={24} color="var(--primary)" style={{ flexShrink: 0 }} />
             <div>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', margin: '0 0 0.25rem 0' }}>Action Required</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', margin: '0 0 0.25rem 0' }}>Action Required</h3>
               <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.875rem' }}>Please upload the requested documents below. Once all documents are uploaded, click the Submit button at the bottom of the page. <strong>Note: You cannot modify files after submission.</strong></p>
             </div>
           </div>
         )}
 
         {/* Upload List */}
-        <div style={{ backgroundColor: 'var(--white)', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', marginBottom: '2rem' }}>
+        <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', marginBottom: '2rem' }}>
           {documents.filter(doc => !['building_plan', 'site_inspection_report', 'govt_approval'].includes(doc.id)).map((doc, index, array) => (
             <div key={doc.id} style={{ padding: '1.5rem', borderBottom: index < array.length - 1 ? '1px solid var(--border-color)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '0.5rem', backgroundColor: doc.status === 'Needs Reupload' ? 'rgba(245, 158, 11, 0.1)' : (doc.fileName || doc.file) ? 'rgba(34, 160, 107, 0.1)' : 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: doc.status === 'Needs Reupload' ? '#F59E0B' : (doc.fileName || doc.file) ? 'var(--success-green)' : 'var(--text-secondary)' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '0.5rem', backgroundColor: doc.status === 'Needs Reupload' ? 'rgba(214, 167, 86, 0.1)' : (doc.fileName || doc.file) ? 'rgba(34, 160, 107, 0.1)' : 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: doc.status === 'Needs Reupload' ? 'var(--warning-gold)' : (doc.fileName || doc.file) ? 'var(--success-green)' : 'var(--text-secondary)' }}>
                   {(doc.fileName || doc.file) && doc.status !== 'Needs Reupload' ? <CheckCircle2 size={24} /> : <FileText size={24} />}
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--dark-navy)', margin: '0 0 0.25rem 0' }}>{doc.name}</h4>
-                  <p style={{ fontSize: '0.875rem', color: doc.status === 'Needs Reupload' ? '#F59E0B' : (doc.fileName || doc.file) ? 'var(--success-green)' : 'var(--text-secondary)', margin: 0 }}>
+                  <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', margin: '0 0 0.25rem 0' }}>{doc.name}</h4>
+                  <p style={{ fontSize: '0.875rem', color: doc.status === 'Needs Reupload' ? 'var(--warning-gold)' : (doc.fileName || doc.file) ? 'var(--success-green)' : 'var(--text-secondary)', margin: 0 }}>
                     {doc.status === 'Needs Reupload' ? 'Reupload Requested' : (doc.fileName || doc.file) ? `Uploaded: ${doc.fileName || doc.file}` : 'Pending Upload'}
                   </p>
                 </div>
@@ -187,7 +187,7 @@ const CustomerUpload: React.FC = () => {
               <div>
                 {isSubmitted && doc.status !== 'Needs Reupload' ? (
                   doc.fileName || doc.file ? (
-                    <button onClick={() => handleView(doc)} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', color: 'var(--dark-navy)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button onClick={() => handleView(doc)} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', color: 'var(--primary-dark)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <FileText size={16} /> View
                     </button>
                   ) : (
@@ -200,8 +200,8 @@ const CustomerUpload: React.FC = () => {
                       padding: '0.5rem 1rem', 
                       borderRadius: '0.5rem', 
                       border: doc.fileName || doc.file ? '1px solid var(--border-color)' : 'none', 
-                      backgroundColor: doc.fileName || doc.file ? 'var(--white)' : 'var(--primary-blue)', 
-                      color: doc.fileName || doc.file ? 'var(--dark-navy)' : 'var(--white)', 
+                      backgroundColor: doc.fileName || doc.file ? 'var(--bg-surface)' : 'var(--primary)', 
+                      color: doc.fileName || doc.file ? 'var(--primary-dark)' : 'var(--bg-surface)', 
                       fontSize: '0.875rem', 
                       fontWeight: 500, 
                       cursor: 'pointer',
@@ -245,7 +245,7 @@ const CustomerUpload: React.FC = () => {
             <button 
               onClick={handleReuploadSubmit}
               className="btn-primary" 
-              style={{ padding: '1rem 2rem', fontSize: '1rem', fontWeight: 600, borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#F59E0B', borderColor: '#F59E0B' }}
+              style={{ padding: '1rem 2rem', fontSize: '1rem', fontWeight: 600, borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--warning-gold)', borderColor: 'var(--warning-gold)' }}
             >
               <ShieldCheck size={20} /> Submit Reuploaded Documents
             </button>
@@ -257,27 +257,27 @@ const CustomerUpload: React.FC = () => {
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '0.75rem', width: '100%', maxWidth: '480px', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', position: 'relative' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '480px', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', position: 'relative' }}>
             <button onClick={() => setShowConfirmModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
               <X size={20} />
             </button>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b', flexShrink: 0 }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(214, 167, 86, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--warning-gold)', flexShrink: 0 }}>
                 <HelpCircle size={24} />
               </div>
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.25rem' }}>Confirm Submission</h3>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Confirm Submission</h3>
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>Are you sure you want to submit your documents now?</p>
               </div>
             </div>
 
-            <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', color: 'var(--dark-navy)' }}>
+            <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', color: 'var(--primary-dark)' }}>
               <strong>Important:</strong> You will not be able to change, delete, or upload more documents after submitting. Please verify all files are correct.
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button onClick={() => setShowConfirmModal(false)} style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', backgroundColor: 'var(--white)', border: '1px solid var(--border-color)', color: 'var(--dark-navy)', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem' }}>
+              <button onClick={() => setShowConfirmModal(false)} style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--primary-dark)', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem' }}>
                 Cancel
               </button>
               <button onClick={confirmSubmission} className="btn-primary" style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
@@ -292,9 +292,9 @@ const CustomerUpload: React.FC = () => {
       {/* View Document Modal */}
       {viewingDoc && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)', padding: '2rem' }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '0.75rem', width: '100%', maxWidth: '800px', height: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '800px', height: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', position: 'relative', overflow: 'hidden' }}>
             <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', margin: 0 }}>{viewingDoc.name}</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', margin: 0 }}>{viewingDoc.name}</h3>
               <button onClick={() => setViewingDoc(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
                 <X size={20} />
               </button>

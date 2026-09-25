@@ -110,21 +110,21 @@ const AttendanceList: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#64748b' }}>
-             <Users size={16} /> <span style={{ fontWeight: 500 }}>Dashboard</span> <span style={{ margin: '0 0.25rem' }}>/</span> <span style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>Attendance</span>
+             <Users size={16} /> <span style={{ fontWeight: 500 }}>Dashboard</span> <span style={{ margin: '0 0.25rem' }}>/</span> <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Attendance</span>
           </div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--dark-navy)', margin: '0 0 0.25rem 0', letterSpacing: '-0.02em' }}>Attendance</h1>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary-dark)', margin: '0 0 0.25rem 0', letterSpacing: '-0.02em' }}>Attendance</h1>
           <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9375rem' }}>Monitor daily employee attendance, check-ins, and leaves.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           
           {/* Functional Date Picker */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1rem', backgroundColor: 'var(--white)', borderRadius: '0.75rem', border: '1px solid var(--border-color)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <Calendar size={18} color="var(--primary-blue)" /> 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1rem', backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', border: '1px solid var(--border-color)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+            <Calendar size={18} color="var(--primary)" /> 
             <input 
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 600, color: 'var(--dark-navy)', cursor: 'pointer', fontFamily: 'inherit' }}
+              style={{ border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 600, color: 'var(--primary-dark)', cursor: 'pointer', fontFamily: 'inherit' }}
             />
           </div>
           
@@ -138,14 +138,14 @@ const AttendanceList: React.FC = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         
         {/* Card 1 */}
-        <div style={{ backgroundColor: 'var(--white)', borderRadius: '1rem', padding: '1.25rem', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+        <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', padding: '1.25rem', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 2 }}>
             <div>
               <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Total Employees</div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--dark-navy)', lineHeight: 1 }}>{totalEmployees}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary-dark)', lineHeight: 1 }}>{totalEmployees}</div>
               <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem', fontWeight: 500 }}>Active Staff</div>
             </div>
-            <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
               <Users size={20} />
             </div>
           </div>
@@ -154,11 +154,11 @@ const AttendanceList: React.FC = () => {
         </div>
 
         {/* Card 2 */}
-        <div style={{ backgroundColor: 'var(--white)', borderRadius: '1rem', padding: '1.25rem', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+        <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', padding: '1.25rem', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 2 }}>
             <div>
               <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Present Today</div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--dark-navy)', lineHeight: 1 }}>{presentCount}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary-dark)', lineHeight: 1 }}>{presentCount}</div>
               <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem', fontWeight: 500 }}>{presentPercentage}% Attendance</div>
             </div>
             <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', backgroundColor: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}>
@@ -169,14 +169,14 @@ const AttendanceList: React.FC = () => {
         </div>
 
         {/* Card 3 */}
-        <div style={{ backgroundColor: 'var(--white)', borderRadius: '1rem', padding: '1.25rem', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+        <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', padding: '1.25rem', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 2 }}>
             <div>
               <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Absent Today</div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--dark-navy)', lineHeight: 1 }}>{absentCount}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary-dark)', lineHeight: 1 }}>{absentCount}</div>
               <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem', fontWeight: 500 }}>{absentPercentage}% Absent</div>
             </div>
-            <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', backgroundColor: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', backgroundColor: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--error-red)' }}>
               <UserX size={20} />
             </div>
           </div>
@@ -184,14 +184,14 @@ const AttendanceList: React.FC = () => {
         </div>
 
         {/* Card 4 */}
-        <div style={{ backgroundColor: 'var(--white)', borderRadius: '1rem', padding: '1.25rem', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+        <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', padding: '1.25rem', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 2 }}>
             <div>
               <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>On Leave</div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--dark-navy)', lineHeight: 1 }}>{leaveCount}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary-dark)', lineHeight: 1 }}>{leaveCount}</div>
               <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem', fontWeight: 500 }}>{leavePercentage}% On Leave</div>
             </div>
-            <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', backgroundColor: '#fefce8', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#eab308' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', backgroundColor: '#fefce8', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--warning-gold)' }}>
               <CalendarClock size={20} />
             </div>
           </div>
@@ -201,16 +201,16 @@ const AttendanceList: React.FC = () => {
       </div>
 
       {/* 3. EMPLOYEE ATTENDANCE SECTION */}
-      <div style={{ backgroundColor: 'var(--white)', borderRadius: '1rem', border: '1px solid var(--border-color)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+      <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', border: '1px solid var(--border-color)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
         
         {/* Card Header */}
-        <div style={{ backgroundColor: 'var(--dark-navy)', padding: '0.875rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ backgroundColor: 'var(--primary-dark)', padding: '0.875rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 2 }}>
             <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '0.5rem', borderRadius: '0.5rem' }}>
-              <Users size={18} color="var(--white)" />
+              <Users size={18} color="var(--bg-surface)" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--white)', margin: 0, letterSpacing: '0.025em' }}>Employee Attendance</h2>
+              <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--bg-surface)', margin: 0, letterSpacing: '0.025em' }}>Employee Attendance</h2>
               <div style={{ fontSize: '0.75rem', color: '#cbd5e1', marginTop: '2px' }}>Today's attendance overview</div>
             </div>
           </div>
@@ -233,16 +233,16 @@ const AttendanceList: React.FC = () => {
               placeholder="Search employee..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', padding: '0.625rem 1rem 0.625rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'var(--white)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)' }}
+              style={{ width: '100%', padding: '0.625rem 1rem 0.625rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'var(--bg-surface)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)' }}
             />
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1rem', backgroundColor: 'var(--white)', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1rem', backgroundColor: 'var(--bg-surface)', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>
             <Filter size={16} color="#64748b" />
             <select 
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 500, color: 'var(--dark-navy)', cursor: 'pointer', paddingRight: '0.5rem' }}
+              style={{ border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 500, color: 'var(--primary-dark)', cursor: 'pointer', paddingRight: '0.5rem' }}
             >
               <option value="All Status">All Status</option>
               <option value="Present">Present</option>
@@ -256,7 +256,7 @@ const AttendanceList: React.FC = () => {
         <div className="attendance-list-container">
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
-              <tr style={{ backgroundColor: 'var(--white)', borderBottom: '1px solid #e2e8f0' }}>
+              <tr style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid #e2e8f0' }}>
                 <th style={{ padding: '0.875rem 1.25rem', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', width: '60px' }}>#</th>
                 <th style={{ padding: '0.875rem 1.25rem', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', width: '120px' }}>Emp ID</th>
                 <th style={{ padding: '0.875rem 1.25rem', fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>Employee Details</th>
@@ -268,15 +268,15 @@ const AttendanceList: React.FC = () => {
             </thead>
             <tbody>
               {filteredAttendance.map((record, index) => (
-                <tr key={index} className="attendance-row" style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s', backgroundColor: index % 2 === 0 ? '#fcfcfc' : 'var(--white)' }}>
+                <tr key={index} className="attendance-row" style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s', backgroundColor: index % 2 === 0 ? '#fcfcfc' : 'var(--bg-surface)' }}>
                   
                   <td style={{ padding: '0.875rem 1.25rem' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '0.5rem', backgroundColor: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '0.5rem', backgroundColor: '#eff6ff', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>
                       {index + 1}
                     </div>
                   </td>
                   
-                  <td style={{ padding: '0.875rem 1.25rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--dark-navy)' }}>
+                  <td style={{ padding: '0.875rem 1.25rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)' }}>
                     {record.id}
                   </td>
                   
@@ -284,7 +284,7 @@ const AttendanceList: React.FC = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       <img src={record.avatar} alt={record.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
                       <div>
-                        <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--dark-navy)' }}>{record.name}</div>
+                        <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--primary-dark)' }}>{record.name}</div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500, marginTop: '2px' }}>{record.role}</div>
                       </div>
                     </div>
@@ -292,9 +292,9 @@ const AttendanceList: React.FC = () => {
                   
                   <td style={{ padding: '0.875rem 1.25rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Clock size={16} color={record.checkIn !== '--' ? '#3b82f6' : '#cbd5e1'} />
+                      <Clock size={16} color={record.checkIn !== '--' ? 'var(--primary)' : '#cbd5e1'} />
                       <div>
-                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: record.checkIn !== '--' ? 'var(--dark-navy)' : '#94a3b8' }}>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: record.checkIn !== '--' ? 'var(--primary-dark)' : '#94a3b8' }}>
                           {record.checkIn}
                         </div>
                         <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 500, textTransform: 'uppercase' }}>
@@ -306,9 +306,9 @@ const AttendanceList: React.FC = () => {
                   
                   <td style={{ padding: '0.875rem 1.25rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Clock size={16} color={record.checkOut !== '--' ? '#3b82f6' : '#cbd5e1'} />
+                      <Clock size={16} color={record.checkOut !== '--' ? 'var(--primary)' : '#cbd5e1'} />
                       <div>
-                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: record.checkOut !== '--' ? 'var(--dark-navy)' : '#94a3b8' }}>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: record.checkOut !== '--' ? 'var(--primary-dark)' : '#94a3b8' }}>
                           {record.checkOut}
                         </div>
                         <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 500, textTransform: 'uppercase' }}>
@@ -331,7 +331,7 @@ const AttendanceList: React.FC = () => {
                       fontSize: '0.75rem', 
                       fontWeight: 700 
                     }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: record.status === 'Present' ? '#22c55e' : record.status === 'Absent' ? '#ef4444' : '#eab308' }}></div>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: record.status === 'Present' ? '#22c55e' : record.status === 'Absent' ? 'var(--error-red)' : 'var(--warning-gold)' }}></div>
                       {record.status}
                     </span>
                   </td>
@@ -351,7 +351,7 @@ const AttendanceList: React.FC = () => {
                     <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
                       <UserCheck size={32} color="#94a3b8" />
                     </div>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>No records found</h3>
+                    <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>No records found</h3>
                     <p style={{ margin: 0, fontSize: '0.875rem' }}>We couldn't find any attendance records matching your search.</p>
                   </td>
                 </tr>
@@ -364,9 +364,9 @@ const AttendanceList: React.FC = () => {
       {/* EXPORT MODAL */}
       {showExportModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '1rem', width: '90%', maxWidth: '400px', padding: '1.5rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', width: '90%', maxWidth: '400px', padding: '1.5rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--dark-navy)', margin: 0 }}>Export Attendance Report</h3>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', margin: 0 }}>Export Attendance Report</h3>
               <button onClick={() => setShowExportModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
                 <X size={20} />
               </button>
@@ -396,7 +396,7 @@ const AttendanceList: React.FC = () => {
                 <select 
                   value={exportEmployee} 
                   onChange={(e) => setExportEmployee(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'var(--white)' }}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'var(--bg-surface)' }}
                 >
                   <option value="all">All Employees</option>
                   {Array.from(new Set(attendance.map(a => a.name))).map((name, idx) => (
@@ -431,7 +431,7 @@ const AttendanceList: React.FC = () => {
         }
         .action-btn:hover {
           background-color: #e2e8f0;
-          color: var(--dark-navy) !important;
+          color: var(--primary-dark) !important;
         }
 
         /* Mobile Responsive adjustments */
@@ -457,7 +457,7 @@ const AttendanceList: React.FC = () => {
             margin: 1rem;
             padding: 1rem;
             position: relative;
-            background-color: var(--white) !important;
+            background-color: var(--bg-surface) !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
           }
           

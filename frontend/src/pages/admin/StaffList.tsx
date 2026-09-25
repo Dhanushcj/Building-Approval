@@ -96,12 +96,12 @@ const StaffList: React.FC = () => {
     border: '1px solid var(--border-color)',
     fontSize: '0.875rem',
     outline: 'none',
-    backgroundColor: 'var(--white)',
+    backgroundColor: 'var(--bg-surface)',
     boxSizing: 'border-box',
   };
 
   const errorStyle: React.CSSProperties = {
-    color: '#ef4444',
+    color: 'var(--error-red)',
     fontSize: '0.75rem',
     marginTop: '0.25rem',
   };
@@ -136,20 +136,20 @@ const StaffList: React.FC = () => {
                   <tr key={staff.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
                     <td style={{ padding: '1rem 1.5rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary-blue), #6366f1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.875rem', flexShrink: 0 }}>
+                        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--primary))', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.875rem', flexShrink: 0 }}>
                           {staff.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)' }}>{staff.name}</div>
+                          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>{staff.name}</div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{staff.id}</div>
                         </div>
                       </div>
                     </td>
                     <td style={{ padding: '1rem 1.5rem' }}>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)' }}>{staff.mobile}</div>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{staff.mobile}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{staff.email}</div>
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)' }}>
+                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
                       {staff.assigned}
                     </td>
                     <td style={{ padding: '1rem 1.5rem' }}>
@@ -163,7 +163,7 @@ const StaffList: React.FC = () => {
                           fontSize: '0.75rem',
                           fontWeight: 600,
                           backgroundColor: staff.status === 'Active' ? 'rgba(34, 160, 107, 0.1)' : '#fee2e2',
-                          color: staff.status === 'Active' ? 'var(--success-green)' : '#ef4444',
+                          color: staff.status === 'Active' ? 'var(--success-green)' : 'var(--error-red)',
                           transition: 'all 0.2s',
                         }}
                       >
@@ -175,14 +175,14 @@ const StaffList: React.FC = () => {
                         <button
                           onClick={() => openEdit(staff)}
                           title="Edit"
-                          style={{ padding: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-secondary)', border: 'none', color: 'var(--primary-blue)', cursor: 'pointer' }}
+                          style={{ padding: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-secondary)', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
                         >
                           <Edit size={16} />
                         </button>
                         <button
                           onClick={() => setDeleteId(staff.id)}
                           title="Delete"
-                          style={{ padding: '0.5rem', borderRadius: '0.25rem', backgroundColor: '#fee2e2', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                          style={{ padding: '0.5rem', borderRadius: '0.25rem', backgroundColor: '#fee2e2', border: 'none', color: 'var(--error-red)', cursor: 'pointer' }}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -197,7 +197,7 @@ const StaffList: React.FC = () => {
                       <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
                         <UserCog size={32} color="var(--text-secondary)" />
                       </div>
-                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>No staff members found</h3>
+                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>No staff members found</h3>
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '400px', marginBottom: '1.5rem' }}>
                         You haven't added any staff members yet. Add staff to assign them applications.
                       </p>
@@ -216,9 +216,9 @@ const StaffList: React.FC = () => {
       {/* Add / Edit Modal */}
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '1rem', width: '100%', maxWidth: '500px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', width: '100%', maxWidth: '500px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
             {/* Header */}
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, var(--primary-blue), #6366f1)' }}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, var(--primary), var(--primary))' }}>
               <div>
                 <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'white', marginBottom: '0.25rem' }}>
                   {editingId ? 'Edit Staff Member' : 'Add New Staff Member'}
@@ -234,59 +234,59 @@ const StaffList: React.FC = () => {
             <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {/* Name */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.375rem' }}>Full Name *</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.375rem' }}>Full Name *</label>
                 <input
                   type="text"
                   placeholder="e.g. Rajesh Kumar"
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  style={{ ...inputStyle, borderColor: errors.name ? '#ef4444' : 'var(--border-color)' }}
+                  style={{ ...inputStyle, borderColor: errors.name ? 'var(--error-red)' : 'var(--border-color)' }}
                 />
                 {errors.name && <div style={errorStyle}>{errors.name}</div>}
               </div>
 
               {/* Mobile / Username */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.375rem' }}>Mobile Number (Username) *</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.375rem' }}>Mobile Number (Username) *</label>
                 <input
                   type="tel"
                   placeholder="e.g. +91 98765 43210"
                   value={form.mobile}
                   onChange={e => setForm(f => ({ ...f, mobile: e.target.value }))}
-                  style={{ ...inputStyle, borderColor: errors.mobile ? '#ef4444' : 'var(--border-color)' }}
+                  style={{ ...inputStyle, borderColor: errors.mobile ? 'var(--error-red)' : 'var(--border-color)' }}
                 />
                 {errors.mobile && <div style={errorStyle}>{errors.mobile}</div>}
               </div>
 
               {/* Password */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.375rem' }}>Password *</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.375rem' }}>Password *</label>
                 <input
                   type="password"
                   placeholder="Create a secure password"
                   value={form.password || ''}
                   onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  style={{ ...inputStyle, borderColor: errors.password ? '#ef4444' : 'var(--border-color)' }}
+                  style={{ ...inputStyle, borderColor: errors.password ? 'var(--error-red)' : 'var(--border-color)' }}
                 />
                 {errors.password && <div style={errorStyle}>{errors.password}</div>}
               </div>
 
               {/* Email */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.375rem' }}>Email Address *</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.375rem' }}>Email Address *</label>
                 <input
                   type="email"
                   placeholder="e.g. rajesh@example.com"
                   value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  style={{ ...inputStyle, borderColor: errors.email ? '#ef4444' : 'var(--border-color)' }}
+                  style={{ ...inputStyle, borderColor: errors.email ? 'var(--error-red)' : 'var(--border-color)' }}
                 />
                 {errors.email && <div style={errorStyle}>{errors.email}</div>}
               </div>
 
               {/* Status */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.375rem' }}>Status</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.375rem' }}>Status</label>
                 <select
                   value={form.status}
                   onChange={e => setForm(f => ({ ...f, status: e.target.value as 'Active' | 'Inactive' }))}
@@ -302,7 +302,7 @@ const StaffList: React.FC = () => {
             <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', backgroundColor: 'var(--bg-secondary)' }}>
               <button
                 onClick={() => setShowModal(false)}
-                style={{ padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', color: 'var(--text-secondary)' }}
+                style={{ padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', color: 'var(--text-secondary)' }}
               >
                 Cancel
               </button>
@@ -322,22 +322,22 @@ const StaffList: React.FC = () => {
       {/* Delete Confirm Modal */}
       {deleteId && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '1rem', width: '100%', maxWidth: '400px', padding: '2rem', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', width: '100%', maxWidth: '400px', padding: '2rem', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-              <Trash2 size={24} color="#ef4444" />
+              <Trash2 size={24} color="var(--error-red)" />
             </div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Remove Staff Member?</h3>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Remove Staff Member?</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>This action cannot be undone. The staff member will be permanently removed.</p>
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
               <button
                 onClick={() => setDeleteId(null)}
-                style={{ padding: '0.625rem 1.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}
+                style={{ padding: '0.625rem 1.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(deleteId)}
-                style={{ padding: '0.625rem 1.5rem', borderRadius: '0.5rem', border: 'none', backgroundColor: '#ef4444', color: 'white', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}
+                style={{ padding: '0.625rem 1.5rem', borderRadius: '0.5rem', border: 'none', backgroundColor: 'var(--error-red)', color: 'white', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}
               >
                 Remove
               </button>

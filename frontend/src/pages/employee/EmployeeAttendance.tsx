@@ -20,7 +20,7 @@ const EmployeeAttendance: React.FC = () => {
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '3rem' }}>
       <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '0.25rem' }}>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>
           My Attendance
         </h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
@@ -43,7 +43,7 @@ const EmployeeAttendance: React.FC = () => {
               {myAttendance.length > 0 ? (
                 myAttendance.map((record, index) => (
                   <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)' }}>
+                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
                       {record.date}
                     </td>
                     <td style={{ padding: '1rem 1.5rem' }}>
@@ -55,8 +55,8 @@ const EmployeeAttendance: React.FC = () => {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '0.25rem',
-                        backgroundColor: record.status === 'Present' ? 'rgba(34, 160, 107, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
-                        color: record.status === 'Present' ? 'var(--success-green)' : '#ef4444' 
+                        backgroundColor: record.status === 'Present' ? 'rgba(34, 160, 107, 0.1)' : 'rgba(185, 74, 72, 0.1)', 
+                        color: record.status === 'Present' ? 'var(--success-green)' : 'var(--error-red)' 
                       }}>
                         {record.status === 'Present' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
                         {record.status}
@@ -75,7 +75,7 @@ const EmployeeAttendance: React.FC = () => {
                   <td colSpan={4} style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                       <CalendarClock size={48} color="#cbd5e1" style={{ marginBottom: '1rem' }} />
-                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>No attendance records</h3>
+                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>No attendance records</h3>
                       <p>You haven't checked in yet.</p>
                     </div>
                   </td>

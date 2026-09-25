@@ -26,26 +26,30 @@ import Settings from './pages/admin/Settings';
 
 function App() {
   useEffect(() => {
-    // Load global theme colors
+    // Load global theme colors and mode
     const savedColorsStr = localStorage.getItem('themeColors');
     if (savedColorsStr) {
       try {
         const colors = JSON.parse(savedColorsStr);
-        document.documentElement.style.setProperty('--primary-blue', colors.primary);
-        document.documentElement.style.setProperty('--sidebar-bg', colors.sidebarBg);
-        document.documentElement.style.setProperty('--sidebar-text', colors.sidebarText);
-        document.documentElement.style.setProperty('--sidebar-icon', colors.sidebarIcon);
-        document.documentElement.style.setProperty('--topbar-bg', colors.topbarBg);
-        document.documentElement.style.setProperty('--topbar-text', colors.topbarText);
-        if (colors.appBg) {
-          document.documentElement.style.setProperty('--bg-primary', colors.appBg);
+        document.documentElement.style.setProperty('--primary', colors.primary);
+        document.documentElement.style.setProperty('--primary-dark', colors.primary);
+        if (colors.secondary) {
+          document.documentElement.style.setProperty('--accent', colors.secondary);
         }
       } catch (e) {}
     } else {
       const savedColor = localStorage.getItem('themeColor');
       if (savedColor) {
-        document.documentElement.style.setProperty('--primary-blue', savedColor);
+        document.documentElement.style.setProperty('--primary', savedColor);
+        document.documentElement.style.setProperty('--primary-dark', savedColor);
       }
+    }
+
+    const savedMode = localStorage.getItem('themeMode');
+    if (savedMode === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
     }
 
     // Background task: Auto-assign unassigned follow-ups after 10 minutes

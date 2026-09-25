@@ -10,10 +10,12 @@ const AdminLayout: React.FC = () => {
     <div className="layout-wrapper">
       <AdminSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <div className="layout-content">
-        <AdminTopbar toggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
-        <main className="main-content-padding" style={{ flex: 1, padding: '2rem' }}>
-          <Outlet />
-        </main>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh' }}>
+          <AdminTopbar toggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
+          <main className="main-content-padding" style={{ flex: 1, padding: '2rem' }}>
+            <Outlet />
+          </main>
+        </div>
       </div>
       
       {/* Mobile Overlay */}

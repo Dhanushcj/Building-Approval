@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Palette, CheckCircle, RefreshCcw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Palette, CheckCircle, RefreshCcw, Moon, Sun, Camera } from 'lucide-react';
 
 const ColorInput = ({ label, value, onChangeKey, desc, handleChange }: { label: string, value: string, onChangeKey: string, desc?: string, handleChange: (key: string, value: string) => void }) => (
   <div style={{ marginBottom: '1.5rem' }}>
-    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>{label}</label>
+    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>{label}</label>
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
       <input 
         type="color" 
@@ -24,26 +24,26 @@ const ColorInput = ({ label, value, onChangeKey, desc, handleChange }: { label: 
 
 const Settings: React.FC = () => {
   const [colors, setColors] = useState({
-    primary: '#0B63CE',
-    sidebarBg: '#0F2747',
-    sidebarText: '#cbd5e1',
-    sidebarIcon: '#94a3b8',
-    topbarBg: '#FFFFFF',
-    topbarText: '#0F2747',
-    appBg: '#FFFFFF'
+    primary: '#12372A',
+    secondary: '#C96A4A'
   });
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
+  const [profilePic, setProfilePic] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const savedColorsStr = localStorage.getItem('themeColors');
     if (savedColorsStr) {
       setColors(JSON.parse(savedColorsStr));
-    } else {
-      // Check for legacy primary color
-      const legacyPrimary = localStorage.getItem('themeColor');
-      if (legacyPrimary) {
-        setColors(prev => ({ ...prev, primary: legacyPrimary }));
-      }
+    }
+    const savedMode = localStorage.getItem('themeMode');
+    if (savedMode === 'dark') {
+      setThemeMode('dark');
+    }
+    const savedPic = localStorage.getItem('profilePicture');
+    if (savedPic) {
+      setProfilePic(savedPic);
     }
   }, []);
 
@@ -51,86 +51,159 @@ const Settings: React.FC = () => {
     setColors(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleModeChange = (mode: 'light' | 'dark') => {
+    setThemeMode(mode);
+  };
+
+  const handlePicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePic(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const saveSettings = () => {
     localStorage.setItem('themeColors', JSON.stringify(colors));
-    // Also save legacy primary for backwards compatibility in other places just in case
     localStorage.setItem('themeColor', colors.primary);
+    localStorage.setItem('themeMode', themeMode);
+    if (profilePic) {
+      localStorage.setItem('profilePicture', profilePic);
+    }
     
-    document.documentElement.style.setProperty('--primary-blue', colors.primary);
-    document.documentElement.style.setProperty('--sidebar-bg', colors.sidebarBg);
-    document.documentElement.style.setProperty('--sidebar-text', colors.sidebarText);
-    document.documentElement.style.setProperty('--sidebar-icon', colors.sidebarIcon);
-    document.documentElement.style.setProperty('--topbar-bg', colors.topbarBg);
-    document.documentElement.style.setProperty('--topbar-text', colors.topbarText);
-    document.documentElement.style.setProperty('--bg-primary', colors.appBg);
+    document.documentElement.style.setProperty('--primary', colors.primary);
+    document.documentElement.style.setProperty('--primary-dark', colors.primary);
+    document.documentElement.style.setProperty('--accent', colors.secondary);
+    
+    if (themeMode === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
     
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+    
+    // Dispatch event so topbar can update profile pic immediately
+    window.dispatchEvent(new Event('profileUpdated'));
   };
 
   const resetDefault = () => {
     const defaultColors = {
-      primary: '#0B63CE',
-      sidebarBg: '#0F2747',
-      sidebarText: '#cbd5e1',
-      sidebarIcon: '#94a3b8',
-      topbarBg: '#FFFFFF',
-      topbarText: '#0F2747',
-      appBg: '#FFFFFF'
+      primary: '#12372A',
+      secondary: '#C96A4A'
     };
     setColors(defaultColors);
+    setThemeMode('light');
+    
     localStorage.setItem('themeColors', JSON.stringify(defaultColors));
     localStorage.setItem('themeColor', defaultColors.primary);
+    localStorage.setItem('themeMode', 'light');
     
-    document.documentElement.style.setProperty('--primary-blue', defaultColors.primary);
-    document.documentElement.style.setProperty('--sidebar-bg', defaultColors.sidebarBg);
-    document.documentElement.style.setProperty('--sidebar-text', defaultColors.sidebarText);
-    document.documentElement.style.setProperty('--sidebar-icon', defaultColors.sidebarIcon);
-    document.documentElement.style.setProperty('--topbar-bg', defaultColors.topbarBg);
-    document.documentElement.style.setProperty('--topbar-text', defaultColors.topbarText);
-    document.documentElement.style.setProperty('--bg-primary', defaultColors.appBg);
+    document.documentElement.style.setProperty('--primary', defaultColors.primary);
+    document.documentElement.style.setProperty('--primary-dark', defaultColors.primary);
+    document.documentElement.style.setProperty('--accent', defaultColors.secondary);
+    
+    document.body.classList.remove('dark-mode');
   };
-
 
   return (
     <div style={{ padding: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Application Settings</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>Customize the appearance and behavior of your ERP system.</p>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Application Settings</h2>
+          <p style={{ color: 'var(--text-secondary)' }}>Customize the appearance and profile settings.</p>
         </div>
       </div>
 
-      <div style={{ backgroundColor: 'var(--white)', padding: '2rem', borderRadius: '0.75rem', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-color)', maxWidth: '800px' }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Palette size={20} color="var(--primary-blue)" /> Theme Customization
-        </h3>
+      <div style={{ backgroundColor: 'var(--bg-surface)', padding: '2rem', borderRadius: '0.75rem', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-color)', maxWidth: '800px', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-          <div>
-            <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Global & Branding</h4>
-            <ColorInput label="Primary Theme Color" value={colors.primary} onChangeKey="primary" desc="Applied to buttons, links, and active states globally." handleChange={(k, v) => handleChange(k as any, v)} />
-            <ColorInput label="Application Background" value={colors.appBg} onChangeKey="appBg" desc="Main background color of the dashboard." handleChange={(k, v) => handleChange(k as any, v)} />
-          </div>
-          
-          <div>
-            <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Sidebar Navigation</h4>
-            <ColorInput label="Sidebar Background" value={colors.sidebarBg} onChangeKey="sidebarBg" handleChange={(k, v) => handleChange(k as any, v)} />
-            <ColorInput label="Sidebar Text" value={colors.sidebarText} onChangeKey="sidebarText" handleChange={(k, v) => handleChange(k as any, v)} />
-            <ColorInput label="Sidebar Icons" value={colors.sidebarIcon} onChangeKey="sidebarIcon" handleChange={(k, v) => handleChange(k as any, v)} />
-          </div>
-
-          <div>
-            <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Top Navbar</h4>
-            <ColorInput label="Navbar Background" value={colors.topbarBg} onChangeKey="topbarBg" handleChange={(k, v) => handleChange(k as any, v)} />
-            <ColorInput label="Navbar Text & Icons" value={colors.topbarText} onChangeKey="topbarText" handleChange={(k, v) => handleChange(k as any, v)} />
+        {/* Profile Settings */}
+        <div>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Camera size={20} color="var(--primary)" /> Profile Picture
+          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-color)' }}>
+              {profilePic ? (
+                <img src={profilePic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <span style={{ color: 'var(--text-muted)', fontSize: '2rem', fontWeight: 600 }}>A</span>
+              )}
+            </div>
+            <div>
+              <input 
+                type="file" 
+                accept="image/*" 
+                ref={fileInputRef}
+                onChange={handlePicUpload}
+                style={{ display: 'none' }}
+              />
+              <button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="btn-secondary"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+              >
+                Upload Picture
+              </button>
+            </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+        {/* Theme Settings */}
+        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '2.5rem' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Palette size={20} color="var(--primary)" /> Theme Customization
+          </h3>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+            <div>
+              <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Brand Colors</h4>
+              <ColorInput label="Primary Theme Color" value={colors.primary} onChangeKey="primary" desc="Changes the main green color." handleChange={(k, v) => handleChange(k as any, v)} />
+              <ColorInput label="Secondary Color" value={colors.secondary} onChangeKey="secondary" desc="Changes the accent/terracotta color." handleChange={(k, v) => handleChange(k as any, v)} />
+            </div>
+            
+            <div>
+              <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Appearance Mode</h4>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleModeChange('light')}
+                  style={{ 
+                    flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', 
+                    border: themeMode === 'light' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                    borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer'
+                  }}
+                >
+                  <Sun size={24} color={themeMode === 'light' ? 'var(--primary)' : 'var(--text-muted)'} />
+                  <span style={{ fontWeight: themeMode === 'light' ? 600 : 400 }}>Light Mode</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleModeChange('dark')}
+                  style={{ 
+                    flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', 
+                    border: themeMode === 'dark' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                    borderRadius: '0.5rem', backgroundColor: '#1C2420', color: 'white', cursor: 'pointer'
+                  }}
+                >
+                  <Moon size={24} color={themeMode === 'dark' ? 'var(--primary)' : 'var(--text-muted)'} />
+                  <span style={{ fontWeight: themeMode === 'dark' ? 600 : 400 }}>Dark Mode</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
           <button 
             onClick={saveSettings}
-            style={{ padding: '0.75rem 1.5rem', backgroundColor: 'var(--primary-blue)', color: 'white', border: 'none', borderRadius: '0.375rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            style={{ padding: '0.75rem 1.5rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', borderRadius: '0.375rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             {saved ? <CheckCircle size={18} /> : null} {saved ? 'Saved Successfully' : 'Save Settings'}
           </button>

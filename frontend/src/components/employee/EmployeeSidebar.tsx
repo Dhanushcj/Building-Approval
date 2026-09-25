@@ -36,7 +36,7 @@ const EmployeeSidebar: React.FC<EmployeeSidebarProps> = ({ isOpen, setIsOpen }) 
       {/* Logo Area */}
       <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Building color="var(--primary-blue)" size={28} />
+          <Building color="var(--primary)" size={28} />
           <div>
             <div style={{ fontWeight: 700, fontSize: '1.125rem', letterSpacing: '0.05em' }}>BUILD APPROVAL ERP</div>
             <div style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase' }}>Employee Portal</div>
@@ -57,9 +57,9 @@ const EmployeeSidebar: React.FC<EmployeeSidebarProps> = ({ isOpen, setIsOpen }) 
                   alignItems: 'center',
                   gap: '1rem',
                   padding: '0.75rem 1.5rem',
-                  color: isActive ? 'var(--white)' : '#cbd5e1',
+                  color: isActive ? 'var(--bg-surface)' : '#cbd5e1',
                   backgroundColor: isActive ? 'rgba(11, 99, 206, 0.2)' : 'transparent',
-                  borderLeft: isActive ? '4px solid var(--primary-blue)' : '4px solid transparent',
+                  borderLeft: isActive ? '4px solid var(--primary)' : '4px solid transparent',
                   textDecoration: 'none',
                   fontSize: '0.875rem',
                   fontWeight: isActive ? 600 : 500,
@@ -69,7 +69,7 @@ const EmployeeSidebar: React.FC<EmployeeSidebarProps> = ({ isOpen, setIsOpen }) 
               >
                 {({ isActive }) => (
                   <>
-                    <span style={{ color: isActive ? 'var(--primary-blue)' : '#94a3b8' }}>
+                    <span style={{ color: isActive ? 'var(--primary)' : '#94a3b8' }}>
                       {item.icon}
                     </span>
                     {item.title}
@@ -83,7 +83,7 @@ const EmployeeSidebar: React.FC<EmployeeSidebarProps> = ({ isOpen, setIsOpen }) 
 
       {/* Profile Area */}
       <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
           {getInitials(employeeName)}
         </div>
         <div style={{ flex: 1 }}>
@@ -97,7 +97,7 @@ const EmployeeSidebar: React.FC<EmployeeSidebarProps> = ({ isOpen, setIsOpen }) 
           onClick={() => window.location.href = '/login'}
           style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.5rem', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
           title="Logout"
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--error-red)'; e.currentTarget.style.backgroundColor = 'rgba(185, 74, 72, 0.1)' }}
           onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.backgroundColor = 'transparent' }}
         >
           <LogOut size={18} />

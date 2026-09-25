@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react';
 import HeroSection from '../components/HeroSection';
-import TrackingSection from '../components/TrackingSection';
 import ServicesSection from '../components/ServicesSection';
-import HowItWorksSection from '../components/HowItWorksSection';
+import ProcessSection from '../components/ProcessSection';
+import TrackingSection from '../components/TrackingSection';
 import WhyChooseUsSection from '../components/WhyChooseUsSection';
-import StatusPreviewSection from '../components/StatusPreviewSection';
-import TestimonialSection from '../components/TestimonialSection';
 import CtaSection from '../components/CtaSection';
 
 const Landing: React.FC = () => {
@@ -18,14 +16,12 @@ const Landing: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', overflowX: 'hidden' }}>
       <HeroSection />
-      <TrackingSection />
       <ServicesSection />
-      <HowItWorksSection />
+      <ProcessSection />
+      <TrackingSection />
       <WhyChooseUsSection />
-      <StatusPreviewSection />
-      <TestimonialSection />
       <CtaSection />
     </div>
   );

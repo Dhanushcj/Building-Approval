@@ -62,12 +62,12 @@ const EmployeeApplicationDetail: React.FC = () => {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
         <button onClick={() => navigate('/employee/applications')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)' }}>
-          <ArrowLeft size={20} color="var(--dark-navy)" />
+          <ArrowLeft size={20} color="var(--primary-dark)" />
         </button>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--dark-navy)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             Application {application.id}
-            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: application.status === 'Approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)', color: application.status === 'Approved' ? '#10b981' : '#3b82f6', verticalAlign: 'middle' }}>
+            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: application.status === 'Approved' ? 'rgba(47, 125, 90, 0.1)' : 'rgba(18, 55, 42, 0.05)', color: application.status === 'Approved' ? 'var(--success-green)' : 'var(--primary)', verticalAlign: 'middle' }}>
               {application.status}
             </span>
           </h2>
@@ -93,7 +93,7 @@ const EmployeeApplicationDetail: React.FC = () => {
         <button 
           onClick={() => handleApplicationStatus('Approved')}
           disabled={application.status === 'Approved'}
-          style={{ padding: '0.5rem 1.5rem', borderRadius: '0.375rem', fontWeight: 600, cursor: application.status === 'Approved' ? 'not-allowed' : 'pointer', backgroundColor: application.status === 'Approved' ? '#e2e8f0' : '#10b981', color: application.status === 'Approved' ? '#94a3b8' : 'white', border: 'none', transition: 'all 0.2s' }}
+          style={{ padding: '0.5rem 1.5rem', borderRadius: '0.375rem', fontWeight: 600, cursor: application.status === 'Approved' ? 'not-allowed' : 'pointer', backgroundColor: application.status === 'Approved' ? '#e2e8f0' : 'var(--success-green)', color: application.status === 'Approved' ? '#94a3b8' : 'white', border: 'none', transition: 'all 0.2s' }}
         >
           {application.status === 'Approved' ? 'Application Approved' : 'Approve Application'}
         </button>
@@ -106,27 +106,27 @@ const EmployeeApplicationDetail: React.FC = () => {
           
           {/* Application Overview */}
           <div className="card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '1rem' }}>Application Overview</h3>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Application Overview</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>APPLICATION NUMBER</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)' }}>{application.id}</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>{application.id}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>CUSTOMER NAME</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)' }}>{application.customer}</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>{application.customer}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>APPLICATION TYPE</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)' }}>{application.appType || 'Residential'}</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{application.appType || 'Residential'}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>PROPERTY LOCATION</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)' }}>{application.location}</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{application.location}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>DATE SUBMITTED</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)' }}>{application.date}</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{application.date}</div>
               </div>
             </div>
           </div>
@@ -134,7 +134,7 @@ const EmployeeApplicationDetail: React.FC = () => {
           {/* Document Section */}
           <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--dark-navy)' }}>Document Verification</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)' }}>Document Verification</h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Review and verify customer documents.</p>
             </div>
             <div style={{ overflowX: 'auto' }}>
@@ -149,15 +149,15 @@ const EmployeeApplicationDetail: React.FC = () => {
                 <tbody>
                   {documents.length > 0 ? documents.map((doc, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{doc.name}</td>
+                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{doc.name}</td>
                       <td style={{ padding: '1rem 1.5rem' }}>
                         <span style={{ 
                           padding: '0.25rem 0.5rem', 
                           borderRadius: '4px', 
                           fontSize: '0.75rem', 
                           fontWeight: 600, 
-                          backgroundColor: doc.status === 'Verified' ? 'rgba(16, 185, 129, 0.1)' : doc.status === 'Rejected' || doc.status === 'Needs Reupload' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)', 
-                          color: doc.status === 'Verified' ? '#10b981' : doc.status === 'Rejected' || doc.status === 'Needs Reupload' ? '#ef4444' : '#d97706' 
+                          backgroundColor: doc.status === 'Verified' ? 'rgba(47, 125, 90, 0.1)' : doc.status === 'Rejected' || doc.status === 'Needs Reupload' ? 'rgba(185, 74, 72, 0.1)' : 'rgba(214, 167, 86, 0.1)', 
+                          color: doc.status === 'Verified' ? 'var(--success-green)' : doc.status === 'Rejected' || doc.status === 'Needs Reupload' ? 'var(--error-red)' : 'var(--accent)' 
                         }}>
                           {doc.status || 'Pending'}
                         </span>
@@ -166,10 +166,10 @@ const EmployeeApplicationDetail: React.FC = () => {
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>View</button>
                           {doc.status !== 'Verified' && (
-                            <button onClick={() => handleDocumentAction(doc.id, 'Verified')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid #10b981', color: '#10b981', backgroundColor: 'transparent', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Verify</button>
+                            <button onClick={() => handleDocumentAction(doc.id, 'Verified')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid var(--success-green)', color: 'var(--success-green)', backgroundColor: 'transparent', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Verify</button>
                           )}
                           {doc.status !== 'Needs Reupload' && (
-                            <button onClick={() => handleDocumentAction(doc.id, 'Needs Reupload')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid #ef4444', color: '#ef4444', backgroundColor: 'transparent', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Reject</button>
+                            <button onClick={() => handleDocumentAction(doc.id, 'Needs Reupload')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid var(--error-red)', color: 'var(--error-red)', backgroundColor: 'transparent', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Reject</button>
                           )}
                         </div>
                       </td>
@@ -189,7 +189,7 @@ const EmployeeApplicationDetail: React.FC = () => {
           
           {/* Workflow Status */}
           <div className="card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '1rem' }}>Application Progress</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Application Progress</h3>
             
             <div style={{ position: 'relative', paddingLeft: '1.5rem' }}>
               <div style={{ position: 'absolute', left: '7px', top: '10px', bottom: '10px', width: '2px', backgroundColor: 'var(--border-color)' }}></div>
@@ -207,15 +207,15 @@ const EmployeeApplicationDetail: React.FC = () => {
                     width: '14px', 
                     height: '14px', 
                     borderRadius: '50%', 
-                    backgroundColor: step.done ? '#10b981' : step.active ? '#3b82f6' : 'var(--border-color)',
-                    border: '3px solid var(--white)',
+                    backgroundColor: step.done ? 'var(--success-green)' : step.active ? 'var(--primary)' : 'var(--border-color)',
+                    border: '3px solid var(--bg-surface)',
                     boxShadow: '0 0 0 1px var(--border-color)',
                     transform: 'translateX(-1px)'
                   }}></div>
                   <div style={{ 
                     fontSize: '0.875rem', 
                     fontWeight: step.active ? 700 : 500, 
-                    color: step.active ? 'var(--primary-blue)' : step.done ? 'var(--dark-navy)' : 'var(--text-secondary)'
+                    color: step.active ? 'var(--primary)' : step.done ? 'var(--primary-dark)' : 'var(--text-secondary)'
                   }}>
                     {step.label}
                   </div>

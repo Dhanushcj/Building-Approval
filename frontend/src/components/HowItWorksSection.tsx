@@ -29,7 +29,7 @@ const HowItWorksSection: React.FC = () => {
     <section id="how-it-works" className="section section-bg-light">
       <div className="container">
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-          <div style={{ color: 'var(--primary-blue)', fontWeight: 600, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+          <div style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
             How It Works
           </div>
           <h2 className="heading-2">
@@ -56,9 +56,9 @@ const HowItWorksSection: React.FC = () => {
                 width: '64px', 
                 height: '64px', 
                 borderRadius: '50%', 
-                backgroundColor: 'var(--white)', 
-                border: '2px solid var(--primary-blue)', 
-                color: 'var(--primary-blue)', 
+                backgroundColor: 'var(--bg-surface)', 
+                border: '2px solid var(--primary)', 
+                color: 'var(--primary)', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
@@ -71,7 +71,7 @@ const HowItWorksSection: React.FC = () => {
                     position: 'absolute', 
                     top: '-8px', 
                     right: '-12px', 
-                    backgroundColor: 'var(--dark-navy)', 
+                    backgroundColor: 'var(--primary-dark)', 
                     color: 'white', 
                     width: '20px', 
                     height: '20px', 
@@ -86,7 +86,7 @@ const HowItWorksSection: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--dark-navy)' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--primary-dark)' }}>
                 {step.title}
               </h3>
               <p style={{ color: 'var(--text-secondary)' }}>

@@ -97,7 +97,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange, onRe
             padding: '0.5rem 1rem', 
             borderRadius: '0.5rem', 
             border: '1px solid var(--border-color)', 
-            backgroundColor: 'var(--white)',
+            backgroundColor: 'var(--bg-surface)',
             fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)',
             cursor: 'pointer'
           }}
@@ -113,7 +113,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange, onRe
               borderRadius: '0.5rem', 
               border: '1px solid var(--border-color)', 
               backgroundColor: 'var(--bg-secondary)',
-              fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)',
+              fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)',
               cursor: 'pointer'
             }}
           >

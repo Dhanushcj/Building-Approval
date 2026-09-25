@@ -17,30 +17,30 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ type, value }) => {
         bgColor = '#f1f5f9'; color = '#64748b'; break;
       case 'Documents Pending':
       case 'Action Required':
-        bgColor = '#fef3c7'; color = '#f59e0b'; break;
+        bgColor = '#fef3c7'; color = 'var(--warning-gold)'; break;
       case 'Verification':
       case 'Gov Verification':
       case 'Under Review':
-        bgColor = '#eff6ff'; color = '#3b82f6'; break;
+        bgColor = '#eff6ff'; color = 'var(--primary)'; break;
       case 'Site Inspection':
       case 'Submitted':
-        bgColor = '#e0f2fe'; color = '#0ea5e9'; break;
+        bgColor = '#e0f2fe'; color = 'var(--info-green)'; break;
       case 'Approval Pending':
-        bgColor = '#fef08a'; color = '#eab308'; break;
+        bgColor = '#fef08a'; color = 'var(--warning-gold)'; break;
       case 'Approved':
       case 'Completed':
         bgColor = 'rgba(34, 160, 107, 0.1)'; color = 'var(--success-green)'; break;
       case 'Rejected':
-        bgColor = '#fee2e2'; color = '#ef4444'; break;
+        bgColor = '#fee2e2'; color = 'var(--error-red)'; break;
       default:
         break;
     }
   } else if (type === 'priority') {
     switch (value.toLowerCase()) {
       case 'high':
-        bgColor = '#fee2e2'; color = '#ef4444'; break;
+        bgColor = '#fee2e2'; color = 'var(--error-red)'; break;
       case 'medium':
-        bgColor = '#fef3c7'; color = '#f59e0b'; break;
+        bgColor = '#fef3c7'; color = 'var(--warning-gold)'; break;
       case 'low':
         bgColor = 'rgba(34, 160, 107, 0.1)'; color = 'var(--success-green)'; break;
     }
@@ -50,9 +50,9 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ type, value }) => {
         bgColor = 'rgba(34, 160, 107, 0.1)'; color = 'var(--success-green)'; break;
       case 'partial':
       case 'pending':
-        bgColor = '#fef3c7'; color = '#f59e0b'; break;
+        bgColor = '#fef3c7'; color = 'var(--warning-gold)'; break;
       case 'overdue':
-        bgColor = '#fee2e2'; color = '#ef4444'; break;
+        bgColor = '#fee2e2'; color = 'var(--error-red)'; break;
     }
   }
 

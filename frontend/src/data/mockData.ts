@@ -9,16 +9,16 @@ export const mockKpiData = {
 
 export const applicationStatusData = [
   { name: 'New', value: 0, color: '#94a3b8' },
-  { name: 'Documents Pending', value: 0, color: '#f59e0b' },
-  { name: 'Verification', value: 0, color: '#3b82f6' },
+  { name: 'Documents Pending', value: 0, color: 'var(--warning-gold)' },
+  { name: 'Verification', value: 0, color: 'var(--primary)' },
   { name: 'Application Prep', value: 0, color: '#8b5cf6' },
-  { name: 'Ready to Submit', value: 0, color: '#6366f1' },
-  { name: 'Submitted', value: 0, color: '#0ea5e9' },
-  { name: 'Gov Verification', value: 0, color: '#0B63CE' },
-  { name: 'Inspection', value: 0, color: '#eab308' },
-  { name: 'Approval Processing', value: 0, color: '#f97316' },
-  { name: 'Approved', value: 0, color: '#22A06B' },
-  { name: 'Rejected', value: 0, color: '#ef4444' }
+  { name: 'Ready to Submit', value: 0, color: 'var(--primary)' },
+  { name: 'Submitted', value: 0, color: 'var(--info-green)' },
+  { name: 'Gov Verification', value: 0, color: 'var(--primary-dark)' },
+  { name: 'Inspection', value: 0, color: 'var(--warning-gold)' },
+  { name: 'Approval Processing', value: 0, color: 'var(--warning-gold)' },
+  { name: 'Approved', value: 0, color: 'var(--success-green)' },
+  { name: 'Rejected', value: 0, color: 'var(--error-red)' }
 ];
 
 const storedApps = localStorage.getItem('recentApplications');

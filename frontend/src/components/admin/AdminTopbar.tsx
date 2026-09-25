@@ -14,7 +14,7 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ toggleSidebar }) => {
   const currentPage = pathParts.length > 1 ? pathParts[1].charAt(0).toUpperCase() + pathParts[1].slice(1) : 'Overview';
 
   return (
-    <header className="topbar-container">
+    <header className="topbar-container" style={{ backgroundColor: 'var(--bg-surface)', boxShadow: '0 2px 8px rgba(11, 36, 27, 0.02)' }}>
       {/* Left side: Title & Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         {toggleSidebar && (
@@ -27,10 +27,11 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ toggleSidebar }) => {
           </button>
         )}
         <div>
-        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--topbar-text, var(--dark-navy))', marginBottom: '0.1rem' }}>{currentPage}</h1>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-          Dashboard / {currentPage}
+        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.1rem', fontFamily: 'var(--font-heading)' }}>{currentPage}</h1>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+          Dashboard <span style={{ color: 'var(--border-color)', margin: '0 4px' }}>/</span> <span style={{ color: 'var(--primary-dark)' }}>{currentPage}</span>
         </div>
+      </div>
       </div>
 
       {/* Right side: Actions */}
@@ -51,32 +52,40 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ toggleSidebar }) => {
               border: '1px solid var(--border-color)',
               backgroundColor: 'var(--bg-secondary)',
               fontSize: '0.875rem',
-              outline: 'none'
+              outline: 'none',
+              fontFamily: 'var(--font-family)',
+              color: 'var(--text-primary)',
+              transition: 'border-color 0.2s'
             }}
+            onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+            onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
           />
         </div>
 
         {/* Notifications */}
         <div style={{ position: 'relative', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-          <Bell size={20} />
+          <Bell size={20} strokeWidth={1.5} />
           <div style={{
             position: 'absolute',
-            top: '-4px',
-            right: '-4px',
+            top: '-2px',
+            right: '-2px',
             width: '8px',
             height: '8px',
             borderRadius: '50%',
-            backgroundColor: 'var(--primary-blue)', // using primary blue as accent indicator for documents
-            border: '2px solid var(--white)'
+            backgroundColor: 'var(--accent)',
+            border: '2px solid var(--bg-surface)'
           }}></div>
         </div>
 
         {/* Profile Dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', paddingLeft: '1rem', borderLeft: '1px solid var(--border-color)' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 600, fontSize: '0.875rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', paddingLeft: '1.25rem', borderLeft: '1px solid var(--border-color)' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--bg-surface)', fontWeight: 700, fontSize: '0.875rem', fontFamily: 'var(--font-heading)' }}>
             AD
           </div>
-          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--topbar-text, var(--dark-navy))' }}>Admin</div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)' }}>Admin User</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Administrator</div>
+          </div>
           <ChevronDown size={16} color="var(--text-secondary)" />
         </div>
       </div>

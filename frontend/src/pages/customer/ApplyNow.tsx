@@ -89,12 +89,12 @@ const ApplyNow: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '4rem 1rem' }}>
-      <div style={{ maxWidth: '600px', margin: '0 auto', backgroundColor: 'var(--white)', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
         
         {/* Header */}
-        <div style={{ backgroundColor: 'var(--dark-navy)', padding: '2rem', textAlign: 'center', color: 'var(--white)' }}>
+        <div style={{ backgroundColor: 'var(--primary-dark)', padding: '2rem', textAlign: 'center', color: 'var(--bg-surface)' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '50%', marginBottom: '1rem' }}>
-            <Building2 size={32} color="var(--primary-blue)" />
+            <Building2 size={32} color="var(--primary)" />
           </div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>Apply Now</h1>
           <p style={{ color: '#cbd5e1', margin: 0 }}>Fill in your details below and our team will get in touch to assist with your building approval.</p>
@@ -105,7 +105,7 @@ const ApplyNow: React.FC = () => {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Full Name *</label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Full Name *</label>
               <div style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                   <User size={18} />
@@ -124,7 +124,7 @@ const ApplyNow: React.FC = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Email Address</label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Email Address</label>
                 <div style={{ position: 'relative' }}>
                   <div style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                     <Mail size={18} />
@@ -141,7 +141,7 @@ const ApplyNow: React.FC = () => {
               </div>
               
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Phone Number *</label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Phone Number *</label>
                 <div style={{ position: 'relative' }}>
                   <div style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                     <Phone size={18} />
@@ -161,7 +161,7 @@ const ApplyNow: React.FC = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Project Type</label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Project Type</label>
                 <select 
                   name="projectType"
                   value={formData.projectType}
@@ -176,7 +176,7 @@ const ApplyNow: React.FC = () => {
               </div>
               
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Location *</label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Location *</label>
                 <div style={{ position: 'relative' }}>
                   <div style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                     <MapPin size={18} />
@@ -195,7 +195,7 @@ const ApplyNow: React.FC = () => {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Property Details *</label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Property Details *</label>
               <textarea 
                 name="propertyDetails"
                 required
@@ -209,21 +209,21 @@ const ApplyNow: React.FC = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Upload Aadhar *</label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Upload Aadhar *</label>
                 <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', textAlign: 'center' }}>
                   <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, 'aadhar')} style={{ display: 'none' }} id="aadharUpload" required={!aadharFile} />
                   <label htmlFor="aadharUpload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.875rem', color: 'var(--primary-blue)', fontWeight: 500 }}>{aadharFileName || 'Click to browse'}</span>
+                    <span style={{ fontSize: '0.875rem', color: 'var(--primary)', fontWeight: 500 }}>{aadharFileName || 'Click to browse'}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Max size 2MB</span>
                   </label>
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Building Photo with GPS *</label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Building Photo with GPS *</label>
                 <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', textAlign: 'center' }}>
                   <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'building')} style={{ display: 'none' }} id="buildingPhotoUpload" required={!buildingPhoto} />
                   <label htmlFor="buildingPhotoUpload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.875rem', color: 'var(--primary-blue)', fontWeight: 500 }}>{buildingPhotoName || 'Click to browse'}</span>
+                    <span style={{ fontSize: '0.875rem', color: 'var(--primary)', fontWeight: 500 }}>{buildingPhotoName || 'Click to browse'}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Max size 2MB</span>
                   </label>
                 </div>
@@ -231,7 +231,7 @@ const ApplyNow: React.FC = () => {
             </div>
             
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Additional Notes (Optional)</label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Additional Notes (Optional)</label>
               <textarea 
                 name="notes"
                 value={formData.notes}

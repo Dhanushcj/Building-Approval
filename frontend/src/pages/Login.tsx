@@ -48,31 +48,66 @@ const Login: React.FC = () => {
     <div style={{ display: 'flex', minHeight: 'calc(100vh - 80px)' }}>
       {/* Left Column - Illustration/Branding */}
       <div style={{ 
-        flex: 1, 
-        backgroundColor: 'var(--bg-secondary)', 
+        flex: 1.2, 
+        backgroundColor: 'var(--primary-dark)',
+        backgroundImage: `linear-gradient(to bottom, rgba(18, 55, 42, 0.85), rgba(11, 36, 27, 0.95)), url('/assets/modern_architecture_login.jpg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         display: 'none', 
         flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '4rem'
+        justifyContent: 'space-between',
+        padding: '4rem',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
       }} className="desktop-only">
-        <div style={{ maxWidth: '400px', textAlign: 'center' }}>
-          <div style={{ 
-            width: '200px', 
-            height: '200px', 
-            backgroundColor: 'rgba(11, 99, 206, 0.1)', 
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 3rem auto'
-          }}>
-            <Building2 size={80} color="var(--primary-blue)" />
+        
+        {/* Decorative background glows */}
+        <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(201, 106, 74, 0.2) 0%, transparent 70%)' }}></div>
+        <div style={{ position: 'absolute', bottom: '20%', left: '-5%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(201, 106, 74, 0.15) 0%, transparent 70%)' }}></div>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '4rem' }}>
+            <div style={{ backgroundColor: 'var(--accent)', padding: '0.5rem', borderRadius: '0.5rem' }}>
+              <Building2 size={24} color="white" />
+            </div>
+            <span style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '0.05em' }}>BUILD APPROVE</span>
           </div>
-          <h2 className="heading-2" style={{ marginBottom: '1rem', color: 'var(--dark-navy)' }}>Manage Your Approval Applications</h2>
-          <p className="text-lead" style={{ fontSize: '1rem' }}>
-            Access your applications, documents, status updates and communication in one place.
+
+          <h1 style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1.2, marginBottom: '1.5rem', fontFamily: 'var(--font-heading)' }}>
+            Streamline your <br/><span style={{ color: 'var(--accent)' }}>approval workflow.</span>
+          </h1>
+          <p style={{ fontSize: '1.125rem', color: 'rgba(255, 255, 255, 0.8)', maxWidth: '450px', lineHeight: 1.6 }}>
+            Access applications, manage documents, and coordinate with your team in one unified workspace designed for modern construction management.
           </p>
+        </div>
+
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '2rem' }}>
+          <div className="hover-effect" style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+            backdropFilter: 'blur(12px)', 
+            border: '1px solid rgba(255, 255, 255, 0.1)', 
+            padding: '1.5rem', 
+            borderRadius: '1rem',
+            flex: 1,
+            transition: 'transform 0.3s ease, background-color 0.3s ease'
+          }}>
+            <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '0.25rem', fontFamily: 'var(--font-heading)' }}>40%</div>
+            <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.5 }}>Faster Application<br/>Processing Time</div>
+          </div>
+          
+          <div className="hover-effect" style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+            backdropFilter: 'blur(12px)', 
+            border: '1px solid rgba(255, 255, 255, 0.1)', 
+            padding: '1.5rem', 
+            borderRadius: '1rem',
+            flex: 1,
+            transition: 'transform 0.3s ease, background-color 0.3s ease'
+          }}>
+            <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'white', marginBottom: '0.25rem', fontFamily: 'var(--font-heading)' }}>10k+</div>
+            <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.5 }}>Projects Approved<br/>Successfully</div>
+          </div>
         </div>
       </div>
 
@@ -86,7 +121,7 @@ const Login: React.FC = () => {
       }}>
         <div style={{ width: '100%', maxWidth: '400px' }}>
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', color: 'var(--primary-blue)' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', color: 'var(--primary)' }}>
               <Building2 size={40} />
             </div>
             <h2 className="heading-2" style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Welcome Back</h2>
@@ -119,31 +154,17 @@ const Login: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', fontSize: '0.875rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--dark-navy)', fontWeight: 500 }}>
-                <input type="checkbox" style={{ accentColor: 'var(--primary-blue)' }} /> Remember me
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary-dark)', fontWeight: 500 }}>
+                <input type="checkbox" style={{ accentColor: 'var(--primary)' }} /> Remember me
               </label>
-              <a href="#" style={{ color: 'var(--primary-blue)', fontWeight: 500 }}>Forgot Password?</a>
+              <a href="#" style={{ color: 'var(--primary)', fontWeight: 500 }}>Forgot Password?</a>
             </div>
 
             <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.875rem' }}>
               Login &rarr;
             </button>
             
-            <div style={{ display: 'flex', alignItems: 'center', margin: '2rem 0' }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
-              <span style={{ padding: '0 1rem', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>OR</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
-            </div>
-
-            <button type="button" className="btn-secondary" style={{ width: '100%', padding: '0.875rem' }}>
-              Continue with Mobile OTP
-            </button>
           </form>
-
-          <div style={{ marginTop: '2.5rem', textAlign: 'center', fontSize: '0.875rem' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>New to BuildApprove? </span>
-            <a href="#" style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>Create Account</a>
-          </div>
           <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>
             <a href="/" style={{ color: 'var(--text-secondary)' }}>&larr; Back to Website</a>
           </div>

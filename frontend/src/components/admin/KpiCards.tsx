@@ -35,8 +35,8 @@ const KpiCards: React.FC = () => {
       label: 'Total Applications',
       value: kpi.total,
       sub: kpi.total === 0 ? 'No applications yet' : `${kpi.active} active`,
-      iconBg: 'rgba(11, 99, 206, 0.1)',
-      iconColor: 'var(--primary-blue)',
+      iconBg: 'rgba(18, 55, 42, 0.05)',
+      iconColor: 'var(--primary-dark)',
       subColor: 'var(--success-green)',
       Icon: Users,
     },
@@ -44,17 +44,17 @@ const KpiCards: React.FC = () => {
       label: 'Active Applications',
       value: kpi.active,
       sub: kpi.active === 0 ? 'None active' : `${kpi.active} in progress`,
-      iconBg: 'rgba(59, 130, 246, 0.1)',
-      iconColor: '#3b82f6',
-      subColor: '#f59e0b',
+      iconBg: 'rgba(201, 106, 74, 0.1)',
+      iconColor: 'var(--accent)',
+      subColor: 'var(--accent)',
       Icon: FileText,
     },
     {
       label: 'Pending Documents',
       value: kpi.docsPending,
       sub: kpi.docsPending === 0 ? 'All clear' : 'Waiting for upload',
-      iconBg: 'rgba(245, 158, 11, 0.1)',
-      iconColor: '#f59e0b',
+      iconBg: 'rgba(214, 167, 86, 0.1)',
+      iconColor: 'var(--warning)',
       subColor: 'var(--text-secondary)',
       Icon: AlertTriangle,
     },
@@ -62,8 +62,8 @@ const KpiCards: React.FC = () => {
       label: 'Government Review',
       value: kpi.govReview,
       sub: kpi.govReview === 0 ? 'None submitted' : 'Processing',
-      iconBg: 'rgba(139, 92, 246, 0.1)',
-      iconColor: '#8b5cf6',
+      iconBg: 'rgba(11, 36, 27, 0.05)',
+      iconColor: 'var(--primary)',
       subColor: 'var(--text-secondary)',
       Icon: Building,
     },
@@ -71,7 +71,7 @@ const KpiCards: React.FC = () => {
       label: 'Approved',
       value: kpi.approved,
       sub: kpi.approved === 0 ? 'None this month' : 'This month',
-      iconBg: 'rgba(34, 160, 107, 0.1)',
+      iconBg: 'rgba(67, 104, 80, 0.1)',
       iconColor: 'var(--success-green)',
       subColor: 'var(--success-green)',
       Icon: CheckCircle2,
@@ -81,17 +81,23 @@ const KpiCards: React.FC = () => {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
       {cards.map(({ label, value, sub, iconBg, iconColor, subColor, Icon }) => (
-        <div key={label} className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: iconBg, color: iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Icon size={24} />
+        <div key={label} className="card kpi-card" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.5rem', transition: 'transform 0.2s, box-shadow 0.2s' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: iconBg, color: iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Icon size={26} strokeWidth={1.5} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--dark-navy)' }}>{value}</div>
-            <div style={{ fontSize: '0.75rem', color: subColor, fontWeight: 500 }}>{sub}</div>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>{label}</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', lineHeight: 1 }}>{value}</div>
+            <div style={{ fontSize: '0.8125rem', color: subColor, fontWeight: 500, marginTop: '0.25rem' }}>{sub}</div>
           </div>
         </div>
       ))}
+      <style>{`
+        .kpi-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(11, 36, 27, 0.08);
+        }
+      `}</style>
     </div>
   );
 };

@@ -10,10 +10,12 @@ const EmployeeLayout: React.FC = () => {
     <div className="layout-wrapper">
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <div className="layout-content">
-        <EmployeeTopbar toggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
-        <main className="main-content-padding" style={{ flex: 1, padding: '2rem' }}>
-          <Outlet />
-        </main>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh' }}>
+          <EmployeeTopbar toggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
+          <main className="main-content-padding" style={{ flex: 1, padding: '2rem' }}>
+            <Outlet />
+          </main>
+        </div>
       </div>
       
       {/* Mobile Overlay */}

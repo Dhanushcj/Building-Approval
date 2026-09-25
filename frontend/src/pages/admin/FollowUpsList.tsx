@@ -92,11 +92,11 @@ const FollowUpsList: React.FC = () => {
             {followUps.length > 0 ? followUps.map((item, idx) => (
               <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <td style={{ padding: '1rem 1.5rem' }}>
-                  <div style={{ fontWeight: 600, color: 'var(--primary-blue)', fontSize: '0.875rem' }}>{item.id}</div>
+                  <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.875rem' }}>{item.id}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{new Date(item.timestamp).toLocaleString()}</div>
                 </td>
                 <td style={{ padding: '1rem 1.5rem' }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)' }}>{item.name}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>{item.name}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     {item.mobile} <MapPin size={12}/> {item.location}
                   </div>
@@ -107,8 +107,8 @@ const FollowUpsList: React.FC = () => {
                     borderRadius: '4px', 
                     fontSize: '0.75rem', 
                     fontWeight: 600, 
-                    backgroundColor: item.status === 'converted' ? 'rgba(16, 185, 129, 0.1)' : item.status === 'rejected' ? 'rgba(239, 68, 68, 0.1)' : item.status === 'unassigned' ? '#fee2e2' : 'rgba(59, 130, 246, 0.1)', 
-                    color: item.status === 'converted' ? '#10b981' : item.status === 'rejected' ? '#ef4444' : item.status === 'unassigned' ? '#ef4444' : '#3b82f6',
+                    backgroundColor: item.status === 'converted' ? 'rgba(47, 125, 90, 0.1)' : item.status === 'rejected' ? 'rgba(185, 74, 72, 0.1)' : item.status === 'unassigned' ? '#fee2e2' : 'rgba(18, 55, 42, 0.05)', 
+                    color: item.status === 'converted' ? 'var(--success-green)' : item.status === 'rejected' ? 'var(--error-red)' : item.status === 'unassigned' ? 'var(--error-red)' : 'var(--primary)',
                     textTransform: 'capitalize'
                   }}>
                     {item.status}
@@ -123,13 +123,13 @@ const FollowUpsList: React.FC = () => {
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                     {(item.status === 'unassigned' || item.status === 'followup') && (
                       <>
-                        <button onClick={() => updateStatus(item.id, 'followup')} style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--dark-navy)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <button onClick={() => updateStatus(item.id, 'followup')} style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--primary-dark)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <MessageCircle size={14} /> Followup
                         </button>
                         <button onClick={() => updateStatus(item.id, 'converted')} style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--success-green)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <CheckCircle size={14} /> Converted
                         </button>
-                        <button onClick={() => updateStatus(item.id, 'rejected')} style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: '#ef4444', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <button onClick={() => updateStatus(item.id, 'rejected')} style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--error-red)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <XCircle size={14} /> Rejected
                         </button>
                       </>

@@ -79,8 +79,8 @@ const MyTasks: React.FC = () => {
                   background: 'none',
                   fontSize: '0.875rem',
                   fontWeight: 600,
-                  color: activeTab === tab ? 'var(--primary-blue)' : 'var(--text-secondary)',
-                  borderBottom: activeTab === tab ? '2px solid var(--primary-blue)' : '2px solid transparent',
+                  color: activeTab === tab ? 'var(--primary)' : 'var(--text-secondary)',
+                  borderBottom: activeTab === tab ? '2px solid var(--primary)' : '2px solid transparent',
                   marginBottom: '-2px',
                   cursor: 'pointer',
                   transition: 'all 0.2s'
@@ -128,11 +128,11 @@ const MyTasks: React.FC = () => {
               {filteredTasks.length > 0 ? filteredTasks.map(task => (
                 <tr key={task.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '1rem 1.5rem' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--dark-navy)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>{task.title}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--primary-dark)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>{task.title}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{task.id}</div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--primary-blue)', fontWeight: 600, cursor: 'pointer', marginBottom: '0.25rem' }} onClick={() => navigate(`/employee/tasks/${task.id}`)}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', marginBottom: '0.25rem' }} onClick={() => navigate(`/employee/tasks/${task.id}`)}>
                       {task.applicationId}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{task.customerName} - {task.propertyLocation}</div>
@@ -142,7 +142,7 @@ const MyTasks: React.FC = () => {
                       <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
                         {task.status}
                       </span>
-                      <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: task.priority === 'Urgent' || task.priority === 'High' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)', color: task.priority === 'Urgent' || task.priority === 'High' ? '#ef4444' : '#3b82f6' }}>
+                      <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: task.priority === 'Urgent' || task.priority === 'High' ? 'rgba(185, 74, 72, 0.1)' : 'rgba(18, 55, 42, 0.05)', color: task.priority === 'Urgent' || task.priority === 'High' ? 'var(--error-red)' : 'var(--primary)' }}>
                         {task.priority}
                       </span>
                     </div>

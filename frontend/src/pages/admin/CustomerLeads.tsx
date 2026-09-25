@@ -80,7 +80,7 @@ const CustomerLeads: React.FC = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--dark-navy)', margin: '0 0 0.5rem 0' }}>Customer Leads</h1>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', margin: '0 0 0.5rem 0' }}>Customer Leads</h1>
           <p style={{ color: 'var(--text-secondary)', margin: 0 }}>View and manage customer application requests.</p>
         </div>
       </div>
@@ -113,8 +113,8 @@ const CustomerLeads: React.FC = () => {
             <tbody>
               {leads.map((lead, index) => (
                 <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-blue)' }}>{lead.id}</td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--dark-navy)', fontWeight: 500 }}>
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{lead.id}</td>
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--primary-dark)', fontWeight: 500 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                         <Users size={16} />
@@ -129,7 +129,7 @@ const CustomerLeads: React.FC = () => {
                     </div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    <div style={{ fontWeight: 500, color: 'var(--dark-navy)' }}>{lead.projectType}</div>
+                    <div style={{ fontWeight: 500, color: 'var(--primary-dark)' }}>{lead.projectType}</div>
                     <div>{lead.location}</div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{lead.date}</td>
@@ -138,14 +138,14 @@ const CustomerLeads: React.FC = () => {
                       padding: '0.25rem 0.75rem', 
                       borderRadius: '1rem', 
                       backgroundColor: lead.status === 'New' ? '#fee2e2' : lead.status === 'Rejected' ? '#f3f4f6' : lead.status === 'Application Created' ? '#e0e7ff' : 'rgba(34, 160, 107, 0.1)', 
-                      color: lead.status === 'New' ? '#ef4444' : lead.status === 'Rejected' ? '#6b7280' : lead.status === 'Application Created' ? '#4f46e5' : 'var(--success-green)', 
+                      color: lead.status === 'New' ? 'var(--error-red)' : lead.status === 'Rejected' ? '#6b7280' : lead.status === 'Application Created' ? '#4f46e5' : 'var(--success-green)', 
                       fontSize: '0.75rem', 
                       fontWeight: 600 
                     }}>
                       {lead.status}
                     </span>
                     {lead.rejectionRemarks && (
-                      <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#ef4444' }}>
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--error-red)' }}>
                         <strong>Remark:</strong> {lead.rejectionRemarks}
                       </div>
                     )}
@@ -154,7 +154,7 @@ const CustomerLeads: React.FC = () => {
                     {lead.status === 'New' && (
                       <button 
                         onClick={() => markAsContacted(lead.id)}
-                        style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--primary-blue)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                       >
                         <CheckCircle size={14} /> Mark Contacted
                       </button>
@@ -163,7 +163,7 @@ const CustomerLeads: React.FC = () => {
                       <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
                         <button 
                           onClick={() => setViewingLead(lead)}
-                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--dark-navy)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                         >
                           <FileText size={14} /> View Details
                         </button>
@@ -175,7 +175,7 @@ const CustomerLeads: React.FC = () => {
                         </button>
                         <button 
                           onClick={() => setRejectingLeadId(lead.id)}
-                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: '#ef4444', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--error-red)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                         >
                           <XCircle size={14} /> Reject
                         </button>
@@ -199,13 +199,13 @@ const CustomerLeads: React.FC = () => {
 
       {rejectingLeadId && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '0.75rem', width: '100%', maxWidth: '400px', padding: '1.5rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', position: 'relative' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '400px', padding: '1.5rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', position: 'relative' }}>
             <button onClick={() => { setRejectingLeadId(null); setRejectionRemarks(''); }} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
               <X size={20} />
             </button>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1rem' }}>Reject Application</h3>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Reject Application</h3>
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Rejection Remarks *</label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Rejection Remarks *</label>
               <textarea 
                 value={rejectionRemarks}
                 onChange={(e) => setRejectionRemarks(e.target.value)}
@@ -215,13 +215,13 @@ const CustomerLeads: React.FC = () => {
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button onClick={() => { setRejectingLeadId(null); setRejectionRemarks(''); }} style={{ padding: '0.6rem 1rem', borderRadius: '0.5rem', backgroundColor: 'var(--white)', border: '1px solid var(--border-color)', color: 'var(--dark-navy)', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem' }}>
+              <button onClick={() => { setRejectingLeadId(null); setRejectionRemarks(''); }} style={{ padding: '0.6rem 1rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--primary-dark)', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem' }}>
                 Cancel
               </button>
               <button 
                 onClick={handleReject}
                 disabled={!rejectionRemarks.trim()}
-                style={{ padding: '0.6rem 1rem', borderRadius: '0.5rem', backgroundColor: '#ef4444', color: 'white', border: 'none', fontWeight: 500, cursor: rejectionRemarks.trim() ? 'pointer' : 'not-allowed', fontSize: '0.875rem', opacity: rejectionRemarks.trim() ? 1 : 0.6 }}
+                style={{ padding: '0.6rem 1rem', borderRadius: '0.5rem', backgroundColor: 'var(--error-red)', color: 'white', border: 'none', fontWeight: 500, cursor: rejectionRemarks.trim() ? 'pointer' : 'not-allowed', fontSize: '0.875rem', opacity: rejectionRemarks.trim() ? 1 : 0.6 }}
               >
                 Reject Lead
               </button>
@@ -232,11 +232,11 @@ const CustomerLeads: React.FC = () => {
 
       {viewingLead && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '0.75rem', width: '100%', maxWidth: '600px', padding: '1.5rem', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '600px', padding: '1.5rem', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
             <button onClick={() => setViewingLead(null)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
               <X size={20} />
             </button>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '1.5rem' }}>Lead Details - {viewingLead.id}</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1.5rem' }}>Lead Details - {viewingLead.id}</h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
@@ -262,7 +262,7 @@ const CustomerLeads: React.FC = () => {
             </div>
 
             <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem', marginBottom: '1.5rem' }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1rem' }}>Uploaded Documents</h4>
+              <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Uploaded Documents</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem' }}>
                   <div>
@@ -270,7 +270,7 @@ const CustomerLeads: React.FC = () => {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{viewingLead.aadharFileName || 'Not uploaded'}</div>
                   </div>
                   {viewingLead.aadharFile && (
-                    <a href={viewingLead.aadharFile} download={viewingLead.aadharFileName || 'aadhar'} style={{ padding: '0.4rem 1rem', backgroundColor: 'var(--primary-blue)', color: 'white', borderRadius: '0.25rem', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>Download</a>
+                    <a href={viewingLead.aadharFile} download={viewingLead.aadharFileName || 'aadhar'} style={{ padding: '0.4rem 1rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '0.25rem', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>Download</a>
                   )}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem' }}>
@@ -279,14 +279,14 @@ const CustomerLeads: React.FC = () => {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{viewingLead.buildingPhotoName || 'Not uploaded'}</div>
                   </div>
                   {viewingLead.buildingPhoto && (
-                    <a href={viewingLead.buildingPhoto} download={viewingLead.buildingPhotoName || 'building_photo'} style={{ padding: '0.4rem 1rem', backgroundColor: 'var(--primary-blue)', color: 'white', borderRadius: '0.25rem', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>Download</a>
+                    <a href={viewingLead.buildingPhoto} download={viewingLead.buildingPhotoName || 'building_photo'} style={{ padding: '0.4rem 1rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '0.25rem', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}>Download</a>
                   )}
                 </div>
               </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setViewingLead(null)} style={{ padding: '0.6rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--dark-navy)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Close</button>
+              <button onClick={() => setViewingLead(null)} style={{ padding: '0.6rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--primary-dark)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Close</button>
             </div>
           </div>
         </div>

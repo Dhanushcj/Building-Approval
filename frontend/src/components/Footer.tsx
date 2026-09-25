@@ -1,74 +1,94 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Mail, Phone, MapPin } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
-    <footer style={{ backgroundColor: 'var(--dark-navy)', color: 'var(--white)', paddingTop: '4rem', paddingBottom: '2rem' }}>
+    <footer style={{ backgroundColor: '#051811', color: 'var(--bg-surface)', padding: '2.5rem 0 1.5rem 0' }}>
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '3rem', marginBottom: '3rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'space-between', marginBottom: '2rem' }}>
           
           {/* Brand Info */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-              <div style={{ color: 'var(--white)' }}>
-                <Building2 size={32} strokeWidth={2} />
+          <div style={{ flex: '1 1 250px' }}>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', marginBottom: '1rem' }}>
+              <div style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}>
+                <img src="/assets/logo_icon.png" alt="Buildwise Logo" style={{ width: '36px', height: '36px', objectFit: 'contain', filter: 'grayscale(1) contrast(4) invert(1) brightness(1.5)', mixBlendMode: 'screen' }} />
               </div>
-              <div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, lineHeight: 1 }}>
-                  <span style={{ color: 'var(--white)' }}>Build</span>
-                  <span style={{ color: 'var(--primary-blue)' }}>Approve</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: '1.125rem', fontWeight: 800, lineHeight: 1, color: 'var(--text-secondary)', fontFamily: 'var(--font-heading)', letterSpacing: '0.05em' }}>
+                  BUILDWISE
+                </div>
+                <div style={{ fontSize: '0.6rem', fontWeight: 500, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.02em', marginTop: '0.125rem' }}>
+                  Building Approval & Documentation
                 </div>
               </div>
+            </Link>
+          </div>
+
+          {/* Links Grid */}
+          <div style={{ flex: '2 1 600px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+            
+            {/* Services */}
+            <div>
+              <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, marginBottom: '0.875rem', fontFamily: 'var(--font-heading)', color: 'var(--bg-surface)' }}>Services</h4>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: 0, margin: 0 }} className="footer-links">
+                <li><a href="#services">Building Approval</a></li>
+                <li><a href="#services">Documentation</a></li>
+                <li><a href="#services">Application Processing</a></li>
+                <li><Link to="/track-application">Application Tracking</Link></li>
+              </ul>
             </div>
-            <p style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '1.5rem', maxWidth: '300px' }}>
-              Your Construction Approval Partner. We help individuals, builders, and developers manage their building approval requirements with professional guidance.
-            </p>
-          </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1.5rem' }}>Quick Links</h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <li><Link to="/" style={{ color: '#94a3b8' }}>Home</Link></li>
-              <li><a href="#services" style={{ color: '#94a3b8' }}>Services</a></li>
-              <li><a href="#how-it-works" style={{ color: '#94a3b8' }}>How It Works</a></li>
-              <li><Link to="/track-application" style={{ color: '#94a3b8' }}>Track Application</Link></li>
-              <li><a href="#about" style={{ color: '#94a3b8' }}>About</a></li>
-              <li><Link to="/login" style={{ color: '#94a3b8' }}>Login</Link></li>
-            </ul>
-          </div>
+            {/* Resources */}
+            <div>
+              <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, marginBottom: '0.875rem', fontFamily: 'var(--font-heading)', color: 'var(--bg-surface)' }}>Resources</h4>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: 0, margin: 0 }} className="footer-links">
+                <li><a href="#documents">Required Documents</a></li>
+                <li><Link to="/track-application">Application Status</Link></li>
+                <li><a href="#faq">FAQ</a></li>
+              </ul>
+            </div>
 
-          {/* Contact */}
-          <div>
-            <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1.5rem' }}>Contact Us</h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <li style={{ display: 'flex', gap: '0.75rem', color: '#94a3b8', alignItems: 'flex-start' }}>
-                <MapPin size={20} style={{ color: 'var(--primary-blue)', flexShrink: 0 }} />
-                <span>123 Approval Street, Business Hub, Hosur, Tamil Nadu 635109</span>
-              </li>
-              <li style={{ display: 'flex', gap: '0.75rem', color: '#94a3b8', alignItems: 'center' }}>
-                <Phone size={20} style={{ color: 'var(--primary-blue)', flexShrink: 0 }} />
-                <span>+91 98765 43210</span>
-              </li>
-              <li style={{ display: 'flex', gap: '0.75rem', color: '#94a3b8', alignItems: 'center' }}>
-                <Mail size={20} style={{ color: 'var(--primary-blue)', flexShrink: 0 }} />
-                <span>support@buildapprove.in</span>
-              </li>
-            </ul>
+            {/* Company */}
+            <div>
+              <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, marginBottom: '0.875rem', fontFamily: 'var(--font-heading)', color: 'var(--bg-surface)' }}>Company</h4>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: 0, margin: 0 }} className="footer-links">
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#areas">Service Areas</a></li>
+              </ul>
+            </div>
+
           </div>
           
         </div>
 
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-            &copy; 2026 BuildApprove. All rights reserved.
-          </p>
-          <div style={{ color: '#94a3b8', fontSize: '0.75rem', maxWidth: '400px', textAlign: 'right' }}>
-            Disclaimer: BuildApprove is a private consultancy assisting with application processing and is not affiliated with any government department.
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div></div> {/* empty to push right side */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '1.25rem', color: 'rgba(255,255,255,0.5)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', display: 'flex', gap: '1.25rem' }}>
+              <span>&copy; 2026 Buildwise. All rights reserved.</span>
+              <span>Privacy Policy | Terms & Conditions</span>
+            </div>
           </div>
         </div>
       </div>
+      <style>{`
+        .footer-links a {
+          color: rgba(255,255,255,0.5) !important;
+          font-size: 0.8125rem;
+          text-decoration: none;
+          transition: color 0.2s;
+        }
+        .footer-links a:hover {
+          color: var(--accent) !important;
+        }
+      `}</style>
     </footer>
   );
 };

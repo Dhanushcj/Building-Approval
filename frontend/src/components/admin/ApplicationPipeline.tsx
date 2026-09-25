@@ -32,37 +32,37 @@ const ApplicationPipeline: React.FC = () => {
   }, []);
 
   const pipelineStages = [
-    { name: 'New',          count: counts.New,          icon: <FilePlus size={24} />,   color: '#94a3b8',                bgColor: '#f1f5f9' },
-    { name: 'Documents',    count: counts.Documents,    icon: <FileText size={24} />,   color: '#f59e0b',                bgColor: '#fef3c7' },
-    { name: 'Verification', count: counts.Verification, icon: <CheckCircle size={24} />,color: '#3b82f6',                bgColor: '#eff6ff' },
-    { name: 'Submitted',    count: counts.Submitted,    icon: <Send size={24} />,        color: '#0ea5e9',                bgColor: '#e0f2fe' },
-    { name: 'Inspection',   count: counts.Inspection,   icon: <Eye size={24} />,         color: '#eab308',                bgColor: '#fef08a' },
-    { name: 'Approval',     count: counts.Approval,     icon: <Stamp size={24} />,       color: 'var(--success-green)',   bgColor: 'rgba(34, 160, 107, 0.1)' },
+    { name: 'New',          count: counts.New,          icon: <FilePlus size={24} strokeWidth={1.5} />,   color: 'var(--text-secondary)',                bgColor: 'var(--bg-secondary)' },
+    { name: 'Documents',    count: counts.Documents,    icon: <FileText size={24} strokeWidth={1.5} />,   color: 'var(--warning)',                bgColor: 'rgba(214, 167, 86, 0.1)' },
+    { name: 'Verification', count: counts.Verification, icon: <CheckCircle size={24} strokeWidth={1.5} />,color: 'var(--primary)',                bgColor: 'rgba(11, 36, 27, 0.05)' },
+    { name: 'Submitted',    count: counts.Submitted,    icon: <Send size={24} strokeWidth={1.5} />,        color: 'var(--primary-dark)',                bgColor: 'rgba(18, 55, 42, 0.05)' },
+    { name: 'Inspection',   count: counts.Inspection,   icon: <Eye size={24} strokeWidth={1.5} />,         color: 'var(--accent)',                bgColor: 'rgba(201, 106, 74, 0.1)' },
+    { name: 'Approval',     count: counts.Approval,     icon: <Stamp size={24} strokeWidth={1.5} />,       color: 'var(--success-green)',   bgColor: 'rgba(47, 125, 90, 0.1)' },
   ];
 
   return (
     <div className="card" style={{ marginBottom: '2rem' }}>
       <div style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.25rem' }}>Application Pipeline</h3>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.25rem', fontFamily: 'var(--font-heading)' }}>Application Pipeline</h3>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Current stage distribution of all active applications.</p>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem' }}>
         {pipelineStages.map((stage, index) => (
           <React.Fragment key={index}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '100px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '100px', transition: 'transform 0.2s', cursor: 'default' }} className="pipeline-item">
               <div style={{ 
-                width: '64px', height: '64px', borderRadius: '16px', 
+                width: '64px', height: '64px', borderRadius: 'var(--border-radius-lg)', 
                 backgroundColor: stage.bgColor, color: stage.color,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem',
-                boxShadow: stage.count > 0 ? `0 4px 12px ${stage.color}33` : 'none',
-                transition: 'box-shadow 0.3s',
-              }}>
+                boxShadow: stage.count > 0 ? `0 4px 12px ${stage.color}20` : 'none',
+                transition: 'box-shadow 0.3s, transform 0.2s',
+              }} className="pipeline-icon">
                 {stage.icon}
               </div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.25rem' }}>{stage.name}</div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>{stage.name}</div>
               <div style={{ 
-                fontSize: '1.25rem', fontWeight: 700, 
+                fontSize: '1.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)',
                 color: stage.count > 0 ? stage.color : 'var(--text-secondary)' 
               }}>{stage.count}</div>
             </div>
@@ -77,6 +77,11 @@ const ApplicationPipeline: React.FC = () => {
           </React.Fragment>
         ))}
       </div>
+      <style>{`
+        .pipeline-item:hover .pipeline-icon {
+          transform: translateY(-4px);
+        }
+      `}</style>
     </div>
   );
 };

@@ -428,28 +428,28 @@ const ApplicationDetail: React.FC = () => {
         return (
           <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
             {isRejected && (
-              <div style={{ gridColumn: '1 / -1', padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: '0.5rem', color: '#ef4444' }}>
+              <div style={{ gridColumn: '1 / -1', padding: '1rem', backgroundColor: 'rgba(185, 74, 72, 0.1)', border: '1px solid var(--error-red)', borderRadius: '0.5rem', color: 'var(--error-red)' }}>
                 <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}><X size={16} /> Application Rejected</strong>
                 <p style={{ margin: 0, fontSize: '0.875rem' }}><strong>Reason:</strong> {rejectionNote || 'No reason provided.'}</p>
               </div>
             )}
             {/* Application Info */}
             <div className="card">
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <FileText size={18} color="var(--primary-blue)" /> Application Information
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FileText size={18} color="var(--primary)" /> Application Information
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Application Type</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.appType}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.appType}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Building Type</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.buildingType}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.buildingType}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Created Date</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.createdAt}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.createdAt}</div>
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Assigned Staff</div>
@@ -466,7 +466,7 @@ const ApplicationDetail: React.FC = () => {
                           localStorage.setItem('recentApplications', JSON.stringify(recentApplications));
                         }
                       }}
-                      style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', fontWeight: 500, color: assignedStaff ? 'var(--primary-blue)' : 'var(--text-secondary)', outline: 'none', backgroundColor: 'var(--white)', cursor: 'pointer', minWidth: '200px' }}
+                      style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', fontWeight: 500, color: assignedStaff ? 'var(--primary)' : 'var(--text-secondary)', outline: 'none', backgroundColor: 'var(--bg-surface)', cursor: 'pointer', minWidth: '200px' }}
                     >
                       <option value="">— Select Staff —</option>
                       {(() => {
@@ -483,11 +483,11 @@ const ApplicationDetail: React.FC = () => {
                   </div>
                 </div>
                 {workflowStages[3].status === 'Completed' && (
-                  <div style={{ gridColumn: 'span 2', marginTop: '1rem', padding: '1.25rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '0.75rem', border: '1px dashed var(--primary-blue)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <div style={{ gridColumn: 'span 2', marginTop: '1rem', padding: '1.25rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '0.75rem', border: '1px dashed var(--primary)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     
                     {/* Govt Tracking Number */}
                     <div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Govt. Tracking Number</div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Govt. Tracking Number</div>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <input 
                           type="text" 
@@ -512,7 +512,7 @@ const ApplicationDetail: React.FC = () => {
 
                     {/* Application Receipt - File Upload */}
                     <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>Application Receipt</div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Application Receipt</div>
                       <input
                         type="file"
                         ref={receiptInputRef}
@@ -537,8 +537,8 @@ const ApplicationDetail: React.FC = () => {
                       />
                       {appReceipt ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem 0.875rem', backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '0.375rem' }}>
-                          <FileText size={18} color="var(--primary-blue)" />
-                          <span style={{ flex: 1, fontSize: '0.875rem', color: 'var(--dark-navy)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{receiptFileName || 'Receipt uploaded'}</span>
+                          <FileText size={18} color="var(--primary)" />
+                          <span style={{ flex: 1, fontSize: '0.875rem', color: 'var(--primary-dark)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{receiptFileName || 'Receipt uploaded'}</span>
                           <button
                             onClick={() => {
                               const a = document.createElement('a');
@@ -546,7 +546,7 @@ const ApplicationDetail: React.FC = () => {
                               a.download = receiptFileName || 'receipt';
                               a.click();
                             }}
-                            style={{ padding: '0.25rem 0.625rem', borderRadius: '0.25rem', border: '1px solid var(--primary-blue)', backgroundColor: 'transparent', color: 'var(--primary-blue)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                            style={{ padding: '0.25rem 0.625rem', borderRadius: '0.25rem', border: '1px solid var(--primary)', backgroundColor: 'transparent', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
                           >
                             View
                           </button>
@@ -557,7 +557,7 @@ const ApplicationDetail: React.FC = () => {
                               localStorage.removeItem(`receipt_${id}`);
                               if (receiptInputRef.current) receiptInputRef.current.value = '';
                             }}
-                            style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', border: 'none', backgroundColor: '#fee2e2', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer' }}
+                            style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', border: 'none', backgroundColor: '#fee2e2', color: 'var(--error-red)', fontSize: '0.75rem', cursor: 'pointer' }}
                           >
                             <X size={14} />
                           </button>
@@ -566,7 +566,7 @@ const ApplicationDetail: React.FC = () => {
                         <button
                           onClick={() => receiptInputRef.current?.click()}
                           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.625rem 0.875rem', borderRadius: '0.375rem', border: '2px dashed var(--border-color)', backgroundColor: 'white', color: 'var(--text-secondary)', fontSize: '0.875rem', cursor: 'pointer', justifyContent: 'center', transition: 'border-color 0.2s' }}
-                          onMouseOver={e => (e.currentTarget.style.borderColor = 'var(--primary-blue)')}
+                          onMouseOver={e => (e.currentTarget.style.borderColor = 'var(--primary)')}
                           onMouseOut={e => (e.currentTarget.style.borderColor = 'var(--border-color)')}
                         >
                           <Upload size={16} /> Upload Receipt (PDF / Image)
@@ -581,50 +581,50 @@ const ApplicationDetail: React.FC = () => {
 
             {/* Customer Info */}
             <div className="card">
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <User size={18} color="var(--primary-blue)" /> Customer Information
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <User size={18} color="var(--primary)" /> Customer Information
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div style={{ gridColumn: 'span 2' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Name</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.customer}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.customer}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Mobile</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.mobile}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.mobile}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Email</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.email}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.email}</div>
                 </div>
               </div>
             </div>
 
             {/* Property Info */}
             <div className="card">
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Building size={18} color="var(--primary-blue)" /> Property Information
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Building size={18} color="var(--primary)" /> Property Information
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div style={{ gridColumn: 'span 2' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Address</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.address}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.address}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Survey No</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.surveyNo}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.surveyNo}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Plot Area</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.plotArea}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.plotArea}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Built-up Area</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.builtUpArea}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.builtUpArea}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Floors</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{app.floors}</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.floors}</div>
                 </div>
               </div>
             </div>
@@ -634,12 +634,12 @@ const ApplicationDetail: React.FC = () => {
         return (
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--dark-navy)' }}>Uploaded Documents</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)' }}>Uploaded Documents</h3>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button onClick={handleDownloadAll} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--white)', border: '1px solid var(--border-color)', cursor: 'pointer', color: 'var(--dark-navy)' }}>
+                <button onClick={handleDownloadAll} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', cursor: 'pointer', color: 'var(--primary-dark)' }}>
                   <Download size={16} /> Download All (ZIP)
                 </button>
-                <button onClick={handleShareLink} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--white)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>
+                <button onClick={handleShareLink} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>
                   <LinkIcon size={16} /> Share Upload Link
                 </button>
                 <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
@@ -666,13 +666,13 @@ const ApplicationDetail: React.FC = () => {
                   const actualIdx = documents.findIndex(d => d.id === doc.id);
                   return (
                   <tr key={doc.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{doc.name}</td>
+                    <td style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{doc.name}</td>
                     <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{doc.uploadedBy}</td>
                     <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{doc.date}</td>
                     <td style={{ padding: '1rem' }}><StatusBadge type="status" value={doc.status} /></td>
                     <td style={{ padding: '1rem', textAlign: 'right' }}>
                       {doc.status === 'Missing' ? (
-                        <button onClick={() => handleUploadClick(actualIdx)} style={{ background: 'none', border: 'none', color: 'var(--primary-blue)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <button onClick={() => handleUploadClick(actualIdx)} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                           <Upload size={14} /> Upload
                         </button>
                       ) : (
@@ -682,15 +682,15 @@ const ApplicationDetail: React.FC = () => {
                               <button onClick={() => updateDocumentStatus(actualIdx, 'Verified')} style={{ background: 'none', border: 'none', color: 'var(--success-green)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <CheckCircle2 size={14} /> Verify
                               </button>
-                              <button onClick={() => updateDocumentStatus(actualIdx, 'Needs Reupload')} style={{ background: 'none', border: 'none', color: '#F59E0B', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <button onClick={() => updateDocumentStatus(actualIdx, 'Needs Reupload')} style={{ background: 'none', border: 'none', color: 'var(--warning-gold)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <Upload size={14} /> Request Reupload
                               </button>
                             </>
                           )}
                           {doc.status === 'Pending' && !isAdmin && (
-                            <span style={{ fontSize: '0.75rem', color: '#F59E0B', fontWeight: 500 }}>Awaiting Admin Verification</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--warning-gold)', fontWeight: 500 }}>Awaiting Admin Verification</span>
                           )}
-                          <button onClick={() => handleView(documents[actualIdx])} style={{ background: 'none', border: 'none', color: 'var(--primary-blue)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>View</button>
+                          <button onClick={() => handleView(documents[actualIdx])} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>View</button>
                           <button onClick={() => handleDownload(doc)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                             <Download size={14} />
                           </button>
@@ -723,7 +723,7 @@ const ApplicationDetail: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
             <h2 className="heading-2" style={{ margin: 0 }}>{app.id}</h2>
             {isRejected ? (
-              <span style={{ padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600, backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>Rejected</span>
+              <span style={{ padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600, backgroundColor: 'rgba(185, 74, 72, 0.1)', color: 'var(--error-red)' }}>Rejected</span>
             ) : (
               <StatusBadge type="status" value={app.status} />
             )}
@@ -737,26 +737,26 @@ const ApplicationDetail: React.FC = () => {
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button 
             onClick={() => navigate(isAdmin ? '/admin/applications/new' : '/employee/applications/new', { state: { editMode: true, appData: app } })}
-            style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}
+            style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}
           >
             <Edit size={16} /> Edit
           </button>
           {!isRejected && (
-            <button onClick={() => setShowRejectModal(true)} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid #ef4444', color: '#ef4444', backgroundColor: 'var(--white)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
+            <button onClick={() => setShowRejectModal(true)} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--error-red)', color: 'var(--error-red)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
               <X size={16} /> Reject Application
             </button>
           )}
           <button className="btn-primary" style={{ padding: '0.5rem 1.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Update Status
           </button>
-          <button style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+          <button style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer', color: 'var(--text-secondary)' }}>
             <MoreVertical size={16} />
           </button>
         </div>
       </div>
       {/* Workflow Tracker */}
       <div className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem', overflowX: 'auto' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1.5rem' }}>Status</h3>
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem' }}>Status</h3>
         <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', minWidth: '600px' }}>
           <div style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', height: '2px', backgroundColor: 'var(--border-color)', zIndex: 0 }}></div>
           {workflowStages.map((stage, idx) => (
@@ -765,19 +765,19 @@ const ApplicationDetail: React.FC = () => {
                 width: '24px', 
                 height: '24px', 
                 borderRadius: '50%', 
-                backgroundColor: isRejected && stage.status === 'Current' ? '#ef4444' : stage.status === 'Completed' ? 'var(--success-green)' : stage.status === 'Current' ? 'var(--primary-blue)' : 'var(--white)',
+                backgroundColor: isRejected && stage.status === 'Current' ? 'var(--error-red)' : stage.status === 'Completed' ? 'var(--success-green)' : stage.status === 'Current' ? 'var(--primary)' : 'var(--bg-surface)',
                 border: stage.status === 'Pending' ? '2px solid var(--border-color)' : 'none',
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
                 color: stage.status === 'Completed' ? 'white' : 'var(--border-color)',
                 marginBottom: '0.5rem',
-                boxShadow: isRejected && stage.status === 'Current' ? '0 0 0 4px rgba(239, 68, 68, 0.1)' : stage.status === 'Current' ? '0 0 0 4px rgba(11, 99, 206, 0.1)' : 'none'
+                boxShadow: isRejected && stage.status === 'Current' ? '0 0 0 4px rgba(185, 74, 72, 0.1)' : stage.status === 'Current' ? '0 0 0 4px rgba(18, 55, 42, 0.05)' : 'none'
               }}>
                 {stage.status === 'Completed' && <CheckCircle2 size={14} color="white" />}
                 {stage.status === 'Current' && <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'white' }}></div>}
               </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: stage.status === 'Pending' ? 400 : 600, color: stage.status === 'Pending' ? 'var(--text-secondary)' : 'var(--dark-navy)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: stage.status === 'Pending' ? 400 : 600, color: stage.status === 'Pending' ? 'var(--text-secondary)' : 'var(--primary-dark)' }}>
                 {stage.stage}
               </div>
             </div>
@@ -795,8 +795,8 @@ const ApplicationDetail: React.FC = () => {
               padding: '0.75rem 1.5rem', 
               background: 'none', 
               border: 'none', 
-              borderBottom: activeTab === tab.id ? '2px solid var(--primary-blue)' : '2px solid transparent',
-              color: activeTab === tab.id ? 'var(--primary-blue)' : 'var(--text-secondary)',
+              borderBottom: activeTab === tab.id ? '2px solid var(--primary)' : '2px solid transparent',
+              color: activeTab === tab.id ? 'var(--primary)' : 'var(--text-secondary)',
               fontWeight: activeTab === tab.id ? 600 : 500,
               fontSize: '0.875rem',
               display: 'flex',
@@ -820,17 +820,17 @@ const ApplicationDetail: React.FC = () => {
       {/* Share Link Modal */}
       {showShareModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '0.75rem', width: '100%', maxWidth: '480px', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', position: 'relative' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '480px', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', position: 'relative' }}>
             <button onClick={() => setShowShareModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
               <X size={20} />
             </button>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(11, 99, 206, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-blue)' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(18, 55, 42, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                 <LinkIcon size={24} />
               </div>
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.25rem' }}>Share Upload Link</h3>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Share Upload Link</h3>
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>Send this link to the customer to upload documents directly.</p>
               </div>
             </div>
@@ -840,14 +840,14 @@ const ApplicationDetail: React.FC = () => {
                 type="text" 
                 readOnly 
                 value={shareLink} 
-                style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', outline: 'none', color: 'var(--dark-navy)', fontSize: '0.875rem' }} 
+                style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', outline: 'none', color: 'var(--primary-dark)', fontSize: '0.875rem' }} 
               />
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(shareLink);
                   setShowShareModal(false);
                 }}
-                style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--white)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}
+                style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}
               >
                 <Copy size={16} /> Copy
               </button>
@@ -874,11 +874,11 @@ const ApplicationDetail: React.FC = () => {
       {/* Reject Modal */}
       {showRejectModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, backdropFilter: 'blur(4px)' }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '0.75rem', width: '100%', maxWidth: '400px', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', position: 'relative' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '400px', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', position: 'relative' }}>
             <button onClick={() => setShowRejectModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
               <X size={20} />
             </button>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '1rem' }}>Reject Application</h3>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Reject Application</h3>
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Reason for Rejection</label>
               <textarea 
@@ -889,7 +889,7 @@ const ApplicationDetail: React.FC = () => {
               />
             </div>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowRejectModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--dark-navy)', border: 'none', fontWeight: 500, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => setShowRejectModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: 'none', fontWeight: 500, cursor: 'pointer' }}>Cancel</button>
               <button 
                 onClick={() => {
                   setIsRejected(true);
@@ -897,7 +897,7 @@ const ApplicationDetail: React.FC = () => {
                   localStorage.setItem(`rejection_${id}`, JSON.stringify({ isRejected: true, rejectionNote: rejectionReason }));
                   setShowRejectModal(false);
                 }} 
-                style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', backgroundColor: '#ef4444', color: 'white', border: 'none', fontWeight: 500, cursor: 'pointer' }}
+                style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', backgroundColor: 'var(--error-red)', color: 'white', border: 'none', fontWeight: 500, cursor: 'pointer' }}
               >
                 Confirm Rejection
               </button>
@@ -909,9 +909,9 @@ const ApplicationDetail: React.FC = () => {
       {/* View Document Modal */}
       {viewingDoc && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)', padding: '2rem' }}>
-          <div style={{ backgroundColor: 'var(--white)', borderRadius: '0.75rem', width: '100%', maxWidth: '800px', height: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '800px', height: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', position: 'relative', overflow: 'hidden' }}>
             <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', margin: 0 }}>{viewingDoc.name}</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', margin: 0 }}>{viewingDoc.name}</h3>
               <button onClick={() => setViewingDoc(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
                 <X size={20} />
               </button>

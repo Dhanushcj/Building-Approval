@@ -70,8 +70,8 @@ const MyApplications: React.FC = () => {
                   background: 'none',
                   fontSize: '0.875rem',
                   fontWeight: 600,
-                  color: activeTab === tab ? 'var(--primary-blue)' : 'var(--text-secondary)',
-                  borderBottom: activeTab === tab ? '2px solid var(--primary-blue)' : '2px solid transparent',
+                  color: activeTab === tab ? 'var(--primary)' : 'var(--text-secondary)',
+                  borderBottom: activeTab === tab ? '2px solid var(--primary)' : '2px solid transparent',
                   marginBottom: '-2px',
                   cursor: 'pointer',
                   transition: 'all 0.2s'
@@ -118,7 +118,7 @@ const MyApplications: React.FC = () => {
                 <tr key={app.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--primary-blue)', fontSize: '0.875rem', cursor: 'pointer' }} onClick={() => navigate(`/employee/applications/${app.id}`)}>
+                      <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.875rem', cursor: 'pointer' }} onClick={() => navigate(`/employee/applications/${app.id}`)}>
                         {app.id}
                       </div>
                       <button 
@@ -138,12 +138,12 @@ const MyApplications: React.FC = () => {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{app.date}</div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)', fontWeight: 600, marginBottom: '0.25rem' }}>
                       {app.customer}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{app.location}</div>
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--dark-navy)' }}>
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--primary-dark)' }}>
                     {app.appType || 'Building'}
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
@@ -152,8 +152,8 @@ const MyApplications: React.FC = () => {
                       borderRadius: '4px', 
                       fontSize: '0.75rem', 
                       fontWeight: 600, 
-                      backgroundColor: app.status === 'Approved' ? 'rgba(16, 185, 129, 0.1)' : app.status === 'Documents Pending' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)', 
-                      color: app.status === 'Approved' ? '#10b981' : app.status === 'Documents Pending' ? '#ef4444' : '#3b82f6' 
+                      backgroundColor: app.status === 'Approved' ? 'rgba(47, 125, 90, 0.1)' : app.status === 'Documents Pending' ? 'rgba(185, 74, 72, 0.1)' : 'rgba(18, 55, 42, 0.05)', 
+                      color: app.status === 'Approved' ? 'var(--success-green)' : app.status === 'Documents Pending' ? 'var(--error-red)' : 'var(--primary)' 
                     }}>
                       {app.status}
                     </span>

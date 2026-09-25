@@ -3,16 +3,16 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { getApplicationStatus } from '../../utils/statusHelper';
 
 const STATUS_COLORS: Record<string, string> = {
-  'New':                '#94a3b8',
-  'Documents Pending':  '#f59e0b',
-  'Action Required':    '#fb923c',
-  'Verification':       '#3b82f6',
-  'Under Review':       '#6366f1',
-  'Submitted':          '#0ea5e9',
-  'Gov Verification':   '#0B63CE',
-  'Site Inspection':    '#eab308',
-  'Approved':           '#22A06B',
-  'Rejected':           '#ef4444',
+  'New':                'var(--text-muted)',
+  'Documents Pending':  'var(--warning)',
+  'Action Required':    '#E07A5F',
+  'Verification':       'var(--primary-dark)',
+  'Under Review':       'var(--primary)',
+  'Submitted':          'var(--text-secondary)',
+  'Gov Verification':   '#3D5A80',
+  'Site Inspection':    'var(--accent)',
+  'Approved':           'var(--success-green)',
+  'Rejected':           'var(--error-red)',
 };
 
 const getChartData = () => {
@@ -27,7 +27,7 @@ const getChartData = () => {
 
   return Object.entries(buckets)
     .filter(([, v]) => v > 0)
-    .map(([name, value]) => ({ name, value, color: STATUS_COLORS[name] || '#94a3b8' }));
+    .map(([name, value]) => ({ name, value, color: STATUS_COLORS[name] || 'var(--text-muted)' }));
 };
 
 const ApplicationStatusChart: React.FC = () => {
@@ -43,12 +43,12 @@ const ApplicationStatusChart: React.FC = () => {
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
   // Fallback for empty state (pie needs at least one non-zero value to render)
-  const chartData = data.length > 0 ? data : [{ name: 'No Data', value: 1, color: '#e2e8f0' }];
+  const chartData = data.length > 0 ? data : [{ name: 'No Data', value: 1, color: 'var(--bg-secondary)' }];
 
   return (
     <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ marginBottom: '1rem' }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)' }}>Application Status Overview</h3>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)' }}>Application Status Overview</h3>
       </div>
       
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center', flex: 1 }}>
@@ -64,22 +64,24 @@ const ApplicationStatusChart: React.FC = () => {
                 outerRadius={80}
                 paddingAngle={2}
                 dataKey="value"
+                stroke="var(--bg-surface)"
+                strokeWidth={2}
               >
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
               <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                itemStyle={{ color: 'var(--dark-navy)', fontWeight: 600 }}
+                contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', backgroundColor: 'var(--bg-surface)', fontFamily: 'var(--font-family)' }}
+                itemStyle={{ color: 'var(--primary-dark)', fontWeight: 600 }}
                 formatter={(value: any, name: string) => [value, name]}
               />
             </PieChart>
           </ResponsiveContainer>
           {/* Inner Text */}
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--dark-navy)' }}>{total}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Total</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', lineHeight: 1.2 }}>{total}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</div>
           </div>
         </div>
 
@@ -92,11 +94,11 @@ const ApplicationStatusChart: React.FC = () => {
           ) : (
             data.map((item, index) => (
               <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: item.color, flexShrink: 0 }}></div>
-                  <span style={{ color: 'var(--text-secondary)' }}>{item.name}</span>
+                  <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{item.name}</span>
                 </div>
-                <span style={{ fontWeight: 600, color: 'var(--dark-navy)' }}>{item.value}</span>
+                <span style={{ fontWeight: 700, color: 'var(--primary-dark)' }}>{item.value}</span>
               </div>
             ))
           )}

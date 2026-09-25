@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, Eye, FileCheck, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Lock } from 'lucide-react';
 
 const TrackingSection: React.FC = () => {
   const [appNumber, setAppNumber] = useState('');
@@ -9,114 +9,130 @@ const TrackingSection: React.FC = () => {
   const handleTrack = (e: React.FormEvent) => {
     e.preventDefault();
     if (appNumber.trim()) {
-      // Mock navigation to track application with query param
       navigate(`/track-application?id=${appNumber}`);
     }
   };
 
   return (
-    <section className="section section-bg-light">
+    <section 
+      className="section" 
+      style={{ 
+        position: 'relative',
+        padding: '2rem 0',
+        backgroundColor: 'var(--primary-dark)',
+        backgroundImage: `linear-gradient(to right, rgba(11, 36, 27, 0.98) 40%, rgba(11, 36, 27, 0.85) 100%), url('/assets/hero_building_wide_1790316604179.jpg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       <div className="container">
-        <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            
-            {/* Form Side */}
-            <div style={{ flex: '1 1 400px', padding: '3rem' }}>
-              <div style={{ marginBottom: '2rem' }}>
-                <div style={{ display: 'inline-flex', backgroundColor: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '50%', color: 'var(--primary-blue)', marginBottom: '1rem' }}>
-                  <Search size={28} />
-                </div>
-                <h2 className="heading-2">Track Your Application Status</h2>
-                <p className="text-lead" style={{ fontSize: '1rem' }}>Enter your application number to check the latest status of your approval application.</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '3rem' }}>
+          
+          {/* Form Side */}
+          <div style={{ flex: '1 1 350px', maxWidth: '500px' }}>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ color: 'var(--success-green)', fontWeight: 800, fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '0.75rem', fontFamily: 'var(--font-heading)' }}>
+                ALREADY SUBMITTED AN APPLICATION?
               </div>
-
-              <form onSubmit={handleTrack}>
-                <div className="form-group" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="e.g. BPA-2026-4387" 
-                    value={appNumber}
-                    onChange={(e) => setAppNumber(e.target.value)}
-                    required
-                    style={{ flex: '1 1 200px' }}
-                  />
-                  <button type="submit" className="btn-primary" style={{ whiteSpace: 'nowrap' }}>
-                    Track Status &rarr;
-                  </button>
-                </div>
-                <div style={{ marginTop: '0.5rem' }}>
-                  <a href="#" style={{ fontSize: '0.875rem' }}>Need help with your application?</a>
-                </div>
-              </form>
-
-              <div style={{ marginTop: '3rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.875rem' }}>
-                  <Eye size={18} color="var(--primary-blue)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <span>View current application status</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.875rem' }}>
-                  <FileCheck size={18} color="var(--primary-blue)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <span>View document updates</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.875rem' }}>
-                  <Search size={18} color="var(--primary-blue)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <span>Check processing stage</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.875rem' }}>
-                  <Bell size={18} color="var(--primary-blue)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <span>Receive important notifications</span>
-                </div>
-              </div>
+              <h2 className="heading-2" style={{ color: 'var(--bg-surface)', marginBottom: '0.75rem', fontSize: '1.75rem', lineHeight: 1.2 }}>Track Your Application</h2>
+              <p className="text-lead" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>Enter your application ID to view the latest status and updates.</p>
             </div>
 
-            {/* Visual Side */}
-            <div style={{ 
-              flex: '1 1 400px', 
-              padding: '3rem', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              backgroundImage: 'linear-gradient(rgba(11, 99, 206, 0.85), rgba(11, 99, 206, 0.85)), url("/track_application_bg.jpg")',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}>
-              <div style={{ 
-                width: '100%', 
-                maxWidth: '300px', 
-                aspectRatio: '1', 
-                backgroundColor: 'rgba(255,255,255,0.1)', 
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative'
-              }}>
-                <div style={{ 
-                  backgroundColor: 'var(--white)', 
-                  padding: '1.5rem', 
-                  borderRadius: 'var(--border-radius-md)', 
-                  boxShadow: 'var(--shadow-lg)',
-                  width: '80%'
-                }}>
-                  <div style={{ height: '8px', backgroundColor: 'var(--bg-secondary)', borderRadius: '4px', width: '40%', marginBottom: '1rem' }}></div>
-                  <div style={{ height: '8px', backgroundColor: 'var(--bg-secondary)', borderRadius: '4px', width: '80%', marginBottom: '0.5rem' }}></div>
-                  <div style={{ height: '8px', backgroundColor: 'var(--bg-secondary)', borderRadius: '4px', width: '60%', marginBottom: '2rem' }}></div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(34, 160, 107, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                       <CheckCircle2 color="var(--success-green)" size={24} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--success-green)' }}>APPROVED</div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Just now</div>
-                    </div>
-                  </div>
+            <form onSubmit={handleTrack}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', backgroundColor: 'var(--bg-surface)', padding: '0.375rem', borderRadius: '0.375rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '0 0.75rem', color: 'var(--text-secondary)' }}>
+                  <Lock size={16} />
                 </div>
+                <input 
+                  type="text" 
+                  placeholder="Enter Application ID (e.g. BA-2026-XXXX)" 
+                  value={appNumber}
+                  onChange={(e) => setAppNumber(e.target.value)}
+                  required
+                  style={{ flex: 1, padding: '0.5rem 0', fontSize: '0.8125rem', border: 'none', outline: 'none', backgroundColor: 'transparent', color: 'var(--primary-dark)' }}
+                />
+                <button type="submit" style={{ padding: '0.625rem 1.25rem', fontSize: '0.8125rem', fontWeight: 600, whiteSpace: 'nowrap', backgroundColor: 'var(--accent)', color: 'var(--bg-surface)', border: 'none', borderRadius: '0.25rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  Track Status &rarr;
+                </button>
               </div>
-            </div>
-
+            </form>
           </div>
+
+          {/* Visual Side */}
+          <div style={{ flex: '0 1 auto', display: 'flex', justifyContent: 'flex-end' }}>
+             <div className="card" style={{ 
+              width: '100%', 
+              minWidth: '380px', 
+              padding: '1.25rem 1.5rem',
+              backgroundColor: 'rgba(18, 55, 42, 0.4)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '0.75rem',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.15)'
+            }}>
+              <div style={{ paddingBottom: '1rem', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ fontSize: '0.55rem', fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '0.5rem' }}>CURRENT STATUS</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--accent)', boxShadow: '0 0 0 3px rgba(201, 106, 74, 0.2)' }}></div>
+                  <h4 style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.9375rem', margin: 0 }}>Government Review</h4>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex' }}>
+                      <CheckCircle2 color="var(--success-green)" fill="rgba(255,255,255,0.1)" size={16} strokeWidth={2} />
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 500, fontSize: '0.75rem' }}>Application Submitted</div>
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem' }}>12 Apr 2026</div>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex' }}>
+                      <CheckCircle2 color="var(--success-green)" fill="rgba(255,255,255,0.1)" size={16} strokeWidth={2} />
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 500, fontSize: '0.75rem' }}>Documents Verified</div>
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem' }}>15 Apr 2026</div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex' }}>
+                      <CheckCircle2 color="var(--success-green)" fill="rgba(255,255,255,0.1)" size={16} strokeWidth={2} />
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 500, fontSize: '0.75rem' }}>Application Review</div>
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem' }}>18 Apr 2026</div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '6px', height: '6px', backgroundColor: 'var(--accent)', borderRadius: '50%' }}></div>
+                    </div>
+                    <div style={{ color: 'var(--bg-surface)', fontWeight: 600, fontSize: '0.75rem' }}>Government Review</div>
+                  </div>
+                  <div style={{ color: 'var(--accent)', fontSize: '0.65rem', fontWeight: 600 }}>In Progress</div>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'transparent', boxSizing: 'border-box' }}></div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 500, fontSize: '0.75rem' }}>Approval</div>
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem' }}>Pending</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

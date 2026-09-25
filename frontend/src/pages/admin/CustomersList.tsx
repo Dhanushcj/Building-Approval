@@ -40,17 +40,17 @@ const CustomersList: React.FC = () => {
                 customers.map((cust, index) => (
                   <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <td style={{ padding: '1rem 1.5rem' }}>
-                      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-blue)' }}>{cust.name}</div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{cust.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{cust.mobile} | {cust.id}</div>
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--dark-navy)' }}>{cust.location}</td>
+                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{cust.location}</td>
                     <td style={{ padding: '1rem 1.5rem' }}>
                       <div style={{ fontSize: '0.875rem', fontWeight: 500 }}>Total: {cust.apps}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#f59e0b' }}>Pending: {cust.pending}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--warning-gold)' }}>Pending: {cust.pending}</div>
                     </td>
                     <td style={{ padding: '1rem 1.5rem' }}>
                       <div style={{ fontSize: '0.875rem', color: 'var(--success-green)', fontWeight: 500 }}>Paid: {cust.totalPaid}</div>
-                      {cust.pendingAmt !== '₹0' && <div style={{ fontSize: '0.75rem', color: '#ef4444' }}>Due: {cust.pendingAmt}</div>}
+                      {cust.pendingAmt !== '₹0' && <div style={{ fontSize: '0.75rem', color: 'var(--error-red)' }}>Due: {cust.pendingAmt}</div>}
                     </td>
                     <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
@@ -71,7 +71,7 @@ const CustomersList: React.FC = () => {
                       <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
                         <Users size={32} color="var(--text-secondary)" />
                       </div>
-                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>No customers found</h3>
+                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>No customers found</h3>
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '400px', marginBottom: '1.5rem' }}>
                         You haven't added any customers yet. Add a customer to start tracking their applications.
                       </p>

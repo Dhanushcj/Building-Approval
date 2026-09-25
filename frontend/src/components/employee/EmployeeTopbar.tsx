@@ -36,11 +36,12 @@ const EmployeeTopbar: React.FC<EmployeeTopbarProps> = ({ toggleSidebar }) => {
             <Menu size={24} />
           </button>
         )}
-        <div>
-        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '0.1rem' }}>{currentPage}</h1>
+      <div>
+        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.1rem' }}>{currentPage}</h1>
         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
           Workspace / {currentPage}
         </div>
+      </div>
       </div>
 
       {/* Right side: Actions */}
@@ -83,7 +84,7 @@ const EmployeeTopbar: React.FC<EmployeeTopbarProps> = ({ toggleSidebar }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '2px solid var(--white)'
+            border: '2px solid var(--bg-surface)'
           }}>
             3
           </div>
@@ -91,11 +92,11 @@ const EmployeeTopbar: React.FC<EmployeeTopbarProps> = ({ toggleSidebar }) => {
 
         {/* Profile Dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingLeft: '1rem', borderLeft: '1px solid var(--border-color)', cursor: 'pointer' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, color: 'white', fontSize: '0.875rem' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, color: 'white', fontSize: '0.875rem' }}>
             {getInitials(employeeName)}
           </div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--dark-navy)' }}>{employeeName}</div>
+            <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{employeeName}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Staff Member</div>
           </div>
           <ChevronDown size={16} color="var(--text-secondary)" />

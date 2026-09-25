@@ -75,12 +75,12 @@ const TaskDetail: React.FC = () => {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
         <button onClick={() => navigate('/employee/tasks')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)' }}>
-          <ArrowLeft size={20} color="var(--dark-navy)" />
+          <ArrowLeft size={20} color="var(--primary-dark)" />
         </button>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--dark-navy)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {task.title}
-            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: task.status === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)', color: task.status === 'Completed' ? '#10b981' : '#3b82f6', verticalAlign: 'middle' }}>
+            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: task.status === 'Completed' ? 'rgba(47, 125, 90, 0.1)' : 'rgba(18, 55, 42, 0.05)', color: task.status === 'Completed' ? 'var(--success-green)' : 'var(--primary)', verticalAlign: 'middle' }}>
               {task.status}
             </span>
           </h2>
@@ -106,7 +106,7 @@ const TaskDetail: React.FC = () => {
         <button 
           onClick={() => handleStatusChange('Completed')}
           disabled={task.status === 'Completed'}
-          style={{ padding: '0.5rem 1.5rem', borderRadius: '0.375rem', fontWeight: 600, cursor: task.status === 'Completed' ? 'not-allowed' : 'pointer', backgroundColor: task.status === 'Completed' ? '#e2e8f0' : '#10b981', color: task.status === 'Completed' ? '#94a3b8' : 'white', border: 'none', transition: 'all 0.2s' }}
+          style={{ padding: '0.5rem 1.5rem', borderRadius: '0.375rem', fontWeight: 600, cursor: task.status === 'Completed' ? 'not-allowed' : 'pointer', backgroundColor: task.status === 'Completed' ? '#e2e8f0' : 'var(--success-green)', color: task.status === 'Completed' ? '#94a3b8' : 'white', border: 'none', transition: 'all 0.2s' }}
         >
           {task.status === 'Completed' ? 'Task Completed' : 'Complete Task'}
         </button>
@@ -119,31 +119,31 @@ const TaskDetail: React.FC = () => {
           
           {/* Application Overview */}
           <div className="card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '1rem' }}>Application Overview</h3>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Application Overview</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>APPLICATION NUMBER</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-blue)', cursor: 'pointer' }} onClick={() => navigate(`/employee/applications/${task.applicationId}`)}>{task.applicationId}</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)', cursor: 'pointer' }} onClick={() => navigate(`/employee/applications/${task.applicationId}`)}>{task.applicationId}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>CUSTOMER NAME</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--dark-navy)' }}>{task.customerName}</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>{task.customerName}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>APPLICATION TYPE</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)' }}>{application?.type || 'Building Approval'} - {application?.appType || 'Residential'}</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{application?.type || 'Building Approval'} - {application?.appType || 'Residential'}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>PROPERTY LOCATION</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)' }}>{task.propertyLocation}</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{task.propertyLocation}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>CURRENT STAGE</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)' }}>Document Verification</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)' }}>Document Verification</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>OVERALL STATUS</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)' }}><span style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#d97706', fontWeight: 600, fontSize: '0.75rem' }}>{application?.status || 'In Progress'}</span></div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)' }}><span style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', backgroundColor: 'rgba(214, 167, 86, 0.1)', color: 'var(--accent)', fontWeight: 600, fontSize: '0.75rem' }}>{application?.status || 'In Progress'}</span></div>
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@ const TaskDetail: React.FC = () => {
           {/* Document Section */}
           <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--dark-navy)' }}>Document Verification</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)' }}>Document Verification</h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Review and verify customer documents.</p>
             </div>
             <div style={{ overflowX: 'auto' }}>
@@ -166,15 +166,15 @@ const TaskDetail: React.FC = () => {
                 <tbody>
                   {documents.length > 0 ? documents.map((doc, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--dark-navy)' }}>{doc.name}</td>
+                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{doc.name}</td>
                       <td style={{ padding: '1rem 1.5rem' }}>
                         <span style={{ 
                           padding: '0.25rem 0.5rem', 
                           borderRadius: '4px', 
                           fontSize: '0.75rem', 
                           fontWeight: 600, 
-                          backgroundColor: doc.status === 'Verified' ? 'rgba(16, 185, 129, 0.1)' : doc.status === 'Rejected' || doc.status === 'Needs Reupload' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)', 
-                          color: doc.status === 'Verified' ? '#10b981' : doc.status === 'Rejected' || doc.status === 'Needs Reupload' ? '#ef4444' : '#d97706' 
+                          backgroundColor: doc.status === 'Verified' ? 'rgba(47, 125, 90, 0.1)' : doc.status === 'Rejected' || doc.status === 'Needs Reupload' ? 'rgba(185, 74, 72, 0.1)' : 'rgba(214, 167, 86, 0.1)', 
+                          color: doc.status === 'Verified' ? 'var(--success-green)' : doc.status === 'Rejected' || doc.status === 'Needs Reupload' ? 'var(--error-red)' : 'var(--accent)' 
                         }}>
                           {doc.status || 'Pending'}
                         </span>
@@ -183,10 +183,10 @@ const TaskDetail: React.FC = () => {
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>View</button>
                           {doc.status !== 'Verified' && (
-                            <button onClick={() => handleDocumentAction(doc.id, 'Verified')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid #10b981', color: '#10b981', backgroundColor: 'transparent', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Verify</button>
+                            <button onClick={() => handleDocumentAction(doc.id, 'Verified')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid var(--success-green)', color: 'var(--success-green)', backgroundColor: 'transparent', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Verify</button>
                           )}
                           {doc.status !== 'Needs Reupload' && (
-                            <button onClick={() => handleDocumentAction(doc.id, 'Needs Reupload')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid #ef4444', color: '#ef4444', backgroundColor: 'transparent', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Reject</button>
+                            <button onClick={() => handleDocumentAction(doc.id, 'Needs Reupload')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', border: '1px solid var(--error-red)', color: 'var(--error-red)', backgroundColor: 'transparent', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Reject</button>
                           )}
                         </div>
                       </td>
@@ -206,26 +206,26 @@ const TaskDetail: React.FC = () => {
           
           {/* Task Info Sidebar */}
           <div className="card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '1rem' }}>Task Details</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Task Details</h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>PRIORITY</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: task.priority === 'Urgent' ? '#ef4444' : task.priority === 'High' ? '#f97316' : '#3b82f6' }}>{task.priority}</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: task.priority === 'Urgent' ? 'var(--error-red)' : task.priority === 'High' ? 'var(--warning-gold)' : 'var(--primary)' }}>{task.priority}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>DUE DATE</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <Clock size={14} color="#ef4444" /> {task.dueDate}
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <Clock size={14} color="var(--error-red)" /> {task.dueDate}
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>ASSIGNED TO</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)' }}>{task.assignedTo}</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{task.assignedTo}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>DESCRIPTION</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-navy)', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--primary-dark)', lineHeight: 1.5 }}>
                   {task.description}
                 </div>
               </div>
@@ -234,7 +234,7 @@ const TaskDetail: React.FC = () => {
 
           {/* Workflow Status */}
           <div className="card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '1rem' }}>Application Progress</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Application Progress</h3>
             
             <div style={{ position: 'relative', paddingLeft: '1.5rem' }}>
               <div style={{ position: 'absolute', left: '7px', top: '10px', bottom: '10px', width: '2px', backgroundColor: 'var(--border-color)' }}></div>
@@ -253,15 +253,15 @@ const TaskDetail: React.FC = () => {
                     width: '14px', 
                     height: '14px', 
                     borderRadius: '50%', 
-                    backgroundColor: step.done ? '#10b981' : step.active ? '#3b82f6' : 'var(--border-color)',
-                    border: '3px solid var(--white)',
+                    backgroundColor: step.done ? 'var(--success-green)' : step.active ? 'var(--primary)' : 'var(--border-color)',
+                    border: '3px solid var(--bg-surface)',
                     boxShadow: '0 0 0 1px var(--border-color)',
                     transform: 'translateX(-1px)'
                   }}></div>
                   <div style={{ 
                     fontSize: '0.875rem', 
                     fontWeight: step.active ? 700 : 500, 
-                    color: step.active ? 'var(--primary-blue)' : step.done ? 'var(--dark-navy)' : 'var(--text-secondary)'
+                    color: step.active ? 'var(--primary)' : step.done ? 'var(--primary-dark)' : 'var(--text-secondary)'
                   }}>
                     {step.label}
                   </div>

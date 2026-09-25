@@ -117,11 +117,11 @@ const EmployeeDashboard: React.FC = () => {
       {/* Welcome Section */}
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '0.25rem' }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>
             Good morning, {employeeName}
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
-            Here's what needs your attention today. &nbsp; • &nbsp; <span style={{ fontWeight: 500, color: 'var(--dark-navy)' }}>{todayDate}</span>
+            Here's what needs your attention today. &nbsp; • &nbsp; <span style={{ fontWeight: 500, color: 'var(--primary-dark)' }}>{todayDate}</span>
           </p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
@@ -136,7 +136,7 @@ const EmployeeDashboard: React.FC = () => {
           )}
 
           {hasCheckedIn && !hasCheckedOut && (
-            <button onClick={() => updateAttendance('checkOut')} style={{ padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: 'none', backgroundColor: '#f59e0b', color: 'white', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button onClick={() => updateAttendance('checkOut')} style={{ padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: 'none', backgroundColor: 'var(--warning-gold)', color: 'white', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Clock size={18} /> Mark Check-out
             </button>
           )}
@@ -152,10 +152,10 @@ const EmployeeDashboard: React.FC = () => {
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
         {[
-          { label: 'Active Applications', value: activeApps, icon: <FileText size={24} color="#3b82f6" />, bg: 'rgba(59, 130, 246, 0.1)', path: '/employee/applications' },
-          { label: 'In Progress', value: inProgressApps, icon: <Clock size={24} color="#f59e0b" />, bg: 'rgba(245, 158, 11, 0.1)', path: '/employee/applications' },
-          { label: 'Pending Docs', value: pendingDocs, icon: <AlertCircle size={24} color="#ef4444" />, bg: 'rgba(239, 68, 68, 0.1)', path: '/employee/applications' },
-          { label: 'Approved', value: completedApps, icon: <CheckCircle2 size={24} color="#10b981" />, bg: 'rgba(16, 185, 129, 0.1)', path: '/employee/applications' },
+          { label: 'Active Applications', value: activeApps, icon: <FileText size={24} color="var(--primary)" />, bg: 'rgba(18, 55, 42, 0.05)', path: '/employee/applications' },
+          { label: 'In Progress', value: inProgressApps, icon: <Clock size={24} color="var(--warning-gold)" />, bg: 'rgba(214, 167, 86, 0.1)', path: '/employee/applications' },
+          { label: 'Pending Docs', value: pendingDocs, icon: <AlertCircle size={24} color="var(--error-red)" />, bg: 'rgba(185, 74, 72, 0.1)', path: '/employee/applications' },
+          { label: 'Approved', value: completedApps, icon: <CheckCircle2 size={24} color="var(--success-green)" />, bg: 'rgba(47, 125, 90, 0.1)', path: '/employee/applications' },
         ].map((card, idx) => (
           <div 
             key={idx} 
@@ -167,7 +167,7 @@ const EmployeeDashboard: React.FC = () => {
               {card.icon}
             </div>
             <div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--dark-navy)', lineHeight: 1.2 }}>{card.value}</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', lineHeight: 1.2 }}>{card.value}</div>
               <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{card.label}</div>
             </div>
           </div>
@@ -182,22 +182,22 @@ const EmployeeDashboard: React.FC = () => {
           {/* Action Required */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--dark-navy)' }}>Action Required (My Applications)</h3>
-              <button style={{ background: 'none', border: 'none', color: 'var(--primary-blue)', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => navigate('/employee/applications')}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)' }}>Action Required (My Applications)</h3>
+              <button style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => navigate('/employee/applications')}>
                 View All <ArrowRight size={16} />
               </button>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {actionRequiredApps.length > 0 ? actionRequiredApps.map(app => (
-                <div key={app.id} className="card" style={{ padding: '1.25rem', borderLeft: `4px solid ${app.status === 'Documents Pending' ? '#ef4444' : '#f59e0b'}` }}>
+                <div key={app.id} className="card" style={{ padding: '1.25rem', borderLeft: `4px solid ${app.status === 'Documents Pending' ? 'var(--error-red)' : 'var(--warning-gold)'}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.25rem' }}>{app.id}</div>
-                      <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--dark-navy)', marginBottom: '0.5rem' }}>{app.customer}</h4>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>{app.customer}</h4>
                       <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', gap: '1rem' }}>
-                        <span><span style={{ fontWeight: 500, color: 'var(--dark-navy)' }}>Type:</span> {app.appType || 'Building'}</span>
-                        <span><span style={{ fontWeight: 500, color: 'var(--dark-navy)' }}>Location:</span> {app.location}</span>
+                        <span><span style={{ fontWeight: 500, color: 'var(--primary-dark)' }}>Type:</span> {app.appType || 'Building'}</span>
+                        <span><span style={{ fontWeight: 500, color: 'var(--primary-dark)' }}>Location:</span> {app.location}</span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
@@ -223,19 +223,19 @@ const EmployeeDashboard: React.FC = () => {
           
           {/* Quick Actions */}
           <div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '1rem' }}>Quick Actions</h3>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Quick Actions</h3>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <button className="card hover-effect" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--dark-navy)', border: '1px dashed var(--primary-blue)' }} onClick={() => navigate('/employee/applications/new')}>
-                <Plus size={18} color="var(--primary-blue)" /> New Application
+              <button className="card hover-effect" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--primary-dark)', border: '1px dashed var(--primary)' }} onClick={() => navigate('/employee/applications/new')}>
+                <Plus size={18} color="var(--primary)" /> New Application
               </button>
-              <button className="card hover-effect" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--dark-navy)' }}>
+              <button className="card hover-effect" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
                 <FileUp size={18} color="#8b5cf6" /> Upload Document
               </button>
-              <button className="card hover-effect" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--dark-navy)' }}>
-                <CalendarIcon size={18} color="#f59e0b" /> Schedule Inspection
+              <button className="card hover-effect" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
+                <CalendarIcon size={18} color="var(--warning-gold)" /> Schedule Inspection
               </button>
-              <button className="card hover-effect" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--dark-navy)' }}>
-                <PhoneCall size={18} color="#10b981" /> Create Follow-up
+              <button className="card hover-effect" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
+                <PhoneCall size={18} color="var(--success-green)" /> Create Follow-up
               </button>
             </div>
           </div>
@@ -248,14 +248,14 @@ const EmployeeDashboard: React.FC = () => {
           {/* Follow-ups */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--dark-navy)' }}>Today's Enquiries</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)' }}>Today's Enquiries</h3>
             </div>
             <div className="card" style={{ padding: '0' }}>
               {followUps.length > 0 ? followUps.map((fu, idx) => (
                 <div key={fu.id} style={{ padding: '1.25rem', borderBottom: idx < followUps.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--dark-navy)' }}>{fu.customerName}</div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '4px', backgroundColor: fu.status === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)', color: fu.status === 'Completed' ? '#10b981' : '#d97706' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--primary-dark)' }}>{fu.customerName}</div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '4px', backgroundColor: fu.status === 'Completed' ? 'rgba(47, 125, 90, 0.1)' : 'rgba(214, 167, 86, 0.1)', color: fu.status === 'Completed' ? 'var(--success-green)' : 'var(--accent)' }}>
                       {fu.status}
                     </div>
                   </div>
@@ -263,18 +263,18 @@ const EmployeeDashboard: React.FC = () => {
                     <span style={{ fontWeight: 600 }}>{fu.applicationId}</span> — {fu.reason}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--error-red)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                       <Clock size={12} /> {fu.dueTime}
                     </div>
                     {fu.status !== 'Completed' && (
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button style={{ padding: '0.4rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', cursor: 'pointer', color: '#3b82f6' }} title="Call">
+                        <button style={{ padding: '0.4rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--primary)' }} title="Call">
                           <Phone size={14} />
                         </button>
-                        <button style={{ padding: '0.4rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', cursor: 'pointer', color: '#10b981' }} title="WhatsApp">
+                        <button style={{ padding: '0.4rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--success-green)' }} title="WhatsApp">
                           <MessageCircle size={14} />
                         </button>
-                        <button style={{ padding: '0.4rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', cursor: 'pointer', color: '#f59e0b' }} onClick={() => updateFollowUpStatus(fu.id, 'Completed')} title="Mark Completed">
+                        <button style={{ padding: '0.4rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--warning-gold)' }} onClick={() => updateFollowUpStatus(fu.id, 'Completed')} title="Mark Completed">
                           <CheckCircle2 size={14} />
                         </button>
                       </div>
@@ -291,20 +291,20 @@ const EmployeeDashboard: React.FC = () => {
 
           {/* My Work Summary */}
           <div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--dark-navy)', marginBottom: '1rem' }}>My Work Summary</h3>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>My Work Summary</h3>
             <div className="card" style={{ padding: '1.25rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Apps processed this week</span>
-                  <span style={{ fontWeight: 700, color: 'var(--dark-navy)' }}>12</span>
+                  <span style={{ fontWeight: 700, color: 'var(--primary-dark)' }}>12</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Active applications</span>
-                  <span style={{ fontWeight: 700, color: '#f59e0b' }}>{activeApps}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--warning-gold)' }}>{activeApps}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Pending documents</span>
-                  <span style={{ fontWeight: 700, color: '#ef4444' }}>{pendingDocs}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--error-red)' }}>{pendingDocs}</span>
                 </div>
               </div>
             </div>
