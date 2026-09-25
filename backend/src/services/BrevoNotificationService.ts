@@ -165,7 +165,7 @@ export class BrevoNotificationService implements NotificationService {
 
     const { caseData, customer } = result;
 
-    const subject = \`Update on your Building Application (\${caseId.substring(0,8)})\`;
+    const subject = `Update on your Building Application (${caseId.substring(0,8)})`;
     const htmlContent = generateEmailTemplate({
       eyebrow: 'Status Update',
       headline: 'Your Application. Now Moving Forward.',
@@ -194,7 +194,7 @@ export class BrevoNotificationService implements NotificationService {
 
     const { caseData, customer } = result;
 
-    const subject = \`Inspection Scheduled - Application (\${caseId.substring(0,8)})\`;
+    const subject = `Inspection Scheduled - Application (${caseId.substring(0,8)})`;
     const htmlContent = generateEmailTemplate({
       eyebrow: 'Inspection Scheduled',
       headline: 'Site Verification. Ready to Proceed.',
@@ -223,7 +223,7 @@ export class BrevoNotificationService implements NotificationService {
 
     const { caseData, customer } = result;
 
-    const subject = \`Congratulations! Your Application is Approved (\${caseId.substring(0,8)})\`;
+    const subject = `Congratulations! Your Application is Approved (${caseId.substring(0,8)})`;
     const htmlContent = generateEmailTemplate({
       eyebrow: 'Application Approved',
       headline: 'Your Building. Officially Approved.',
@@ -247,7 +247,7 @@ export class BrevoNotificationService implements NotificationService {
   }
 
   async notifyLeadThanks(email: string, name: string): Promise<void> {
-    const subject = \`We received your enquiry - Buildwise\`;
+    const subject = `We received your enquiry - Buildwise`;
     const htmlContent = generateEmailTemplate({
       eyebrow: 'Enquiry Received',
       headline: 'Your Project. Our Priority.',
@@ -265,7 +265,7 @@ export class BrevoNotificationService implements NotificationService {
   }
 
   async notifyUploadLink(email: string, name: string, uploadLink: string): Promise<void> {
-    const subject = \`Document Upload Required - Buildwise\`;
+    const subject = `Document Upload Required - Buildwise`;
     const htmlContent = generateEmailTemplate({
       eyebrow: 'Action Required',
       headline: 'Missing Documents. Upload Needed.',
