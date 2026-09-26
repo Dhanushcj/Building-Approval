@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Search, Phone, Mail, FileText, CheckCircle, FilePlus, XCircle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const CustomerLeads: React.FC = () => {
+const EnquiriesList: React.FC = () => {
   const [leads, setLeads] = useState<any[]>([]);
   const [rejectingLeadId, setRejectingLeadId] = useState<string | null>(null);
   const [rejectionRemarks, setRejectionRemarks] = useState('');
@@ -16,7 +16,7 @@ const CustomerLeads: React.FC = () => {
         if (res.ok) {
           const data = await res.json();
           const formattedLeads = data
-            .filter((lead: any) => lead.type === 'Lead')
+            .filter((lead: any) => lead.type === 'Enquiry')
             .map((lead: any) => ({
               id: lead.id,
               displayId: lead.leadId || lead.id,
@@ -127,8 +127,8 @@ const CustomerLeads: React.FC = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', margin: '0 0 0.5rem 0' }}>Customer Leads</h1>
-          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>View and manage customer leads and applications.</p>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', margin: '0 0 0.5rem 0' }}>Enquiries</h1>
+          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>View and manage customer enquiries and requests.</p>
         </div>
       </div>
 
@@ -235,7 +235,7 @@ const CustomerLeads: React.FC = () => {
                 <tr>
                   <td colSpan={7} style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     <FileText size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-                    <p>No customer leads found.</p>
+                    <p>No enquiries found.</p>
                   </td>
                 </tr>
               )}
@@ -283,7 +283,7 @@ const CustomerLeads: React.FC = () => {
             <button onClick={() => setViewingLead(null)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
               <X size={20} />
             </button>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1.5rem' }}>Lead Details - {viewingLead.displayId}</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1.5rem' }}>Enquiry Details - {viewingLead.displayId}</h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
@@ -342,4 +342,4 @@ const CustomerLeads: React.FC = () => {
   );
 };
 
-export default CustomerLeads;
+export default EnquiriesList;

@@ -50,35 +50,27 @@ const ApplyNow: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, send to backend
-    // Here we save to localStorage to show in admin dashboard
-    const existingLeads = JSON.parse(localStorage.getItem('customerLeads') || '[]');
-    const newLead = {
-      id: `L-${Math.floor(1000 + Math.random() * 9000)}`,
-      ...formData,
-      aadharFile,
-      aadharFileName,
-      buildingPhoto,
-      buildingPhotoName,
-      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      status: 'New'
-    };
     
     try {
-      localStorage.setItem('customerLeads', JSON.stringify([newLead, ...existingLeads]));
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      
+      const payload = {
+        ...formData,
+        type: 'Lead',
+        aadharFile,
+        aadharFileName,
+        buildingPhoto,
+        buildingPhotoName
+      };
 
-      // Send Thanks Email via Backend API
-      if (formData.email) {
-        try {
-          const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
-          await fetch(`${apiUrl}/notifications/lead-thanks`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: formData.email, name: formData.name })
-          });
-        } catch (mailError) {
-          console.error("Failed to send thanks email", mailError);
-        }
+      const response = await fetch(`${apiUrl}/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit application');
       }
 
       toast.success('Thank you! Your application details have been submitted. Our team will contact you shortly.');

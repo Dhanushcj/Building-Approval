@@ -35,7 +35,7 @@ const Landing: React.FC = () => {
       const response = await fetch(`${apiUrl}/leads`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, type: 'Enquiry' })
       });
       
       if (!response.ok) {

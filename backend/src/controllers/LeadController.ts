@@ -6,20 +6,33 @@ const notificationService = new BrevoNotificationService();
 
 export const createLead = async (req: Request, res: Response) => {
   try {
-    const { name, phone, email, location } = req.body;
+    const { name, phone, email, location, type = 'Enquiry', projectType, propertyDetails, notes, aadharFile, aadharFileName, buildingPhoto, buildingPhotoName } = req.body;
     
     if (!name || !phone) {
       return res.status(400).json({ error: 'Name and phone are required' });
     }
 
+    // Generate leadId based on type
+    const count = await prisma.lead.count({ where: { type } });
+    const prefix = type === 'Lead' ? 'LD' : 'EQ';
+    const formattedCount = String(count + 1).padStart(3, '0');
+    const leadId = `${prefix}-${formattedCount}`;
+
     const newLead = await prisma.lead.create({
       data: {
+        leadId,
+        type,
         name,
         phone,
         email,
         location,
-        projectType: 'General Enquiry',
-        propertyDetails: 'General Enquiry via Popup',
+        projectType: projectType || 'General Enquiry',
+        propertyDetails: propertyDetails || 'General Enquiry via Popup',
+        aadharFile,
+        aadharFileName,
+        buildingPhoto,
+        buildingPhotoName,
+        notes,
         status: 'New'
       }
     });

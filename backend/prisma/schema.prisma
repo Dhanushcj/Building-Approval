@@ -164,12 +164,18 @@ model Fee {
 
 model Lead {
   id String @id @default(auto()) @map("_id") @db.ObjectId
+  leadId          String?
+  type            String    @default("Enquiry")
   name            String
   phone           String
   email           String?
   location        String?
   projectType     String?
   propertyDetails String?
+  aadharFile      String?
+  aadharFileName  String?
+  buildingPhoto   String?
+  buildingPhotoName String?
   status          String    @default("New")
   assignedTo      String?
   notes           String?

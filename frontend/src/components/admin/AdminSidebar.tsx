@@ -2,13 +2,14 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Building, 
-  CreditCard, PhoneCall, Bell, BarChart3, 
-  UserCog, Settings, LogOut, UserCheck, CheckSquare
+  CreditCard, PhoneCall, BarChart3, 
+  UserCog, Settings, LogOut, CheckSquare, Users
 } from 'lucide-react';
 
 const menuItems = [
   { title: 'Dashboard', icon: <LayoutDashboard size={20} strokeWidth={1.5} />, path: '/admin' },
-  { title: 'Enquiries', icon: <PhoneCall size={20} strokeWidth={1.5} />, path: '/admin/leads' },
+  { title: 'Customer Leads', icon: <Users size={20} strokeWidth={1.5} />, path: '/admin/leads' },
+  { title: 'Enquiries', icon: <PhoneCall size={20} strokeWidth={1.5} />, path: '/admin/enquiries' },
   { title: 'Applications', icon: <FileText size={20} strokeWidth={1.5} />, path: '/admin/applications' },
   { title: 'Payments', icon: <CreditCard size={20} strokeWidth={1.5} />, path: '/admin/payments' },
   { title: 'Attendance', icon: <CheckSquare size={20} strokeWidth={1.5} />, path: '/admin/attendance' },

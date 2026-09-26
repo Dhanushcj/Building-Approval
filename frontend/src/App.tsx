@@ -24,6 +24,7 @@ import AttendanceList from './pages/admin/AttendanceList';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import FollowUpsList from './pages/admin/FollowUpsList';
 import Settings from './pages/admin/Settings';
+import EnquiriesList from './pages/admin/EnquiriesList';
 
 function App() {
   useEffect(() => {
@@ -139,6 +140,7 @@ function App() {
             {/* Customers Module */}
             <Route path="customers" element={<CustomersList />} />
             <Route path="leads" element={<CustomerLeads />} />
+            <Route path="enquiries" element={<EnquiriesList />} />
             
             {/* Staff Module */}
             <Route path="staff" element={<StaffList />} />
