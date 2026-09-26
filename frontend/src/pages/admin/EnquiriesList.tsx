@@ -28,7 +28,11 @@ const EnquiriesList: React.FC = () => {
               propertyDetails: lead.propertyDetails || 'General Enquiry via Popup',
               date: new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
               status: lead.status,
-              assignedTo: lead.assignedTo || ''
+              assignedTo: lead.assignedTo || '',
+              aadharFile: lead.aadharFile,
+              aadharFileName: lead.aadharFileName,
+              buildingPhoto: lead.buildingPhoto,
+              buildingPhotoName: lead.buildingPhotoName
             }));
           setLeads(formattedLeads);
         } else {
@@ -90,37 +94,51 @@ const EnquiriesList: React.FC = () => {
     
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      
+      // Mark lead status
       await fetch(`${apiUrl}/leads/${lead.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Application Created' })
       });
+
+      // 2. Create property
+      const propRes = await fetch(`${apiUrl}/properties`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          owner_name: lead.name,
+          owner_phone: lead.phone,
+          owner_email: lead.email,
+          village: lead.location || 'Unknown',
+          taluk: 'Unknown',
+          survey_number: lead.propertyDetails?.substring(0, 50) || 'Unknown',
+          jurisdiction: 'HOSUR_CORPORATION'
+        })
+      });
+
+      if (!propRes.ok) throw new Error('Failed to create property');
+      const property = await propRes.json();
+
+      // 3. Create case
+      const caseRes = await fetch(`${apiUrl}/cases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          property_id: property.id,
+          approval_type: 'BUILDING_PLAN',
+          status: 'INTAKE'
+        })
+      });
+
+      if (!caseRes.ok) throw new Error('Failed to create case');
+      const newCase = await caseRes.json();
+
+      toast.success(`Application ${newCase.application_number || newCase.id} created successfully!`);
     } catch (e) {
       console.error(e);
+      toast.error('Failed to create application');
     }
-
-    // 2. Create Application
-    const newAppId = `BPA-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    const storedApps = localStorage.getItem('recentApplications');
-    const recentApps = storedApps ? JSON.parse(storedApps) : [];
-    
-    const newApp = {
-      id: newAppId,
-      customer: lead.name,
-      mobile: lead.phone,
-      type: lead.projectType,
-      appType: 'Building Approval',
-      location: lead.location,
-      status: 'New',
-      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      staff: 'Unassigned',
-      leadId: lead.id
-    };
-    
-    localStorage.setItem('recentApplications', JSON.stringify([newApp, ...recentApps]));
-    window.dispatchEvent(new Event('storage'));
-    
-    toast.success(`Application ${newAppId} created successfully!`);
   };
 
   return (
