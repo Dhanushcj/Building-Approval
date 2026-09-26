@@ -4,15 +4,28 @@ import { ArrowLeft, Save, User, Building, FileText, Upload } from 'lucide-react'
 import { recentApplications } from '../../data/mockData';
 import toast from 'react-hot-toast';
 
-const getStaffList = () => {
-  const saved = localStorage.getItem('staffMembers');
-  return saved ? JSON.parse(saved).filter((s: any) => s.status === 'Active') : [];
-};
+
 
 const NewApplication: React.FC = () => {
   const navigate = useNavigate();
-  const staffList = getStaffList();
-  
+  const [staffList, setStaffList] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+        const res = await fetch(`${apiUrl}/users`);
+        if (res.ok) {
+          const data = await res.json();
+          setStaffList(data.filter((s: any) => s.status === 'Active' && s.role === 'STAFF'));
+        }
+      } catch (e) {
+        console.error('Failed to fetch staff list', e);
+      }
+    };
+    fetchStaff();
+  }, []);
+
   const loggedInUser = localStorage.getItem('loggedInUser') || 'Admin';
   const isEmployee = loggedInUser !== 'Admin';
 
@@ -63,8 +76,15 @@ const NewApplication: React.FC = () => {
             jurisdiction: 'DTCP'
           }
         }
-        // assigned_staff_id omitted for now since frontend uses string names instead of IDs
+        
       };
+
+      if (formData.staff) {
+        const assignedStaffObj = staffList.find(s => s.name === formData.staff);
+        if (assignedStaffObj) {
+          (payload as any).assigned_staff_id = assignedStaffObj.id;
+        }
+      }
 
       if (editMode && existingApp) {
         toast.error("Editing existing applications via API is not implemented yet.");

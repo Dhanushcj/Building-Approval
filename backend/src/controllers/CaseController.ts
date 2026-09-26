@@ -4,6 +4,7 @@ import { caseStateService } from '../services/CaseStateService';
 
 export class CaseController {
   async createCase(req: Request, res: Response) {
+    console.log("createCase hit with body:", req.body);
     try {
       const data = req.body;
       
@@ -23,6 +24,7 @@ export class CaseController {
       
       const formattedCount = String(count + 1).padStart(3, '0');
       const application_number = `APP-${yy}${mm}${dd}-${formattedCount}`;
+      console.log("Generated application_number:", application_number);
       
       const newCase = await prisma.case.create({ 
         data: {
@@ -30,8 +32,10 @@ export class CaseController {
           application_number
         } 
       });
+      console.log("Created case:", newCase);
       res.status(201).json(newCase);
     } catch (error: any) {
+      console.error("Error creating case:", error);
       res.status(400).json({ error: error.message });
     }
   }
