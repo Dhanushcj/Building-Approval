@@ -392,31 +392,46 @@ const ApplicationDetail: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  const appData = recentApplications.find(a => a.id === id);
+  const [app, setApp] = useState<any>(null);
 
-  // Mock application data based on ID
-  const app = {
-    id: id || 'BA-2026-00124',
-    status: appData?.status || 'Gov Verification',
-    priority: 'Medium',
-    customer: appData?.customer || 'Ramesh Kumar',
-    mobile: appData?.mobile || '',
-    email: appData?.email || '',
-    location: appData?.location || 'Hosur, Tamil Nadu',
-    address: appData?.address || 'Hosur, Tamil Nadu',
-    propertyType: appData?.type || 'Residential',
-    buildingType: 'Individual Villa',
-    surveyNo: appData?.surveyNo || '124/3B',
-    plotArea: appData?.plotArea ? `${appData.plotArea} sq.ft` : '2400 sq.ft',
-    builtUpArea: appData?.builtUpArea ? `${appData.builtUpArea} sq.ft` : '1800 sq.ft',
-    floors: appData?.floors || 'G+1',
-    staff: appData?.staff || 'Unassigned',
-    createdAt: appData?.date || '12 Sep 2026',
-    updatedAt: '20 Sep 2026',
-    paymentStatus: appData?.payment || 'Paid',
-    amount: '₹25,000',
-    appType: appData?.appType || 'Building Plan Approval'
-  };
+  useEffect(() => {
+    const fetchCase = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+        const res = await fetch(`${apiUrl}/cases/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setApp({
+            id: data.id,
+            status: data.status,
+            priority: 'Medium',
+            customer: data.property?.owner_name || 'Unknown',
+            mobile: data.property?.owner_phone || '',
+            email: '',
+            location: data.property?.village || data.property?.jurisdiction || '',
+            address: data.property?.address || '',
+            propertyType: 'Residential',
+            buildingType: 'Individual Villa',
+            surveyNo: data.property?.survey_number || '',
+            plotArea: 'N/A',
+            builtUpArea: 'N/A',
+            floors: 'N/A',
+            staff: data.assigned_staff?.name || 'Unassigned',
+            createdAt: new Date(data.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+            updatedAt: new Date(data.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+            paymentStatus: 'Pending',
+            amount: '₹0',
+            appType: data.approval_type
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch case details:", err);
+      }
+    };
+    fetchCase();
+  }, [id]);
+
+  if (!app) return <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading application details...</div>;
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FileText size={16} /> },

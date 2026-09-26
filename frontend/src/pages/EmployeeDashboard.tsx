@@ -23,23 +23,34 @@ const EmployeeDashboard: React.FC = () => {
   const [applications, setApplications] = useState<any[]>([]);
   const [followUps, setFollowUps] = useState<EmployeeFollowUp[]>([]);
 
-  const loadData = () => {
-    // Get Applications
-    const storedApps = localStorage.getItem('recentApplications');
-    if (storedApps) {
-      const allApps = JSON.parse(storedApps);
-      // Filter for applications assigned to this employee
-      const assignedApps = allApps.filter((app: any) => app.assignedTo === employeeName || app.assignedStaff === employeeName);
-      setApplications(assignedApps);
+  const fetchCases = async (user: string) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      const res = await fetch(`${apiUrl}/cases`);
+      if (res.ok) {
+        const casesData = await res.json();
+        const mappedApps = casesData.map((c: any) => ({
+          id: c.id,
+          customer: c.property?.owner_name || 'Unknown',
+          mobile: c.property?.owner_phone || '',
+          location: c.property?.jurisdiction || c.property?.village || '',
+          type: 'Building',
+          appType: c.approval_type,
+          status: c.status,
+          assignedTo: c.assigned_staff?.name || 'Unassigned',
+          date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        })).filter((app: any) => app.assignedTo === user);
+        
+        setApplications(mappedApps);
+      }
+    } catch (err) {
+      console.error("Failed to fetch cases for employee:", err);
     }
-
-    // Get Followups
-    setFollowUps(getEmployeeFollowUps(employeeName));
   };
 
   useEffect(() => {
-    const user = localStorage.getItem('loggedInUser');
-    if (user && user !== 'Admin') {
+    const user = localStorage.getItem('loggedInUser') || 'Employee';
+    if (user !== 'Admin') {
       setEmployeeName(user);
       
       const savedStaff = localStorage.getItem('staffMembers');
@@ -52,9 +63,11 @@ const EmployeeDashboard: React.FC = () => {
       loadTodayAttendance(user);
     }
     
-    loadData();
-    window.addEventListener('storage', loadData);
-    return () => window.removeEventListener('storage', loadData);
+    fetchCases(user);
+    setFollowUps(getEmployeeFollowUps(user));
+
+    const interval = setInterval(() => fetchCases(user), 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadTodayAttendance = (user: string) => {

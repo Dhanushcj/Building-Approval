@@ -36,70 +36,60 @@ const NewApplication: React.FC = () => {
     staff: existingApp?.staff && existingApp.staff !== 'Unassigned' ? existingApp.staff : (isEmployee ? loggedInUser : '')
   });
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.customerName || !formData.mobile || !formData.propertyType || !formData.location || !formData.appType) {
-      toast.success("Please fill all required fields before saving.");
+      toast.error("Please fill all required fields before saving.");
       return;
     }
 
-    if (editMode && existingApp) {
-      const appIdx = recentApplications.findIndex(a => a.id === existingApp.id);
-      if (appIdx !== -1) {
-        recentApplications[appIdx] = {
-          ...recentApplications[appIdx],
-          customer: formData.customerName,
-          mobile: formData.mobile,
-          email: formData.email,
-          aadhar: formData.aadhar,
-          location: formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
-          address: formData.address,
-          type: formData.propertyType.charAt(0).toUpperCase() + formData.propertyType.slice(1),
-          appType: formData.appType === 'building' ? 'Building Approval' : formData.appType === 'plan' ? 'Plan Approval' : 'Occupancy Cert',
-          staff: formData.staff || 'Unassigned',
-          surveyNo: formData.surveyNo,
-          plotArea: formData.plotArea,
-          builtUpArea: formData.builtUpArea,
-          floors: formData.floors
-        };
-        localStorage.setItem('recentApplications', JSON.stringify(recentApplications));
-        window.dispatchEvent(new Event('storage'));
-        navigate(isEmployee ? `/employee/applications/${existingApp.id}` : `/admin/applications/${existingApp.id}`);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      
+      const payload = {
+        approval_type: formData.appType === 'building' ? 'BUILDING_PLAN_APPROVAL' : 
+                       formData.appType === 'plan' ? 'LAYOUT_APPROVAL' : 
+                       formData.appType === 'occupancy' ? 'COMPLETION_CERTIFICATE' : 'BUILDING_PLAN_APPROVAL',
+        status: 'INTAKE',
+        property: {
+          create: {
+            owner_name: formData.customerName,
+            owner_phone: formData.mobile,
+            address: formData.address || 'Not provided',
+            village: formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
+            taluk: formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
+            survey_number: formData.surveyNo || 'N/A',
+            jurisdiction: 'DTCP'
+          }
+        }
+        // assigned_staff_id omitted for now since frontend uses string names instead of IDs
+      };
+
+      if (editMode && existingApp) {
+        toast.error("Editing existing applications via API is not implemented yet.");
         return;
       }
-    }
 
-    const newId = `BA-2026-00${129 + recentApplications.length}`;
-    
-    // Create new application object and push to mock array
-    recentApplications.unshift({
-      id: newId,
-      customer: formData.customerName,
-      mobile: formData.mobile,
-      email: formData.email,
-      aadhar: formData.aadhar,
-      location: formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
-      address: formData.address,
-      type: formData.propertyType.charAt(0).toUpperCase() + formData.propertyType.slice(1),
-      appType: formData.appType === 'building' ? 'Building Approval' : formData.appType === 'plan' ? 'Plan Approval' : 'Occupancy Cert',
-      staff: formData.staff || 'Unassigned',
-      status: 'New',
-      payment: 'Pending',
-      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      surveyNo: formData.surveyNo,
-      plotArea: formData.plotArea,
-      builtUpArea: formData.builtUpArea,
-      floors: formData.floors
-    });
-    
-    // Persist to local storage
-    localStorage.setItem('recentApplications', JSON.stringify(recentApplications));
-
-    if (isEmployee) {
-      navigate('/employee/applications');
-    } else {
-      navigate('/admin/applications');
+      const res = await fetch(`${apiUrl}/cases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!res.ok) {
+        throw new Error("Failed to save application");
+      }
+      
+      toast.success("Application created successfully!");
+      if (isEmployee) {
+        navigate('/employee/applications');
+      } else {
+        navigate('/admin/applications');
+      }
+    } catch (err) {
+      console.error("Save error:", err);
+      toast.error("An error occurred while saving the application.");
     }
   };
 

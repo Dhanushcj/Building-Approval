@@ -2,32 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { Users, FileText, AlertTriangle, Building, CheckCircle2 } from 'lucide-react';
 import { getApplicationStatus } from '../../utils/statusHelper';
 
-const getKpiData = () => {
-  const stored = localStorage.getItem('recentApplications');
-  const apps: any[] = stored ? JSON.parse(stored) : [];
-
-  const withStatuses = apps.map(app => ({
-    ...app,
-    status: getApplicationStatus(app.id, app.status)
-  }));
-
-  const total = withStatuses.length;
-  const active = withStatuses.filter(a => !['Approved', 'Rejected'].includes(a.status)).length;
-  const docsPending = withStatuses.filter(a => ['Documents Pending', 'Action Required', 'New'].includes(a.status)).length;
-  const govReview = withStatuses.filter(a => ['Gov Verification', 'Site Inspection', 'Submitted', 'Under Review'].includes(a.status)).length;
-  const approved = withStatuses.filter(a => a.status === 'Approved').length;
-
-  return { total, active, docsPending, govReview, approved };
-};
-
 const KpiCards: React.FC = () => {
-  const [kpi, setKpi] = useState(getKpiData());
+  const [kpi, setKpi] = useState({ total: 0, active: 0, docsPending: 0, govReview: 0, approved: 0 });
 
   useEffect(() => {
-    const update = () => setKpi(getKpiData());
-    update();
-    window.addEventListener('storage', update);
-    return () => window.removeEventListener('storage', update);
+    const fetchCases = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+        const res = await fetch(`${apiUrl}/cases`);
+        if (res.ok) {
+          const apps = await res.json();
+          const total = apps.length;
+          const active = apps.filter((a: any) => !['APPROVED', 'CLOSED'].includes(a.status)).length;
+          const docsPending = apps.filter((a: any) => ['DOCUMENT_COLLECTION', 'ACTION_NEEDED', 'INTAKE'].includes(a.status)).length;
+          const govReview = apps.filter((a: any) => ['SUBMITTED', 'SCRUTINY', 'INSPECTION_SCHEDULED', 'INSPECTION_DONE'].includes(a.status)).length;
+          const approved = apps.filter((a: any) => a.status === 'APPROVED').length;
+          setKpi({ total, active, docsPending, govReview, approved });
+        }
+      } catch (err) {
+        console.error("Failed to fetch kpi data:", err);
+      }
+    };
+
+    fetchCases();
+    const interval = setInterval(fetchCases, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const cards = [

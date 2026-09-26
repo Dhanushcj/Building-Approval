@@ -12,19 +12,37 @@ const ApplicationsList: React.FC = () => {
   const [filterValues, setFilterValues] = React.useState<Record<string, string>>({});
 
   React.useEffect(() => {
-    const loadAndMapApplications = () => {
-      const storedApps = localStorage.getItem('recentApplications');
-      const appsToUse = storedApps ? JSON.parse(storedApps) : recentApplications;
-      
-      setApplications(appsToUse.map((app: any) => ({
-        ...app,
-        status: getApplicationStatus(app.id, app.status)
-      })));
+    const fetchCases = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+        const res = await fetch(`${apiUrl}/cases`);
+        if (res.ok) {
+          const casesData = await res.json();
+          const mappedApps = casesData.map((c: any) => ({
+            id: c.id,
+            customer: c.property?.owner_name || 'Unknown',
+            mobile: c.property?.owner_phone || '',
+            location: c.property?.jurisdiction || c.property?.village || '',
+            type: 'Building', // Frontend expects something like 'Residential'
+            appType: c.approval_type,
+            status: c.status,
+            staff: c.assigned_staff?.name || 'Unassigned',
+            date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+          }));
+          setApplications(mappedApps);
+        } else {
+          setApplications([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch cases:", err);
+        setApplications([]);
+      }
     };
     
-    loadAndMapApplications();
-    window.addEventListener('storage', loadAndMapApplications);
-    return () => window.removeEventListener('storage', loadAndMapApplications);
+    fetchCases();
+    // Refresh periodically if desired or just once on mount
+    const interval = setInterval(fetchCases, 10000);
+    return () => clearInterval(interval);
   }, []);
   const navigate = useNavigate();
 
