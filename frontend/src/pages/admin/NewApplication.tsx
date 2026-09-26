@@ -69,11 +69,16 @@ const NewApplication: React.FC = () => {
           create: {
             owner_name: formData.customerName,
             owner_phone: formData.mobile,
+            owner_email: formData.email || null,
             address: formData.address || 'Not provided',
             village: formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
             taluk: formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
             survey_number: formData.surveyNo || 'N/A',
-            jurisdiction: 'DTCP'
+            jurisdiction: 'DTCP',
+            plot_area: formData.plotArea || null,
+            built_up_area: formData.builtUpArea || null,
+            floors: formData.floors || null,
+            property_type: formData.propertyType || null
           }
         }
         

@@ -80,11 +80,16 @@ model Property {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   owner_name    String
   owner_phone   String
+  owner_email   String?
   address       String
   village       String
   taluk         String
   survey_number String
   jurisdiction  Jurisdiction
+  plot_area     String?
+  built_up_area String?
+  floors        String?
+  property_type String?
   created_at    DateTime     @default(now())
   updated_at    DateTime     @updatedAt
 
