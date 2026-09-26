@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Save, User, Building, FileText, Upload } from 'lucide-react';
-import { recentApplications } from '../../data/mockData';
+
 import toast from 'react-hot-toast';
 
 
