@@ -6,7 +6,30 @@ export class CaseController {
   async createCase(req: Request, res: Response) {
     try {
       const data = req.body;
-      const newCase = await prisma.case.create({ data });
+      
+      const now = new Date();
+      const yy = String(now.getFullYear()).slice(-2);
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const count = await prisma.case.count({
+        where: {
+          created_at: {
+            gte: startOfDay,
+          }
+        }
+      });
+      
+      const formattedCount = String(count + 1).padStart(3, '0');
+      const application_number = `APP-${yy}${mm}${dd}-${formattedCount}`;
+      
+      const newCase = await prisma.case.create({ 
+        data: {
+          ...data,
+          application_number
+        } 
+      });
       res.status(201).json(newCase);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -16,8 +39,10 @@ export class CaseController {
   async getCase(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const caseData = await prisma.case.findUnique({
-        where: { id: id as string },
+      const caseData = await prisma.case.findFirst({
+        where: id.startsWith('APP-') 
+          ? { application_number: id } 
+          : { id },
         include: {
           documents: true,
           fees: true,
@@ -58,9 +83,16 @@ export class CaseController {
       const { status, note } = req.body;
       const userId = (req as any).user.id; // From auth middleware
       
-      await caseStateService.changeStatus(id as string, status, userId, note);
+      let caseIdToUpdate = id;
+      if (id.startsWith('APP-')) {
+        const found = await prisma.case.findFirst({ where: { application_number: id } });
+        if (!found) return res.status(404).json({ error: 'Case not found' });
+        caseIdToUpdate = found.id;
+      }
       
-      const updatedCase = await prisma.case.findUnique({ where: { id: id as string } });
+      await caseStateService.changeStatus(caseIdToUpdate, status, userId, note);
+      
+      const updatedCase = await prisma.case.findUnique({ where: { id: caseIdToUpdate } });
       res.json(updatedCase);
     } catch (error: any) {
       res.status(400).json({ error: error.message });

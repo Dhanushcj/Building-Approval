@@ -19,7 +19,8 @@ const ApplicationsList: React.FC = () => {
         if (res.ok) {
           const casesData = await res.json();
           const mappedApps = casesData.map((c: any) => ({
-            id: c.id,
+            id: c.application_number || c.id,
+            mongoId: c.id,
             customer: c.property?.owner_name || 'Unknown',
             mobile: c.property?.owner_phone || '',
             location: c.property?.jurisdiction || c.property?.village || '',

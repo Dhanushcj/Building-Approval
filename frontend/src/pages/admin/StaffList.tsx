@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, UserCog, X, Save } from 'lucide-react';
 
 interface StaffMember {
   id: string;
+  staffId?: string;
   name: string;
   mobile: string;
   email: string;
@@ -28,13 +29,19 @@ const StaffList: React.FC = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('staffMembers');
-    if (saved) setStaffMembers(JSON.parse(saved));
+    fetchStaff();
   }, []);
 
-  const save = (list: StaffMember[]) => {
-    setStaffMembers(list);
-    localStorage.setItem('staffMembers', JSON.stringify(list));
+  const fetchStaff = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:10000/api'}/users`);
+      if (res.ok) {
+        const data = await res.json();
+        setStaffMembers(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch staff members');
+    }
   };
 
   const openAdd = () => {
@@ -63,30 +70,59 @@ const StaffList: React.FC = () => {
     return e;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const e = validate();
     if (Object.keys(e).length > 0) { setErrors(e); return; }
 
-    if (editingId) {
-      save(staffMembers.map(s => s.id === editingId ? { ...s, ...form } : s));
-    } else {
-      const newStaff: StaffMember = {
-        ...form,
-        id: `STF-${Date.now()}`,
-        assigned: 0,
-      };
-      save([...staffMembers, newStaff]);
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:10000/api';
+
+    try {
+      if (editingId) {
+        const res = await fetch(`${apiUrl}/users/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form)
+        });
+        if (res.ok) fetchStaff();
+      } else {
+        const res = await fetch(`${apiUrl}/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...form, role: 'STAFF' })
+        });
+        if (res.ok) fetchStaff();
+      }
+    } catch (error) {
+      console.error('Failed to save staff member');
     }
+    
     setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    save(staffMembers.filter(s => s.id !== id));
+  const handleDelete = async (id: string) => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:10000/api';
+    try {
+      const res = await fetch(`${apiUrl}/users/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchStaff();
+    } catch (error) {
+      console.error('Failed to delete staff member');
+    }
     setDeleteId(null);
   };
 
-  const toggleStatus = (id: string) => {
-    save(staffMembers.map(s => s.id === id ? { ...s, status: s.status === 'Active' ? 'Inactive' : 'Active' } : s));
+  const toggleStatus = async (staff: StaffMember) => {
+    const newStatus = staff.status === 'Active' ? 'Inactive' : 'Active';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:10000/api';
+    try {
+      const res = await fetch(`${apiUrl}/users/${staff.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) fetchStaff();
+    } catch (error) {
+      console.error('Failed to update status');
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -141,7 +177,7 @@ const StaffList: React.FC = () => {
                         </div>
                         <div>
                           <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>{staff.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{staff.id}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{staff.staffId || staff.id}</div>
                         </div>
                       </div>
                     </td>
@@ -154,7 +190,7 @@ const StaffList: React.FC = () => {
                     </td>
                     <td style={{ padding: '1rem 1.5rem' }}>
                       <button
-                        onClick={() => toggleStatus(staff.id)}
+                        onClick={() => toggleStatus(staff)}
                         style={{
                           padding: '0.25rem 0.75rem',
                           borderRadius: '1rem',

@@ -8,6 +8,7 @@ import templateRoutes from './template.routes';
 import feeRoutes from './fee.routes';
 import dashboardRoutes from './dashboard.routes';
 import leadRoutes from './lead.routes';
+import userRoutes from './user.routes';
 import { authController } from '../controllers/AuthController';
 
 const router = Router();
@@ -23,5 +24,6 @@ router.use('/fees', feeRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/leads', leadRoutes);
+router.use('/users', userRoutes);
 
 export default router;
