@@ -42,7 +42,7 @@ export class CaseController {
 
   async getCase(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const caseData = await prisma.case.findFirst({
         where: id.startsWith('APP-') 
           ? { application_number: id } 
@@ -83,7 +83,7 @@ export class CaseController {
 
   async updateStatus(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { status, note } = req.body;
       const userId = (req as any).user.id; // From auth middleware
       
