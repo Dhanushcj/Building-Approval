@@ -8,10 +8,10 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Admin login
+    // Admin login (hardcoded for now as it seems there is no admin in DB)
     if (email === 'admin@test.com' || email === 'admin') {
       if (password === 'admin123') {
         localStorage.setItem('loggedInUser', 'Admin');
@@ -23,26 +23,33 @@ const Login: React.FC = () => {
       }
     }
 
+    // Dynamic Staff Login via Backend
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      const response = await fetch(`${apiUrl}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: email, password })
+      });
 
-    // Dynamic Staff Login
-    const savedStaff = localStorage.getItem('staffMembers');
-    if (savedStaff) {
-      const staffList = JSON.parse(savedStaff);
-      const staff = staffList.find((s: any) => s.mobile === email || s.email === email);
-      
-      if (staff) {
-        if (staff.password === password) {
-          localStorage.setItem('loggedInUser', staff.name);
-          navigate('/employee');
-          return;
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('loggedInUser', data.user.name);
+        // Assuming non-admin users go to /employee
+        if (data.user.role === 'ADMIN') {
+          navigate('/admin');
         } else {
-          toast.error('Invalid password');
-          return;
+          navigate('/employee');
         }
+      } else {
+        const errData = await response.json();
+        toast.error(errData.error || 'User not found or invalid credentials.');
       }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('An error occurred during login. Please try again later.');
     }
-
-    toast.success('User not found. Please check your credentials.');
   };
 
   return (
