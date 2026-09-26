@@ -52,7 +52,7 @@ export const getLeads = async (req: Request, res: Response) => {
 
 export const updateLeadStatus = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status, assignedTo } = req.body;
     
     const lead = await prisma.lead.update({
