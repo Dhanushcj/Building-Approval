@@ -75,7 +75,7 @@ export class CaseController {
             ? { property: { jurisdiction: jurisdiction as any } }
             : {}),
         },
-        include: { property: true },
+        include: { property: true, assigned_staff: true },
       });
       res.json(cases);
     } catch (error: any) {

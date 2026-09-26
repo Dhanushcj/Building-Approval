@@ -25,6 +25,7 @@ import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import FollowUpsList from './pages/admin/FollowUpsList';
 import Settings from './pages/admin/Settings';
 import EnquiriesList from './pages/admin/EnquiriesList';
+import Reports from './pages/admin/Reports';
 
 function App() {
   useEffect(() => {
@@ -154,7 +155,7 @@ function App() {
             <Route path="submissions/*" element={<div style={{padding:'2rem'}}><h2>Submissions Module</h2><p>Coming soon...</p></div>} />
             <Route path="tasks/*" element={<div style={{padding:'2rem'}}><h2>Tasks Module</h2><p>Coming soon...</p></div>} />
             <Route path="followups" element={<FollowUpsList />} />
-            <Route path="reports/*" element={<div style={{padding:'2rem'}}><h2>Reports Module</h2><p>Coming soon...</p></div>} />
+            <Route path="reports/*" element={<Reports />} />
             <Route path="settings/*" element={<Settings />} />
           </Route>
           {/* Employee Layout */}

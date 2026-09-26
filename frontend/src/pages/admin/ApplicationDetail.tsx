@@ -442,205 +442,232 @@ const ApplicationDetail: React.FC = () => {
     switch(activeTab) {
       case 'overview':
         return (
-          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-            {isRejected && (
-              <div style={{ gridColumn: '1 / -1', padding: '1rem', backgroundColor: 'rgba(185, 74, 72, 0.1)', border: '1px solid var(--error-red)', borderRadius: '0.5rem', color: 'var(--error-red)' }}>
-                <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}><X size={16} /> Application Rejected</strong>
-                <p style={{ margin: 0, fontSize: '0.875rem' }}><strong>Reason:</strong> {rejectionNote || 'No reason provided.'}</p>
-              </div>
-            )}
-            {/* Application Info */}
-            <div className="card">
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <FileText size={18} color="var(--primary)" /> Application Information
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Application Type</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.appType}</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-start' }}>
+            {/* Main Stage (Left Column) - Customer & Property */}
+            <div style={{ flex: '1 1 60%', minWidth: '320px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {isRejected && (
+                <div style={{ padding: '1rem', backgroundColor: 'rgba(185, 74, 72, 0.1)', border: '1px solid var(--error-red)', borderRadius: '0.5rem', color: 'var(--error-red)' }}>
+                  <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}><X size={16} /> Application Rejected</strong>
+                  <p style={{ margin: 0, fontSize: '0.875rem' }}><strong>Reason:</strong> {rejectionNote || 'No reason provided.'}</p>
                 </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Building Type</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.buildingType}</div>
+              )}
+
+              {/* Customer Info */}
+              <div style={{ backgroundColor: 'white', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', border: '1px solid var(--border-color)', borderTop: '4px solid #0ea5e9', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '0.75rem 1rem', backgroundColor: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '0.5rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                    <User size={14} />
+                  </div>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', margin: 0 }}>Customer Information</h3>
                 </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Created Date</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.createdAt}</div>
-                </div>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Assigned Staff</div>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <select
-                      value={assignedStaff}
-                      onChange={e => {
-                        const val = e.target.value;
-                        setAssignedStaff(val);
-                        localStorage.setItem(`assignedStaff_${id}`, val);
-                        const appIdx = recentApplications.findIndex(a => a.id === id);
-                        if (appIdx !== -1) {
-                          recentApplications[appIdx].staff = val || 'Unassigned';
-                          localStorage.setItem('recentApplications', JSON.stringify(recentApplications));
-                        }
-                      }}
-                      style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', fontWeight: 500, color: assignedStaff ? 'var(--primary)' : 'var(--text-secondary)', outline: 'none', backgroundColor: 'var(--bg-surface)', cursor: 'pointer', minWidth: '200px' }}
-                    >
-                      <option value="">— Select Staff —</option>
-                      {(() => {
-                        const staffSaved = localStorage.getItem('staffMembers');
-                        const staffList: any[] = staffSaved ? JSON.parse(staffSaved).filter((s: any) => s.status === 'Active') : [];
-                        return staffList.length > 0
-                          ? staffList.map((s: any) => <option key={s.id} value={s.name}>{s.name} — {s.role}</option>)
-                          : <option value="" disabled>No staff added yet. Add staff in Staff & Users.</option>;
-                      })()}
-                    </select>
-                    {assignedStaff && (
-                      <span style={{ fontSize: '0.75rem', color: 'var(--success-green)', fontWeight: 600 }}>✓ Assigned</span>
-                    )}
+                <div style={{ padding: '1rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', flex: 1 }}>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Name</div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>{app.customer}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Mobile</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.mobile}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Email</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.email}</div>
                   </div>
                 </div>
-                {workflowStages[3].status === 'Completed' && (
-                  <div style={{ gridColumn: 'span 2', marginTop: '1rem', padding: '1.25rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '0.75rem', border: '1px dashed var(--primary)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    
-                    {/* Govt Tracking Number */}
-                    <div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Govt. Tracking Number</div>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <input 
-                          type="text" 
-                          value={govtTrackingNumber} 
-                          onChange={e => setGovtTrackingNumber(e.target.value)} 
-                          placeholder="Enter tracking ID..." 
-                          style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', outline: 'none', fontSize: '0.875rem' }} 
-                        />
-                        <button 
-                          onClick={() => {
-                            localStorage.setItem(`tracking_${id}`, govtTrackingNumber);
-                            window.dispatchEvent(new Event('storage'));
-                          }}
-                          className="btn-primary" 
-                          style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '0.375rem', whiteSpace: 'nowrap', flexShrink: 0 }}
-                        >
-                          Save
-                        </button>
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.375rem' }}>Entering this will mark Government Submission as Completed.</div>
-                    </div>
+              </div>
 
-                    {/* Application Receipt - File Upload */}
-                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Application Receipt</div>
-                      <input
-                        type="file"
-                        ref={receiptInputRef}
-                        accept="image/*,application/pdf"
-                        style={{ display: 'none' }}
+            </div>
+
+            {/* Sidebar (Right Column) - Application Actions */}
+            <div style={{ flex: '1 1 30%', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* Application Info */}
+              <div style={{ backgroundColor: 'white', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', border: '1px solid var(--border-color)', borderTop: '4px solid var(--primary)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '0.75rem 1rem', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '0.5rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                    <FileText size={14} />
+                  </div>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', margin: 0 }}>Application Information</h3>
+                </div>
+                <div style={{ padding: '1rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', flex: 1 }}>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Application Type</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.appType}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Building Type</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.buildingType}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Created Date</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.createdAt}</div>
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Assigned Staff</div>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <select
+                        value={assignedStaff}
                         onChange={e => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          const reader = new FileReader();
-                          reader.onload = ev => {
-                            const data = ev.target?.result as string;
-                            setAppReceipt(data);
-                            setReceiptFileName(file.name);
-                            try {
-                              localStorage.setItem(`receipt_${id}`, JSON.stringify({ data, name: file.name }));
-                            } catch {
-                              toast.success('File too large to store.');
-                            }
-                          };
-                          reader.readAsDataURL(file);
+                          const val = e.target.value;
+                          setAssignedStaff(val);
+                          localStorage.setItem(`assignedStaff_${id}`, val);
+                          const appIdx = recentApplications.findIndex(a => a.id === id);
+                          if (appIdx !== -1) {
+                            recentApplications[appIdx].staff = val || 'Unassigned';
+                            localStorage.setItem('recentApplications', JSON.stringify(recentApplications));
+                          }
                         }}
-                      />
-                      {appReceipt ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem 0.875rem', backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '0.375rem' }}>
-                          <FileText size={18} color="var(--primary)" />
-                          <span style={{ flex: 1, fontSize: '0.875rem', color: 'var(--primary-dark)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{receiptFileName || 'Receipt uploaded'}</span>
-                          <button
-                            onClick={() => {
-                              const a = document.createElement('a');
-                              a.href = appReceipt;
-                              a.download = receiptFileName || 'receipt';
-                              a.click();
-                            }}
-                            style={{ padding: '0.25rem 0.625rem', borderRadius: '0.25rem', border: '1px solid var(--primary)', backgroundColor: 'transparent', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
-                          >
-                            View
-                          </button>
-                          <button
-                            onClick={() => {
-                              setAppReceipt('');
-                              setReceiptFileName('');
-                              localStorage.removeItem(`receipt_${id}`);
-                              if (receiptInputRef.current) receiptInputRef.current.value = '';
-                            }}
-                            style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', border: 'none', backgroundColor: '#fee2e2', color: 'var(--error-red)', fontSize: '0.75rem', cursor: 'pointer' }}
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => receiptInputRef.current?.click()}
-                          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.625rem 0.875rem', borderRadius: '0.375rem', border: '2px dashed var(--border-color)', backgroundColor: 'white', color: 'var(--text-secondary)', fontSize: '0.875rem', cursor: 'pointer', justifyContent: 'center', transition: 'border-color 0.2s' }}
-                          onMouseOver={e => (e.currentTarget.style.borderColor = 'var(--primary)')}
-                          onMouseOut={e => (e.currentTarget.style.borderColor = 'var(--border-color)')}
-                        >
-                          <Upload size={16} /> Upload Receipt (PDF / Image)
-                        </button>
+                        style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', fontWeight: 500, color: assignedStaff ? 'var(--primary-dark)' : 'var(--text-secondary)', outline: 'none', backgroundColor: '#f8fafc', cursor: 'pointer', minWidth: '220px', transition: 'all 0.2s' }}
+                      >
+                        <option value="">— Select Staff —</option>
+                        {(() => {
+                          const staffSaved = localStorage.getItem('staffMembers');
+                          const staffList: any[] = staffSaved ? JSON.parse(staffSaved).filter((s: any) => s.status === 'Active') : [];
+                          return staffList.length > 0
+                            ? staffList.map((s: any) => <option key={s.id} value={s.name}>{s.name} — {s.role}</option>)
+                            : <option value="" disabled>No staff added yet. Add staff in Staff & Users.</option>;
+                        })()}
+                      </select>
+                      {assignedStaff && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.25rem 0.75rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#059669', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600 }}>
+                          <CheckCircle2 size={14} /> Assigned
+                        </span>
                       )}
                     </div>
-
                   </div>
-                )}
-              </div>
-            </div>
+                  {workflowStages[3].status === 'Completed' && (
+                    <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem', padding: '1.25rem', backgroundColor: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      
+                      {/* Govt Tracking Number */}
+                      <div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Govt. Tracking Number</div>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <input 
+                            type="text" 
+                            value={govtTrackingNumber} 
+                            onChange={e => setGovtTrackingNumber(e.target.value)} 
+                            placeholder="Enter tracking ID..." 
+                            style={{ flex: 1, minWidth: '150px', padding: '0.625rem 0.75rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', outline: 'none', fontSize: '0.875rem' }} 
+                          />
+                          <button 
+                            onClick={() => {
+                              localStorage.setItem(`tracking_${id}`, govtTrackingNumber);
+                              window.dispatchEvent(new Event('storage'));
+                            }}
+                            className="btn-primary" 
+                            style={{ padding: '0.625rem 1.25rem', fontSize: '0.875rem', borderRadius: '0.5rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.375rem' }}>Entering this will mark Government Submission as Completed.</div>
+                      </div>
 
-            {/* Customer Info */}
-            <div className="card">
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <User size={18} color="var(--primary)" /> Customer Information
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Name</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.customer}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Mobile</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.mobile}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Email</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.email}</div>
+                      {/* Application Receipt - File Upload */}
+                      <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.25rem' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Application Receipt</div>
+                        <input
+                          type="file"
+                          ref={receiptInputRef}
+                          accept="image/*,application/pdf"
+                          style={{ display: 'none' }}
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = ev => {
+                              const data = ev.target?.result as string;
+                              setAppReceipt(data);
+                              setReceiptFileName(file.name);
+                              try {
+                                localStorage.setItem(`receipt_${id}`, JSON.stringify({ data, name: file.name }));
+                              } catch {
+                                toast.success('File too large to store.');
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                        />
+                        {appReceipt ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', backgroundColor: 'white', border: '1px solid #cbd5e1', borderRadius: '0.5rem', flexWrap: 'wrap' }}>
+                            <FileText size={18} color="var(--primary)" />
+                            <span style={{ flex: 1, minWidth: '100px', fontSize: '0.875rem', color: '#334155', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{receiptFileName || 'Receipt uploaded'}</span>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button
+                                onClick={() => {
+                                  const a = document.createElement('a');
+                                  a.href = appReceipt;
+                                  a.download = receiptFileName || 'receipt';
+                                  a.click();
+                                }}
+                                style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--primary)', backgroundColor: 'transparent', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                              >
+                                View
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setAppReceipt('');
+                                  setReceiptFileName('');
+                                  localStorage.removeItem(`receipt_${id}`);
+                                  if (receiptInputRef.current) receiptInputRef.current.value = '';
+                                }}
+                                style={{ padding: '0.375rem 0.5rem', borderRadius: '0.375rem', border: 'none', backgroundColor: '#fee2e2', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer' }}
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => receiptInputRef.current?.click()}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '2px dashed #cbd5e1', backgroundColor: 'white', color: '#64748b', fontSize: '0.875rem', cursor: 'pointer', justifyContent: 'center', transition: 'all 0.2s' }}
+                            onMouseOver={e => {
+                              e.currentTarget.style.borderColor = 'var(--primary)';
+                              e.currentTarget.style.color = 'var(--primary)';
+                            }}
+                            onMouseOut={e => {
+                              e.currentTarget.style.borderColor = '#cbd5e1';
+                              e.currentTarget.style.color = '#64748b';
+                            }}
+                          >
+                            <Upload size={16} /> Upload Receipt (PDF / Image)
+                          </button>
+                        )}
+                      </div>
+
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-
-            {/* Property Info */}
-            <div className="card">
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Building size={18} color="var(--primary)" /> Property Information
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Address</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.address}</div>
+              
+              {/* Property Info */}
+              <div style={{ backgroundColor: 'white', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', border: '1px solid var(--border-color)', borderTop: '4px solid #f59e0b', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '0.75rem 1rem', backgroundColor: '#f59e0b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '0.5rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                    <Building size={14} />
+                  </div>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', margin: 0 }}>Property Information</h3>
                 </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Survey No</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.surveyNo}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Plot Area</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.plotArea}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Built-up Area</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.builtUpArea}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Floors</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.floors}</div>
+                <div style={{ padding: '1rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '1rem', flex: 1 }}>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Address</div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 500, color: '#0f172a' }}>{app.address}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Survey No</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.surveyNo}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Plot Area</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.plotArea}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Built-up Area</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.builtUpArea}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Floors</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.floors}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -734,52 +761,52 @@ const ApplicationDetail: React.FC = () => {
       </Link>
 
       {/* Header */}
-      <div className="card" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '0.5rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-            <h2 className="heading-2" style={{ margin: 0 }}>{app.id}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+            <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', margin: 0 }}>{app.id}</h2>
             {isRejected ? (
-              <span style={{ padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600, backgroundColor: 'rgba(185, 74, 72, 0.1)', color: 'var(--error-red)' }}>Rejected</span>
+              <span style={{ padding: '0.125rem 0.5rem', borderRadius: '1rem', fontSize: '0.65rem', fontWeight: 600, backgroundColor: 'rgba(185, 74, 72, 0.1)', color: 'var(--error-red)' }}>Rejected</span>
             ) : (
               <StatusBadge type="status" value={app.status} />
             )}
           </div>
-          <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><User size={16} /> {app.customer}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><MapPin size={16} /> {app.location}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={16} /> Updated: {app.updatedAt}</span>
+          <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><User size={14} /> {app.customer}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><MapPin size={14} /> {app.location}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={14} /> Updated: {app.updatedAt}</span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
           <button 
             onClick={() => navigate(isAdmin ? '/admin/applications/new' : '/employee/applications/new', { state: { editMode: true, appData: app } })}
-            style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}
+            style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer' }}
           >
-            <Edit size={16} /> Edit
+            <Edit size={14} /> Edit
           </button>
           {!isRejected && (
-            <button onClick={() => setShowRejectModal(true)} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--error-red)', color: 'var(--error-red)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
-              <X size={16} /> Reject Application
+            <button onClick={() => setShowRejectModal(true)} style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--error-red)', color: 'var(--error-red)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer' }}>
+              <X size={14} /> Reject
             </button>
           )}
-          <button className="btn-primary" style={{ padding: '0.5rem 1.5rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button className="btn-primary" style={{ padding: '0.375rem 1rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             Update Status
           </button>
-          <button style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-            <MoreVertical size={16} />
+          <button style={{ padding: '0.375rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+            <MoreVertical size={14} />
           </button>
         </div>
       </div>
       {/* Workflow Tracker */}
-      <div className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem', overflowX: 'auto' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem' }}>Status</h3>
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '0.5rem 1rem', overflowX: 'auto' }}>
+        <h3 style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Status</h3>
         <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', minWidth: '600px' }}>
-          <div style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', height: '2px', backgroundColor: 'var(--border-color)', zIndex: 0 }}></div>
+          <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', height: '2px', backgroundColor: 'var(--border-color)', zIndex: 0 }}></div>
           {workflowStages.map((stage, idx) => (
             <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, width: '12%', textAlign: 'center' }}>
               <div style={{ 
-                width: '24px', 
-                height: '24px', 
+                width: '20px', 
+                height: '20px', 
                 borderRadius: '50%', 
                 backgroundColor: isRejected && stage.status === 'Current' ? 'var(--error-red)' : stage.status === 'Completed' ? 'var(--success-green)' : stage.status === 'Current' ? 'var(--primary)' : 'var(--bg-surface)',
                 border: stage.status === 'Pending' ? '2px solid var(--border-color)' : 'none',
@@ -787,13 +814,13 @@ const ApplicationDetail: React.FC = () => {
                 alignItems: 'center', 
                 justifyContent: 'center',
                 color: stage.status === 'Completed' ? 'white' : 'var(--border-color)',
-                marginBottom: '0.5rem',
-                boxShadow: isRejected && stage.status === 'Current' ? '0 0 0 4px rgba(185, 74, 72, 0.1)' : stage.status === 'Current' ? '0 0 0 4px rgba(18, 55, 42, 0.05)' : 'none'
+                marginBottom: '0.25rem',
+                boxShadow: isRejected && stage.status === 'Current' ? '0 0 0 3px rgba(185, 74, 72, 0.1)' : stage.status === 'Current' ? '0 0 0 3px rgba(18, 55, 42, 0.05)' : 'none'
               }}>
-                {stage.status === 'Completed' && <CheckCircle2 size={14} color="white" />}
-                {stage.status === 'Current' && <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'white' }}></div>}
+                {stage.status === 'Completed' && <CheckCircle2 size={12} color="white" />}
+                {stage.status === 'Current' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white' }}></div>}
               </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: stage.status === 'Pending' ? 400 : 600, color: stage.status === 'Pending' ? 'var(--text-secondary)' : 'var(--primary-dark)' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: stage.status === 'Pending' ? 400 : 600, color: stage.status === 'Pending' ? 'var(--text-secondary)' : 'var(--primary-dark)', lineHeight: '1.2' }}>
                 {stage.stage}
               </div>
             </div>
