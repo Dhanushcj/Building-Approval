@@ -46,137 +46,81 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: 'calc(100vh - 80px)' }}>
-      {/* Left Column - Illustration/Branding */}
-      <div style={{ 
-        flex: 1.2, 
-        backgroundColor: 'var(--primary-dark)',
-        backgroundImage: `linear-gradient(to bottom, rgba(18, 55, 42, 0.85), rgba(11, 36, 27, 0.95)), url('/assets/modern_architecture_login.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        display: 'none', 
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '4rem',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
-      }} className="desktop-only">
-        
-        {/* Decorative background glows */}
-        <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(201, 106, 74, 0.2) 0%, transparent 70%)' }}></div>
-        <div style={{ position: 'absolute', bottom: '20%', left: '-5%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(201, 106, 74, 0.15) 0%, transparent 70%)' }}></div>
-
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '4rem' }}>
-            <div style={{ backgroundColor: 'var(--accent)', padding: '0.5rem', borderRadius: '0.5rem' }}>
-              <Building2 size={24} color="white" />
-            </div>
-            <span style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '0.05em' }}>BUILD APPROVE</span>
-          </div>
-
-          <h1 style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1.2, marginBottom: '1.5rem', fontFamily: 'var(--font-heading)' }}>
-            Streamline your <br/><span style={{ color: 'var(--accent)' }}>approval workflow.</span>
-          </h1>
-          <p style={{ fontSize: '1.125rem', color: 'rgba(255, 255, 255, 0.8)', maxWidth: '450px', lineHeight: 1.6 }}>
-            Access applications, manage documents, and coordinate with your team in one unified workspace designed for modern construction management.
-          </p>
-        </div>
-
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '2rem' }}>
-          <div className="hover-effect" style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.05)', 
-            backdropFilter: 'blur(12px)', 
-            border: '1px solid rgba(255, 255, 255, 0.1)', 
-            padding: '1.5rem', 
-            borderRadius: '1rem',
-            flex: 1,
-            transition: 'transform 0.3s ease, background-color 0.3s ease'
-          }}>
-            <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '0.25rem', fontFamily: 'var(--font-heading)' }}>40%</div>
-            <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.5 }}>Faster Application<br/>Processing Time</div>
-          </div>
-          
-          <div className="hover-effect" style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.05)', 
-            backdropFilter: 'blur(12px)', 
-            border: '1px solid rgba(255, 255, 255, 0.1)', 
-            padding: '1.5rem', 
-            borderRadius: '1rem',
-            flex: 1,
-            transition: 'transform 0.3s ease, background-color 0.3s ease'
-          }}>
-            <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'white', marginBottom: '0.25rem', fontFamily: 'var(--font-heading)' }}>10k+</div>
-            <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.5 }}>Projects Approved<br/>Successfully</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Column - Login Form */}
-      <div style={{ 
-        flex: 1, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        padding: '2rem' 
-      }}>
-        <div style={{ width: '100%', maxWidth: '400px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', color: 'var(--primary)' }}>
-              <Building2 size={40} />
-            </div>
-            <h2 className="heading-2" style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Welcome Back</h2>
-            <p className="text-secondary">Sign in to continue to BuildApprove</p>
-          </div>
-
-          <form onSubmit={handleLogin}>
-            <div className="form-group">
-              <label className="form-label">Email / Mobile Number</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="Enter your email or mobile"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input 
-                type="password" 
-                className="form-input" 
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', fontSize: '0.875rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary-dark)', fontWeight: 500 }}>
-                <input type="checkbox" style={{ accentColor: 'var(--primary)' }} /> Remember me
-              </label>
-              <a href="#" style={{ color: 'var(--primary)', fontWeight: 500 }}>Forgot Password?</a>
-            </div>
-
-            <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.875rem' }}>
-              Login &rarr;
-            </button>
-            
-          </form>
-          <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>
-            <a href="/" style={{ color: 'var(--text-secondary)' }}>&larr; Back to Website</a>
-          </div>
-        </div>
-      </div>
+    <div style={{ 
+      display: 'flex', 
+      minHeight: '100vh',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'var(--primary-dark)',
+      backgroundImage: `linear-gradient(to bottom, rgba(18, 55, 42, 0.75), rgba(11, 36, 27, 0.90)), url('/assets/modern_architecture_login.jpg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      padding: '2rem'
+    }}>
       
-      <style>{`
-        @media (min-width: 1024px) {
-          .desktop-only { display: flex !important; }
-        }
-      `}</style>
+      {/* Centered Login Form Container */}
+      <div style={{ 
+        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+        backdropFilter: 'blur(10px)',
+        padding: '2rem 2.5rem',
+        borderRadius: '1rem',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+        width: '100%', 
+        maxWidth: '380px',
+        position: 'relative',
+        zIndex: 10
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', color: 'var(--primary)' }}>
+            <Building2 size={40} />
+          </div>
+          <h2 className="heading-2" style={{ fontSize: '1.75rem', marginBottom: '0.25rem', color: 'var(--primary-dark)' }}>Welcome Back</h2>
+          <p style={{ color: '#4b5563', fontSize: '0.95rem' }}>Sign in to continue to BuildApprove</p>
+        </div>
+
+        <form onSubmit={handleLogin}>
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label className="form-label" style={{ color: 'var(--primary-dark)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>Email / Mobile</label>
+            <input 
+              type="text" 
+              className="form-input" 
+              placeholder="Enter your email or mobile"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{ backgroundColor: 'white', border: '1px solid #d1d5db', padding: '0.6rem 0.75rem', fontSize: '0.9rem' }}
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label className="form-label" style={{ color: 'var(--primary-dark)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>Password</label>
+            <input 
+              type="password" 
+              className="form-input" 
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ backgroundColor: 'white', border: '1px solid #d1d5db', padding: '0.6rem 0.75rem', fontSize: '0.9rem' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0 1.5rem 0', fontSize: '0.8rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--primary-dark)', fontWeight: 500 }}>
+              <input type="checkbox" style={{ accentColor: 'var(--primary)', width: '0.9rem', height: '0.9rem' }} /> Remember me
+            </label>
+            <a href="#" style={{ color: 'var(--primary)', fontWeight: 600 }}>Forgot Password?</a>
+          </div>
+
+          <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '1rem', fontWeight: 600 }}>
+            Login &rarr;
+          </button>
+          
+        </form>
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.85rem' }}>
+          <a href="/" style={{ color: '#6b7280', fontWeight: 500, textDecoration: 'none' }} className="hover:text-primary">&larr; Back to Website</a>
+        </div>
+      </div>
     </div>
   );
 };
