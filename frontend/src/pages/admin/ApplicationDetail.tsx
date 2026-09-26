@@ -402,7 +402,7 @@ const ApplicationDetail: React.FC = () => {
         if (res.ok) {
           const data = await res.json();
           setApp({
-            id: data.id,
+            id: data.application_number || data.id,
             status: data.status,
             priority: 'Medium',
             customer: data.property?.owner_name || 'Unknown',
