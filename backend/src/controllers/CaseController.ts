@@ -52,6 +52,8 @@ export class CaseController {
           fees: true,
           status_history: true,
           child_cases: true,
+          property: true,
+          assigned_staff: true,
         },
       });
       if (!caseData) return res.status(404).json({ error: 'Not found' });
