@@ -144,11 +144,7 @@ const StaffList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div>
-          <h2 className="heading-2" style={{ marginBottom: '0.25rem' }}>Staff & Users</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Manage system users and their roles.</p>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '1.5rem' }}>
         <button className="btn-primary" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }}>
           <Plus size={18} /> Add Staff
         </button>

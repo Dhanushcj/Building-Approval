@@ -73,10 +73,7 @@ const FollowUpsList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h2 className="heading-2" style={{ marginBottom: '0.25rem' }}>Enquiries</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Manage and track customer enquiries.</p>
-      </div>
+
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>

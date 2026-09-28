@@ -108,14 +108,7 @@ const AttendanceList: React.FC = () => {
   return (
     <div style={{ backgroundColor: '#F8FAFC', minHeight: '100%', paddingBottom: '2rem' }}>
       {/* 1. PAGE HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#64748b' }}>
-             <Users size={16} /> <span style={{ fontWeight: 500 }}>Dashboard</span> <span style={{ margin: '0 0.25rem' }}>/</span> <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Attendance</span>
-          </div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary-dark)', margin: '0 0 0.25rem 0', letterSpacing: '-0.02em' }}>Attendance</h1>
-          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9375rem' }}>Monitor daily employee attendance, check-ins, and leaves.</p>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           
           {/* Functional Date Picker */}

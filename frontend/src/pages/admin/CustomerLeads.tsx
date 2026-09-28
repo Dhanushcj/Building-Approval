@@ -143,12 +143,7 @@ const CustomerLeads: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', margin: '0 0 0.5rem 0' }}>Customer Leads</h1>
-          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>View and manage customer leads and applications.</p>
-        </div>
-      </div>
+
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

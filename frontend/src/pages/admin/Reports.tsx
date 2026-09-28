@@ -96,10 +96,7 @@ const Reports: React.FC = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 className="heading-2">Reports & Analytics</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Track employee performance and application processing metrics.</p>
-      </div>
+
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>

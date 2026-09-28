@@ -4,7 +4,7 @@ import { Plus, Eye, MoreVertical, FileText, Copy } from 'lucide-react';
 import FilterPanel from '../../components/admin/FilterPanel';
 import StatusBadge from '../../components/admin/StatusBadge';
 import { recentApplications } from '../../data/mockData';
-import { getApplicationStatus } from '../../utils/statusHelper';
+
 
 const ApplicationsList: React.FC = () => {
   const [applications, setApplications] = React.useState(recentApplications);
@@ -112,11 +112,7 @@ const ApplicationsList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div>
-          <h2 className="heading-2" style={{ marginBottom: '0.25rem' }}>All Applications</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Manage and track all building approval applications.</p>
-        </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
         <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }} onClick={() => navigate('/admin/applications/new')}>
           <Plus size={18} /> New Application
         </button>

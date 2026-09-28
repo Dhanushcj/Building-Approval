@@ -127,12 +127,7 @@ const Settings: React.FC = () => {
 
   return (
     <div style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Application Settings</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>Customize the appearance and profile settings.</p>
-        </div>
-      </div>
+
 
       <div style={{ backgroundColor: 'var(--bg-surface)', padding: '2rem', borderRadius: '0.75rem', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-color)', maxWidth: '800px', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
         
