@@ -98,7 +98,7 @@ const ApplicationDetail: React.FC = () => {
         formDataUpload.append('file', file);
         formDataUpload.append('upload_preset', 'ml_default');
         
-        const response = await fetch(`https://api.cloudinary.com/v1_1/dfou7lxtg/image/upload`, {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/dfou7lxtg/auto/upload`, {
           method: 'POST',
           body: formDataUpload,
         });
@@ -1020,8 +1020,8 @@ const ApplicationDetail: React.FC = () => {
                   {uploadedFiles[docUploadType as keyof typeof uploadedFiles] ? 'File Selected' : `${docUploadType}_1`}
                 </span>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} accept={docUploadType === 'CUSTOMER PHOTOGRAPH' ? 'image/*' : '*/*'} />
-                  <button onClick={() => fileInputRef.current?.click()} title="Browse" style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}><Upload size={24} /></button>
+                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} accept={docUploadType === 'CUSTOMER PHOTOGRAPH' ? 'image/*' : '*/*'} disabled={isUploading} />
+                  <button onClick={() => !isUploading && fileInputRef.current?.click()} title="Browse" style={{ background: 'none', border: 'none', color: isUploading ? 'var(--text-secondary)' : 'var(--primary)', cursor: isUploading ? 'not-allowed' : 'pointer' }} disabled={isUploading}><Upload size={24} /></button>
                 </div>
               </div>
             ) : (
