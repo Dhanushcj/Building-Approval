@@ -889,68 +889,63 @@ const NewApplication: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Save Button with Menu */}
-      <div 
-        onMouseEnter={() => setSaveMenuOpen(true)}
-        onMouseLeave={() => setSaveMenuOpen(false)}
-        style={{
-          position: 'fixed',
-          bottom: '2rem',
-          right: '2rem',
-          zIndex: 50,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
-          gap: '1rem',
-        }}
-      >
-        {isSaveMenuOpen && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem', animation: 'fadeIn 0.2s ease-in-out' }}>
-            {currentStep === 3 && (
-              <button 
-                onClick={async () => {
-                  if (!checkAllDocumentsUploaded()) {
-                     toast.error("Please upload all required documents to submit!");
-                     return;
-                  }
-                  await saveApplicationData(false);
-                  toast.success("Application Submitted for Verification!");
-                  if (isEmployee) navigate('/employee/applications');
-                  else navigate('/admin/applications');
-                }}
-                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '2rem', backgroundColor: '#10b981', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
-              >
-                <CheckCircle size={16} /> Submit Application
-              </button>
-            )}
-            <button 
-              onClick={() => setIsPartialSaveModalOpen(true)}
-              style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '2rem', backgroundColor: 'white', color: '#f59e0b', border: '2px solid #f59e0b', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
-            >
-              <Save size={16} /> Save as Draft
-            </button>
-          </div>
-        )}
-        <button 
+      {/* Floating Submit/Save Button (Step 3 only) */}
+      {currentStep === 3 && (
+        <div 
+          onMouseEnter={() => setSaveMenuOpen(true)}
+          onMouseLeave={() => setSaveMenuOpen(false)}
           style={{
-            padding: '1rem',
-            borderRadius: '50%',
-            backgroundColor: '#f59e0b',
-            color: 'white',
-            border: 'none',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
+            position: 'fixed',
+            bottom: '2rem',
+            right: '2rem',
+            zIndex: 50,
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'transform 0.2s',
-            transform: isSaveMenuOpen ? 'scale(1.1)' : 'scale(1)'
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: '1rem',
           }}
-          title="Application Options"
         >
-          <Save size={24} />
-        </button>
-      </div>
+          {isSaveMenuOpen && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem', animation: 'fadeIn 0.2s ease-in-out' }}>
+              <button 
+                onClick={() => setIsPartialSaveModalOpen(true)}
+                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '2rem', backgroundColor: 'white', color: '#f59e0b', border: '2px solid #f59e0b', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+              >
+                <Save size={16} /> Save as Draft
+              </button>
+            </div>
+          )}
+          <button 
+            onClick={async () => {
+              if (!checkAllDocumentsUploaded()) {
+                 toast.error("Please upload all required documents to submit!");
+                 return;
+              }
+              await saveApplicationData(false);
+              toast.success("Application Submitted for Verification!");
+              if (isEmployee) navigate('/employee/applications');
+              else navigate('/admin/applications');
+            }}
+            style={{
+              padding: '1rem',
+              borderRadius: '50%',
+              backgroundColor: '#10b981',
+              color: 'white',
+              border: 'none',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'transform 0.2s',
+              transform: isSaveMenuOpen ? 'scale(1.1)' : 'scale(1)'
+            }}
+            title="Submit Application"
+          >
+            <CheckCircle size={24} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
