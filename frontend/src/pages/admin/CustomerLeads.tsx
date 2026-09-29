@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Phone, Mail, FileText, CheckCircle, FilePlus, XCircle, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Search, FileText, X, Pencil, Info, ArrowUpDown } from 'lucide-react';
 
 const CustomerLeads: React.FC = () => {
   const [leads, setLeads] = useState<any[]>([]);
   const [rejectingLeadId, setRejectingLeadId] = useState<string | null>(null);
   const [rejectionRemarks, setRejectionRemarks] = useState('');
   const [viewingLead, setViewingLead] = useState<any | null>(null);
+  
+  const [filterOn, setFilterOn] = useState('select');
+  const [subFilter, setSubFilter] = useState('select');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const loadLeads = async () => {
@@ -52,20 +55,7 @@ const CustomerLeads: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const markAsContacted = async (id: string) => {
-    const updatedLeads = leads.map(lead => lead.id === id ? { ...lead, status: 'Contacted' } : lead);
-    setLeads(updatedLeads);
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
-      await fetch(`${apiUrl}/leads/${id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Contacted' })
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  };
+
 
   const handleReject = async () => {
     if (!rejectingLeadId || !rejectionRemarks.trim()) return;
@@ -87,113 +77,137 @@ const CustomerLeads: React.FC = () => {
     }
   };
 
-  const handleCreateApplication = async (lead: any) => {
-    // 1. Mark lead as Application Created
-    const updatedLeads = leads.map(l => l.id === lead.id ? { ...l, status: 'Application Created' } : l);
-    setLeads(updatedLeads);
-    
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+
+
+  const filteredLeads = leads.filter(lead => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = searchTerm === '' || 
+      (lead.displayId || '').toLowerCase().includes(searchLower) ||
+      (lead.name || '').toLowerCase().includes(searchLower) ||
+      (lead.phone || '').includes(searchLower);
       
-      // Mark lead status
-      await fetch(`${apiUrl}/leads/${lead.id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Application Created' })
-      });
-
-      // 2. Create property
-      const propRes = await fetch(`${apiUrl}/properties`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          owner_name: lead.name,
-          owner_phone: lead.phone,
-          owner_email: lead.email,
-          village: lead.location || 'Unknown',
-          taluk: 'Unknown',
-          survey_number: lead.propertyDetails?.substring(0, 50) || 'Unknown',
-          jurisdiction: 'HOSUR_CORPORATION'
-        })
-      });
-
-      if (!propRes.ok) throw new Error('Failed to create property');
-      const property = await propRes.json();
-
-      // 3. Create case
-      const caseRes = await fetch(`${apiUrl}/cases`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          property_id: property.id,
-          approval_type: 'BUILDING_PLAN',
-          status: 'INTAKE'
-        })
-      });
-
-      if (!caseRes.ok) throw new Error('Failed to create case');
-      const newCase = await caseRes.json();
-
-      toast.success(`Application ${newCase.application_number || newCase.id} created successfully!`);
-    } catch (e) {
-      console.error(e);
-      toast.error('Failed to create application');
+    let matchesFilter = true;
+    if (filterOn === 'Product' && subFilter !== 'select') {
+      matchesFilter = (lead.projectType || 'General Enquiry') === subFilter;
+    } else if (filterOn === 'Status' && subFilter !== 'select') {
+      matchesFilter = lead.status === subFilter;
     }
-  };
+    
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div>
 
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ position: 'relative', width: '300px' }}>
-            <Search size={18} color="#94a3b8" style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)' }} />
+        <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Proposal Process</h2>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Filter On:</label>
+                <select 
+                  value={filterOn} 
+                  onChange={(e) => { setFilterOn(e.target.value); setSubFilter('select'); }}
+                  style={{ padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', minWidth: '150px', backgroundColor: 'var(--bg-surface)' }}
+                >
+                  <option value="select">select</option>
+                  <option value="Product">Product</option>
+                  <option value="Status">Status</option>
+                </select>
+              </div>
+              
+              {filterOn !== 'select' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Select {filterOn}:</label>
+                  <select 
+                    value={subFilter} 
+                    onChange={(e) => setSubFilter(e.target.value)}
+                    style={{ padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', minWidth: '150px', backgroundColor: 'var(--bg-surface)' }}
+                  >
+                    <option value="select">select</option>
+                    {filterOn === 'Product' && (
+                      <>
+                        <option value="Residential">Residential</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Industrial">Industrial</option>
+                        <option value="General Enquiry">General Enquiry</option>
+                      </>
+                    )}
+                    {filterOn === 'Status' && (
+                      <>
+                        <option value="New">New</option>
+                        <option value="Contacted">Contacted</option>
+                        <option value="Application Created">Application Created</option>
+                        <option value="Rejected">Rejected</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ position: 'relative', width: '300px', alignSelf: 'flex-end' }}>
+            <Search size={18} color="#94a3b8" style={{ position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)' }} />
             <input 
               type="text" 
-              placeholder="Search leads..." 
-              style={{ width: '100%', padding: '0.625rem 1rem 0.625rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem' }}
+              placeholder="Search any Values.." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '0.625rem 2.5rem 0.625rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'transparent' }}
             />
           </div>
+        </div>
+        
+        <div style={{ padding: '0 1.5rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
+          Total {filteredLeads.length} Records
         </div>
 
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
-              <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Lead ID</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Customer</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Contact Info</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Project Details</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Date</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Status</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Action</th>
+              <tr style={{ backgroundColor: '#1e3a8a', borderBottom: '1px solid var(--border-color)' }}>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>Edit</th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>View</th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal No <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Customer Name <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Mobile Number <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Current Status <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal Date (DD/MM/YYYY HH:MM) <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Product <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Source <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
               </tr>
             </thead>
             <tbody>
-              {leads.map((lead, index) => (
+              {filteredLeads.map((lead, index) => (
                 <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{lead.displayId}</td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--primary-dark)', fontWeight: 500 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
-                        <Users size={16} />
-                      </div>
-                      {lead.name}
-                    </div>
+                  <td style={{ padding: '0.75rem 1rem' }}>
+                    <button 
+                      onClick={() => { /* Implement edit functionality here */ }}
+                      style={{ padding: '0.4rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
+                      title="Edit Lead"
+                    >
+                      <Pencil size={16} />
+                    </button>
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Phone size={14} /> {lead.phone}</div>
-                      {lead.email && <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Mail size={14} /> {lead.email}</div>}
-                    </div>
+                  <td style={{ padding: '0.75rem 1rem' }}>
+                    <button 
+                      onClick={() => setViewingLead(lead)}
+                      style={{ padding: '0.4rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
+                      title="View Details"
+                    >
+                      <Info size={16} />
+                    </button>
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    <div style={{ fontWeight: 500, color: 'var(--primary-dark)' }}>{lead.projectType}</div>
-                    <div>{lead.location}</div>
+                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{lead.displayId}</td>
+                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--primary-dark)', fontWeight: 500 }}>
+                    {lead.name}
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{lead.date}</td>
-                  <td style={{ padding: '1rem 1.5rem' }}>
+                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                    {lead.phone}
+                  </td>
+                  <td style={{ padding: '0.75rem 1rem' }}>
                     <span style={{ 
                       padding: '0.25rem 0.75rem', 
                       borderRadius: '1rem', 
@@ -210,41 +224,16 @@ const CustomerLeads: React.FC = () => {
                       </div>
                     )}
                   </td>
-                  <td style={{ padding: '1rem 1.5rem' }}>
-                    {lead.status === 'New' && (
-                      <button 
-                        onClick={() => markAsContacted(lead.id)}
-                        style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                      >
-                        <CheckCircle size={14} /> Mark Contacted
-                      </button>
-                    )}
-                    {lead.status === 'Contacted' && (
-                      <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-                        <button 
-                          onClick={() => setViewingLead(lead)}
-                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                        >
-                          <FileText size={14} /> View Details
-                        </button>
-                        <button 
-                          onClick={() => handleCreateApplication(lead)}
-                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--success-green)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                        >
-                          <FilePlus size={14} /> Create App
-                        </button>
-                        <button 
-                          onClick={() => setRejectingLeadId(lead.id)}
-                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--error-red)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                        >
-                          <XCircle size={14} /> Reject
-                        </button>
-                      </div>
-                    )}
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{lead.date}</td>
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                    {lead.projectType}
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                    {lead.source || 'Web'}
                   </td>
                 </tr>
               ))}
-              {leads.length === 0 && (
+              {filteredLeads.length === 0 && (
                 <tr>
                   <td colSpan={7} style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     <FileText size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />

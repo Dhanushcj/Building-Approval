@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Edit, FileText, CheckCircle2, User, Building, 
-  MapPin, Clock, Upload, MoreVertical, Link as LinkIcon, Download, X, Copy, Mail
+  MapPin, Clock, Upload, MoreVertical, Link as LinkIcon, Download, X, Copy, Mail, Printer
 } from 'lucide-react';
 import StatusBadge from '../../components/admin/StatusBadge';
 import { recentApplications } from '../../data/mockData';
 import JSZip from 'jszip';
 import toast from 'react-hot-toast';
+import html2pdf from 'html2pdf.js';
 
 const ApplicationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,13 +27,14 @@ const ApplicationDetail: React.FC = () => {
 
   type DocumentItem = { id: string, name: string, uploadedBy: string, date: string, status: string, file: any, fileData?: string };
   const [documents, setDocuments] = useState<DocumentItem[]>([
-    { id: 'aadhar', name: 'Aadhar Card (Front & Back)', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'pan', name: 'PAN Card', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'sale_deed', name: 'Sale Deed / Title Deed', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'tax_receipt', name: 'Latest Property Tax Receipt', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'patta', name: 'Patta Document', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'ec', name: 'Encumbrance Certificate (EC)', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'building_plan', name: 'Building Plan', uploadedBy: '-', date: '-', status: 'Missing', file: null },
+    { id: 'sale_deed', name: 'Land document sale Deed', uploadedBy: '-', date: '-', status: 'Missing', file: null },
+    { id: 'patta', name: 'Patta', uploadedBy: '-', date: '-', status: 'Missing', file: null },
+    { id: 'fmb', name: 'FMB', uploadedBy: '-', date: '-', status: 'Missing', file: null },
+    { id: 'pan', name: 'Pancard', uploadedBy: '-', date: '-', status: 'Missing', file: null },
+    { id: 'aadhar', name: 'Aadhar card', uploadedBy: '-', date: '-', status: 'Missing', file: null },
+    { id: 'photo', name: 'Photo (passport size)', uploadedBy: '-', date: '-', status: 'Missing', file: null },
+    { id: 'signature', name: 'Signature', uploadedBy: '-', date: '-', status: 'Missing', file: null },
+    { id: 'building_plan', name: 'Building plan', uploadedBy: '-', date: '-', status: 'Missing', file: null },
     { id: 'site_inspection_report', name: 'Site Inspection Report', uploadedBy: '-', date: '-', status: 'Missing', file: null },
     { id: 'govt_approval', name: 'Government Approval (Final)', uploadedBy: '-', date: '-', status: 'Missing', file: null }
   ]);
@@ -131,7 +133,7 @@ const ApplicationDetail: React.FC = () => {
         changed = true;
       }
 
-      const customerDocIds = ['aadhar', 'pan', 'sale_deed', 'tax_receipt', 'patta', 'ec'];
+      const customerDocIds = ['sale_deed', 'patta', 'fmb', 'pan', 'aadhar', 'photo', 'signature', 'building_plan'];
       const customerDocs = documents.filter(d => customerDocIds.includes(d.id));
       const allCustomerDocsReceived = customerDocs.every(d => d.status !== 'Missing');
       
@@ -354,6 +356,24 @@ const ApplicationDetail: React.FC = () => {
 
   const handleView = (doc: any) => {
     setViewingDoc({ name: doc.name, fileData: doc.fileData });
+  };
+
+  const handlePrintApplication = () => {
+    const element = document.getElementById('application-pdf-template');
+    if (!element) return;
+    
+    element.style.display = 'block';
+    const opt = {
+      margin:       10,
+      filename:     `Application_${app.id}.pdf`,
+      image:        { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+    };
+    
+    html2pdf().set(opt).from(element).save().then(() => {
+      element.style.display = 'none';
+    });
   };
 
   const handleDownloadAll = async () => {
@@ -789,6 +809,12 @@ const ApplicationDetail: React.FC = () => {
               <X size={14} /> Reject
             </button>
           )}
+          <button 
+            onClick={handlePrintApplication}
+            style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer', color: 'var(--primary)' }}
+          >
+            <Printer size={14} /> Print
+          </button>
           <button className="btn-primary" style={{ padding: '0.375rem 1rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             Update Status
           </button>
@@ -815,7 +841,7 @@ const ApplicationDetail: React.FC = () => {
                 justifyContent: 'center',
                 color: stage.status === 'Completed' ? 'white' : 'var(--border-color)',
                 marginBottom: '0.25rem',
-                boxShadow: isRejected && stage.status === 'Current' ? '0 0 0 3px rgba(185, 74, 72, 0.1)' : stage.status === 'Current' ? '0 0 0 3px rgba(18, 55, 42, 0.05)' : 'none'
+                boxShadow: isRejected && stage.status === 'Current' ? '0 0 0 3px rgba(185, 74, 72, 0.1)' : stage.status === 'Current' ? '0 0 0 3px rgba(30, 58, 138, 0.05)' : 'none'
               }}>
                 {stage.status === 'Completed' && <CheckCircle2 size={12} color="white" />}
                 {stage.status === 'Current' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white' }}></div>}
@@ -869,7 +895,7 @@ const ApplicationDetail: React.FC = () => {
             </button>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(18, 55, 42, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(30, 58, 138, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                 <LinkIcon size={24} />
               </div>
               <div>
@@ -976,6 +1002,158 @@ const ApplicationDetail: React.FC = () => {
         </div>
       )}
 
+      {/* Hidden PDF Template */}
+      <div style={{ display: 'none' }}>
+        <div id="application-pdf-template" style={{ padding: '20px', backgroundColor: '#fff', color: '#000', width: '190mm', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px solid #1044C4', paddingBottom: '20px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <img src="/assets/logo.jpeg" alt="Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+              <div>
+                <h1 style={{ margin: 0, color: '#1044C4', fontSize: '28px', fontWeight: 800 }}>C.B. BUILDING APPROVALS</h1>
+                <p style={{ margin: '5px 0 0 0', color: '#E9A83A', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase' }}>Quality is our success</p>
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', paddingTop: '10px' }}>
+              <p style={{ margin: 0, fontWeight: 'bold' }}>Date: {new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+          
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <h2 style={{ margin: 0, color: '#1044C4', fontSize: '24px', letterSpacing: '2px', textDecoration: 'underline' }}>APPLICATION DETAILS</h2>
+            <p style={{ margin: '5px 0 0 0', fontSize: '16px', fontWeight: 'bold' }}>Application No: {app.id}</p>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', marginBottom: '30px' }}>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Customer Information</h3>
+              <table style={{ width: '100%', fontSize: '14px' }}>
+                <tbody>
+                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold', width: '120px' }}>Name:</td><td>{app.customer}</td></tr>
+                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Mobile:</td><td>{app.mobile || 'N/A'}</td></tr>
+                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Email:</td><td>{app.email || 'N/A'}</td></tr>
+                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Status:</td><td>{app.status}</td></tr>
+                </tbody>
+              </table>
+            </div>
+            {documents.find(d => d.id === 'photo')?.fileData && (
+              <div style={{ width: '120px', height: '140px', border: '2px solid #ccc', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }}>
+                <img src={documents.find(d => d.id === 'photo')?.fileData} alt="Customer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
+          </div>
+
+          <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Property Details</h3>
+          <table style={{ width: '100%', fontSize: '14px', marginBottom: '30px', borderCollapse: 'collapse' }}>
+            <tbody>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee', width: '150px' }}>Location:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.location || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Address:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.address || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Property Type:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.propertyType || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Survey Number:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.surveyNo || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Plot Area:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.plotArea || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Built Up Area:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.builtUpArea || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Floors:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.floors || 'N/A'}</td></tr>
+            </tbody>
+          </table>
+
+          <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Application Timeline</h3>
+          <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse', marginBottom: '30px' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f5f5f5' }}>
+                <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Stage</th>
+                <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workflowStages.map((stage, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '8px', border: '1px solid #ddd' }}>{stage.stage}</td>
+                  <td style={{ padding: '8px', border: '1px solid #ddd', color: stage.status === 'Completed' ? '#059669' : '#666' }}>{stage.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          <div style={{ textAlign: 'center', marginTop: '40px', color: '#666', fontSize: '12px' }}>
+            <p>This is a computer-generated document. No signature is required.</p>
+          </div>
+        </div>
+      </div>
+      {/* Hidden PDF Template */}
+      <div style={{ display: 'none' }}>
+        <div id="application-pdf-template" style={{ padding: '20px', backgroundColor: '#fff', color: '#000', width: '190mm', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px solid #1044C4', paddingBottom: '20px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <img src="/assets/logo.jpeg" alt="Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+              <div>
+                <h1 style={{ margin: 0, color: '#1044C4', fontSize: '28px', fontWeight: 800 }}>C.B. BUILDING APPROVALS</h1>
+                <p style={{ margin: '5px 0 0 0', color: '#E9A83A', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase' }}>Quality is our success</p>
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', paddingTop: '10px' }}>
+              <p style={{ margin: 0, fontWeight: 'bold' }}>Date: {new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+          
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <h2 style={{ margin: 0, color: '#1044C4', fontSize: '24px', letterSpacing: '2px', textDecoration: 'underline' }}>APPLICATION DETAILS</h2>
+            <p style={{ margin: '5px 0 0 0', fontSize: '16px', fontWeight: 'bold' }}>Application No: {app.id}</p>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', marginBottom: '30px' }}>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Customer Information</h3>
+              <table style={{ width: '100%', fontSize: '14px' }}>
+                <tbody>
+                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold', width: '120px' }}>Name:</td><td>{app.customer}</td></tr>
+                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Mobile:</td><td>{app.mobile || 'N/A'}</td></tr>
+                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Email:</td><td>{app.email || 'N/A'}</td></tr>
+                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Status:</td><td>{app.status}</td></tr>
+                </tbody>
+              </table>
+            </div>
+            {documents.find(d => d.id === 'photo')?.fileData && (
+              <div style={{ width: '120px', height: '140px', border: '2px solid #ccc', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }}>
+                <img src={documents.find(d => d.id === 'photo')?.fileData} alt="Customer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
+          </div>
+
+          <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Property Details</h3>
+          <table style={{ width: '100%', fontSize: '14px', marginBottom: '30px', borderCollapse: 'collapse' }}>
+            <tbody>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee', width: '150px' }}>Location:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.location || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Address:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.address || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Property Type:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.propertyType || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Survey Number:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.surveyNo || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Plot Area:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.plotArea || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Built Up Area:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.builtUpArea || 'N/A'}</td></tr>
+              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Floors:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.floors || 'N/A'}</td></tr>
+            </tbody>
+          </table>
+
+          <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Application Timeline</h3>
+          <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse', marginBottom: '30px' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f5f5f5' }}>
+                <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Stage</th>
+                <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workflowStages.map((stage, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '8px', border: '1px solid #ddd' }}>{stage.stage}</td>
+                  <td style={{ padding: '8px', border: '1px solid #ddd', color: stage.status === 'Completed' ? '#059669' : '#666' }}>{stage.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          <div style={{ textAlign: 'center', marginTop: '40px', color: '#666', fontSize: '12px' }}>
+            <p>This is a computer-generated document. No signature is required.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -100,7 +100,7 @@ const Reports: React.FC = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
-          <div style={{ padding: '1rem', borderRadius: '0.75rem', backgroundColor: 'rgba(18, 55, 42, 0.1)', color: 'var(--primary)' }}>
+          <div style={{ padding: '1rem', borderRadius: '0.75rem', backgroundColor: 'rgba(30, 58, 138, 0.1)', color: 'var(--primary)' }}>
             <Users size={24} />
           </div>
           <div>
@@ -110,7 +110,7 @@ const Reports: React.FC = () => {
         </div>
 
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
-          <div style={{ padding: '1rem', borderRadius: '0.75rem', backgroundColor: 'rgba(18, 55, 42, 0.1)', color: 'var(--primary)' }}>
+          <div style={{ padding: '1rem', borderRadius: '0.75rem', backgroundColor: 'rgba(30, 58, 138, 0.1)', color: 'var(--primary)' }}>
             <FileText size={24} />
           </div>
           <div>

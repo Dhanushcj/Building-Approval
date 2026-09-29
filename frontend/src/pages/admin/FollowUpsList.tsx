@@ -105,7 +105,7 @@ const FollowUpsList: React.FC = () => {
                     borderRadius: '4px', 
                     fontSize: '0.75rem', 
                     fontWeight: 600, 
-                    backgroundColor: item.status === 'converted' ? 'rgba(47, 125, 90, 0.1)' : item.status === 'rejected' ? 'rgba(185, 74, 72, 0.1)' : item.status === 'unassigned' ? '#fee2e2' : 'rgba(18, 55, 42, 0.05)', 
+                    backgroundColor: item.status === 'converted' ? 'rgba(47, 125, 90, 0.1)' : item.status === 'rejected' ? 'rgba(185, 74, 72, 0.1)' : item.status === 'unassigned' ? '#fee2e2' : 'rgba(30, 58, 138, 0.05)', 
                     color: item.status === 'converted' ? 'var(--success-green)' : item.status === 'rejected' ? 'var(--error-red)' : item.status === 'unassigned' ? 'var(--error-red)' : 'var(--primary)',
                     textTransform: 'capitalize'
                   }}>

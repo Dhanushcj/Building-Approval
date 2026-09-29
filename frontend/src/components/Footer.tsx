@@ -4,7 +4,7 @@ import { Building2 } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
-    <footer style={{ backgroundColor: '#051811', color: 'var(--bg-surface)', padding: '2.5rem 0 1.5rem 0' }}>
+    <footer style={{ backgroundColor: 'var(--primary-dark)', color: 'var(--bg-surface)', padding: '2.5rem 0 1.5rem 0' }}>
       <div className="container">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'space-between', marginBottom: '2rem' }}>
           

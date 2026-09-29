@@ -1,10 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, FileText, Building, 
-  CreditCard, PhoneCall, BarChart3, 
+import {
+  LayoutDashboard, FileText,
+  CreditCard, PhoneCall, BarChart3,
   UserCog, Settings, LogOut, CheckSquare, Users
 } from 'lucide-react';
+
 
 const menuItems = [
   { title: 'Dashboard', icon: <LayoutDashboard size={20} strokeWidth={1.5} />, path: '/admin' },
@@ -12,6 +13,7 @@ const menuItems = [
   { title: 'Enquiries', icon: <PhoneCall size={20} strokeWidth={1.5} />, path: '/admin/enquiries' },
   { title: 'Applications', icon: <FileText size={20} strokeWidth={1.5} />, path: '/admin/applications' },
   { title: 'Payments', icon: <CreditCard size={20} strokeWidth={1.5} />, path: '/admin/payments' },
+  { title: 'Quotations', icon: <FileText size={20} strokeWidth={1.5} />, path: '/admin/quotations' },
   { title: 'Attendance', icon: <CheckSquare size={20} strokeWidth={1.5} />, path: '/admin/attendance' },
   { title: 'Reports', icon: <BarChart3 size={20} strokeWidth={1.5} />, path: '/admin/reports' },
   { title: 'Staff & Users', icon: <UserCog size={20} strokeWidth={1.5} />, path: '/admin/staff' },
@@ -29,22 +31,25 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
       {/* Logo Area */}
       <div style={{ padding: '2rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Building color="var(--accent)" size={28} strokeWidth={1.5} />
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '1.25rem', letterSpacing: '0.05em', color: 'var(--bg-surface)', fontFamily: 'var(--font-heading)' }}>BUILD APPROVAL</div>
-            <div style={{ fontSize: '0.65rem', color: '#D9DED8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Government Approval Mgmt</div>
+          <div style={{ backgroundColor: '#fff', borderRadius: '4px', padding: '2px', display: 'flex' }}>
+            <img src="/assets/logo.jpeg" alt="C.B. Building Approvals Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+          </div>
+          <div className="sidebar-logo-text">
+            <div style={{ fontWeight: 700, fontSize: '1.1rem', letterSpacing: '0.02em', color: 'var(--bg-surface)', fontFamily: 'var(--font-heading)', lineHeight: 1.1 }}>
+              C.B. BUILDING<br />APPROVALS
+            </div>
           </div>
         </div>
       </div>
 
       {/* Menu */}
-      <nav style={{ flex: 1, padding: '1.5rem 0', overflowY: 'auto' }}>
-        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 1.5rem', marginBottom: '0.75rem' }}>Main Menu</div>
+      <nav style={{ flex: 1, padding: '1.5rem 0', overflowY: 'auto', overflowX: 'hidden' }}>
+        <div className="sidebar-main-menu-text" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 1.5rem', marginBottom: '0.75rem' }}>Main Menu</div>
         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: 0, margin: 0 }}>
           {menuItems.map((item, index) => (
             <li key={index}>
-              <NavLink 
-                to={item.path} 
+              <NavLink
+                to={item.path}
                 end={item.path === '/admin'}
                 style={({ isActive }) => ({
                   display: 'flex',
@@ -63,10 +68,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
               >
                 {({ isActive }) => (
                   <>
-                    <span style={{ color: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.5)' }}>
+                    <span style={{ color: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.5)', minWidth: '20px' }}>
                       {item.icon}
                     </span>
-                    {item.title}
+                    <span className="sidebar-text">{item.title}</span>
                   </>
                 )}
               </NavLink>
@@ -77,17 +82,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
 
       {/* Profile Area */}
       <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--accent)', color: 'var(--bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontFamily: 'var(--font-heading)' }}>
+        <div style={{ minWidth: '40px', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--accent)', color: 'var(--bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontFamily: 'var(--font-heading)' }}>
           AD
         </div>
-        <div style={{ flex: 1 }}>
+        <div className="sidebar-profile-info" style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--bg-surface)' }}>Admin User</div>
           <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--success-green)' }}></div>
             Administrator
           </div>
         </div>
-        <button 
+        <button
           onClick={() => window.location.href = '/login'}
           style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', padding: '0.5rem', borderRadius: 'var(--border-radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
           title="Logout"
@@ -97,7 +102,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
           <LogOut size={18} />
         </button>
       </div>
-      
+
       {/* Custom Scrollbar Styles for the sidebar */}
       <style>{`
         .admin-sidebar nav::-webkit-scrollbar {

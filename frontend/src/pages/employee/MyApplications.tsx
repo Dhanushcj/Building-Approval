@@ -152,7 +152,7 @@ const MyApplications: React.FC = () => {
                       borderRadius: '4px', 
                       fontSize: '0.75rem', 
                       fontWeight: 600, 
-                      backgroundColor: app.status === 'Approved' ? 'rgba(47, 125, 90, 0.1)' : app.status === 'Documents Pending' ? 'rgba(185, 74, 72, 0.1)' : 'rgba(18, 55, 42, 0.05)', 
+                      backgroundColor: app.status === 'Approved' ? 'rgba(47, 125, 90, 0.1)' : app.status === 'Documents Pending' ? 'rgba(185, 74, 72, 0.1)' : 'rgba(30, 58, 138, 0.05)', 
                       color: app.status === 'Approved' ? 'var(--success-green)' : app.status === 'Documents Pending' ? 'var(--error-red)' : 'var(--primary)' 
                     }}>
                       {app.status}

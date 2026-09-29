@@ -14,30 +14,18 @@ const HeroSection: React.FC = () => {
         
         {/* Left Content */}
         <div style={{ flex: '1 1 500px', maxWidth: '600px' }}>
-          <div style={{ 
-            color: 'var(--primary-dark)', 
-            fontSize: '0.65rem', 
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.15em',
-            marginBottom: '1rem',
-            fontFamily: 'var(--font-heading)'
-          }}>
-            BUILDING APPROVAL & DOCUMENTATION SERVICES
-          </div>
-          
           <h1 className="heading-1" style={{ marginBottom: '1rem', color: 'var(--primary-dark)', fontSize: '3.5rem', lineHeight: 1.1, fontWeight: 700 }}>
             Your Building.<br/>
             Your Approval.<br/>
             <span style={{ color: 'var(--accent)' }}>Done Right.</span>
           </h1>
           
-          <p className="text-lead" style={{ marginBottom: '2rem', maxWidth: '480px', fontSize: '0.9375rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            Professional assistance for building approvals, documentation and government submission — with complete application tracking from start to finish.
+          <p className="text-lead" style={{ marginBottom: '2rem', maxWidth: '480px', fontSize: '1.25rem', color: 'var(--text-secondary)', lineHeight: 1.5, fontWeight: 600 }}>
+            YOUR APPROVALS OUR RESPONSIBILITY
           </p>
           
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '3rem' }}>
-            <Link to="/apply" className="btn-primary" style={{ padding: '0.75rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, backgroundColor: 'var(--accent)', color: 'var(--bg-surface)', border: 'none', borderRadius: '0.25rem' }}>
+            <Link to="/apply" className="btn-primary" style={{ padding: '0.75rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, backgroundColor: 'var(--accent)', color: 'var(--primary-dark)', border: 'none', borderRadius: '0.25rem' }}>
               Start an Application &rarr;
             </Link>
             <Link to="/track-application" className="btn-secondary" style={{ padding: '0.75rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, border: '1px solid var(--primary-dark)', color: 'var(--primary-dark)', backgroundColor: 'transparent', borderRadius: '0.25rem' }}>
@@ -65,10 +53,7 @@ const HeroSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Visual Card */}
-        <div style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', paddingRight: '2rem' }}>
-          {/* Card removed as requested */}
-        </div>
+        {/* Right Visual Card Removed */}
 
       </div>
     </section>

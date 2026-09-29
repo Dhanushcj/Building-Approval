@@ -17,7 +17,7 @@ const ActivityTimeline: React.FC = () => {
     switch (type) {
       case 'document': return 'rgba(201, 106, 74, 0.1)';
       case 'status': return 'rgba(214, 167, 86, 0.1)';
-      case 'payment': return 'rgba(11, 36, 27, 0.05)';
+      case 'payment': return 'rgba(23, 37, 84, 0.05)';
       case 'success': return 'rgba(47, 125, 90, 0.1)';
       default: return 'var(--bg-secondary)';
     }

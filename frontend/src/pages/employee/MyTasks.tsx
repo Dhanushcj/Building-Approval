@@ -142,7 +142,7 @@ const MyTasks: React.FC = () => {
                       <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
                         {task.status}
                       </span>
-                      <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: task.priority === 'Urgent' || task.priority === 'High' ? 'rgba(185, 74, 72, 0.1)' : 'rgba(18, 55, 42, 0.05)', color: task.priority === 'Urgent' || task.priority === 'High' ? 'var(--error-red)' : 'var(--primary)' }}>
+                      <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: task.priority === 'Urgent' || task.priority === 'High' ? 'rgba(185, 74, 72, 0.1)' : 'rgba(30, 58, 138, 0.05)', color: task.priority === 'Urgent' || task.priority === 'High' ? 'var(--error-red)' : 'var(--primary)' }}>
                         {task.priority}
                       </span>
                     </div>

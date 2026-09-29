@@ -10,12 +10,14 @@ const CustomerUpload: React.FC = () => {
   
   // Track uploaded documents
   const [documents, setDocuments] = useState<any[]>([
-    { id: 'aadhar', name: 'Aadhar Card (Front & Back)', fileName: null, status: 'Missing' },
-    { id: 'pan', name: 'PAN Card', fileName: null, status: 'Missing' },
-    { id: 'sale_deed', name: 'Sale Deed / Title Deed', fileName: null, status: 'Missing' },
-    { id: 'tax_receipt', name: 'Latest Property Tax Receipt', fileName: null, status: 'Missing' },
-    { id: 'patta', name: 'Patta Document', fileName: null, status: 'Missing' },
-    { id: 'ec', name: 'Encumbrance Certificate (EC)', fileName: null, status: 'Missing' }
+    { id: 'sale_deed', name: 'Land document sale Deed', fileName: null, status: 'Missing' },
+    { id: 'patta', name: 'Patta', fileName: null, status: 'Missing' },
+    { id: 'fmb', name: 'FMB', fileName: null, status: 'Missing' },
+    { id: 'pan', name: 'Pancard', fileName: null, status: 'Missing' },
+    { id: 'aadhar', name: 'Aadhar card', fileName: null, status: 'Missing' },
+    { id: 'photo', name: 'Photo (passport size)', fileName: null, status: 'Missing' },
+    { id: 'signature', name: 'Signature', fileName: null, status: 'Missing' },
+    { id: 'building_plan', name: 'Building plan', fileName: null, status: 'Missing' }
   ]);
 
   useEffect(() => {
@@ -160,7 +162,7 @@ const CustomerUpload: React.FC = () => {
         )}
 
         {!isSubmitted && (
-          <div style={{ backgroundColor: 'rgba(18, 55, 42, 0.05)', border: '1px solid rgba(11, 99, 206, 0.2)', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+          <div style={{ backgroundColor: 'rgba(30, 58, 138, 0.05)', border: '1px solid rgba(11, 99, 206, 0.2)', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
             <AlertCircle size={24} color="var(--primary)" style={{ flexShrink: 0 }} />
             <div>
               <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', margin: '0 0 0.25rem 0' }}>Action Required</h3>
@@ -171,7 +173,7 @@ const CustomerUpload: React.FC = () => {
 
         {/* Upload List */}
         <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', marginBottom: '2rem' }}>
-          {documents.filter(doc => !['building_plan', 'site_inspection_report', 'govt_approval'].includes(doc.id)).map((doc, index, array) => (
+          {documents.filter(doc => !['site_inspection_report', 'govt_approval'].includes(doc.id)).map((doc, index, array) => (
             <div key={doc.id} style={{ padding: '1.5rem', borderBottom: index < array.length - 1 ? '1px solid var(--border-color)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '0.5rem', backgroundColor: doc.status === 'Needs Reupload' ? 'rgba(214, 167, 86, 0.1)' : (doc.fileName || doc.file) ? 'rgba(34, 160, 107, 0.1)' : 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: doc.status === 'Needs Reupload' ? 'var(--warning-gold)' : (doc.fileName || doc.file) ? 'var(--success-green)' : 'var(--text-secondary)' }}>

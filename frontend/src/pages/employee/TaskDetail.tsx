@@ -81,7 +81,7 @@ const TaskDetail: React.FC = () => {
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {task.title}
-            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: task.status === 'Completed' ? 'rgba(47, 125, 90, 0.1)' : 'rgba(18, 55, 42, 0.05)', color: task.status === 'Completed' ? 'var(--success-green)' : 'var(--primary)', verticalAlign: 'middle' }}>
+            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: task.status === 'Completed' ? 'rgba(47, 125, 90, 0.1)' : 'rgba(30, 58, 138, 0.05)', color: task.status === 'Completed' ? 'var(--success-green)' : 'var(--primary)', verticalAlign: 'middle' }}>
               {task.status}
             </span>
           </h2>

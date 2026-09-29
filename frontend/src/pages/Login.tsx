@@ -59,7 +59,7 @@ const Login: React.FC = () => {
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'var(--primary-dark)',
-      backgroundImage: `linear-gradient(to bottom, rgba(18, 55, 42, 0.75), rgba(11, 36, 27, 0.90)), url('/assets/modern_architecture_login.jpg')`,
+      backgroundImage: `linear-gradient(to bottom, rgba(30, 58, 138, 0.75), rgba(23, 37, 84, 0.90)), url('/assets/modern_architecture_login.jpg')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       padding: '2rem'

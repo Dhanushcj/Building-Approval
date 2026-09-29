@@ -14,7 +14,7 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ toggleSidebar }) => {
   const currentPage = pathParts.length > 1 ? pathParts[1].charAt(0).toUpperCase() + pathParts[1].slice(1) : 'Overview';
 
   return (
-    <header className="topbar-container" style={{ backgroundColor: 'var(--bg-surface)', boxShadow: '0 2px 8px rgba(11, 36, 27, 0.02)' }}>
+    <header className="topbar-container" style={{ backgroundColor: 'var(--bg-surface)', boxShadow: '0 2px 8px rgba(23, 37, 84, 0.02)' }}>
       {/* Left side: Title & Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         {toggleSidebar && (

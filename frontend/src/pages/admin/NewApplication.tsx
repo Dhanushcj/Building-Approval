@@ -40,13 +40,17 @@ const NewApplication: React.FC = () => {
     aadhar: existingApp?.aadhar || '',
     propertyType: existingApp?.propertyType?.toLowerCase() || '',
     location: existingApp?.location?.toLowerCase() || '',
+    village: existingApp?.village || '',
+    taluk: existingApp?.taluk || '',
+    panchayat: existingApp?.panchayat || '',
     address: existingApp?.address || '',
     appType: existingApp?.appType === 'Building Approval' ? 'building' : existingApp?.appType === 'Plan Approval' ? 'plan' : existingApp?.appType === 'Occupancy Cert' ? 'occupancy' : existingApp?.appType?.toLowerCase() || '',
     surveyNo: existingApp?.surveyNo || '',
     plotArea: existingApp?.plotArea?.replace(' sq.ft', '') || '',
     builtUpArea: existingApp?.builtUpArea?.replace(' sq.ft', '') || '',
     floors: existingApp?.floors || '',
-    staff: existingApp?.staff && existingApp.staff !== 'Unassigned' ? existingApp.staff : (isEmployee ? loggedInUser : '')
+    staff: existingApp?.staff && existingApp.staff !== 'Unassigned' ? existingApp.staff : (isEmployee ? loggedInUser : ''),
+    paymentAmount: existingApp?.paymentAmount || ''
   });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -71,8 +75,9 @@ const NewApplication: React.FC = () => {
             owner_phone: formData.mobile,
             owner_email: formData.email || null,
             address: formData.address || 'Not provided',
-            village: formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
-            taluk: formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
+            village: formData.village || formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
+            taluk: formData.taluk || formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
+            panchayat: formData.panchayat || '',
             survey_number: formData.surveyNo || 'N/A',
             jurisdiction: 'DTCP',
             plot_area: formData.plotArea || null,
@@ -102,8 +107,13 @@ const NewApplication: React.FC = () => {
         body: JSON.stringify(payload)
       });
       
-      if (!res.ok) {
-        throw new Error("Failed to save application");
+      const data = await res.json();
+      
+      if (formData.paymentAmount) {
+        const createdId = data.application_number || data.id;
+        if (createdId) {
+          localStorage.setItem(`paymentAmount_${createdId}`, formData.paymentAmount);
+        }
       }
       
       toast.success("Application created successfully!");
@@ -158,15 +168,20 @@ const NewApplication: React.FC = () => {
                 <input type="text" value={formData.aadhar} onChange={e => setFormData({...formData, aadhar: e.target.value})} placeholder="Aadhar Number" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
               </div>
               
-              <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '0.5rem' }}>
+              <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', marginTop: '0.5rem' }}>
                 <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer' }}>
                   <Upload size={20} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Upload Aadhar Card</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Customer Photo</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Click or drag file</div>
                 </div>
                 <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer' }}>
                   <Upload size={20} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Upload PAN Card</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Upload Aadhar</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Click or drag file</div>
+                </div>
+                <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer' }}>
+                  <Upload size={20} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Upload PAN</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Click or drag file</div>
                 </div>
               </div>
@@ -196,6 +211,18 @@ const NewApplication: React.FC = () => {
                   <option value="shoolagiri">Shoolagiri</option>
                   <option value="other">Other Area</option>
                 </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Village</label>
+                <input type="text" value={formData.village} onChange={e => setFormData({...formData, village: e.target.value})} placeholder="Village name" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Panchayat</label>
+                <input type="text" value={formData.panchayat} onChange={e => setFormData({...formData, panchayat: e.target.value})} placeholder="Panchayat name" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Taluk</label>
+                <input type="text" value={formData.taluk} onChange={e => setFormData({...formData, taluk: e.target.value})} placeholder="Taluk name" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Property Address *</label>
@@ -251,6 +278,10 @@ const NewApplication: React.FC = () => {
                     )}
                   </select>
                 )}
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Total Amount (₹)</label>
+                <input type="number" value={formData.paymentAmount} onChange={e => setFormData({...formData, paymentAmount: e.target.value})} placeholder="e.g. 50000" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
               </div>
             </div>
 

@@ -26,27 +26,13 @@ import FollowUpsList from './pages/admin/FollowUpsList';
 import Settings from './pages/admin/Settings';
 import EnquiriesList from './pages/admin/EnquiriesList';
 import Reports from './pages/admin/Reports';
+import PaymentsList from './pages/admin/PaymentsList';
+import PaymentDetail from './pages/admin/PaymentDetail';
+import Quotations from './pages/admin/Quotations';
 
 function App() {
   useEffect(() => {
-    // Load global theme colors and mode
-    const savedColorsStr = localStorage.getItem('themeColors');
-    if (savedColorsStr) {
-      try {
-        const colors = JSON.parse(savedColorsStr);
-        document.documentElement.style.setProperty('--primary', colors.primary);
-        document.documentElement.style.setProperty('--primary-dark', colors.primary);
-        if (colors.secondary) {
-          document.documentElement.style.setProperty('--accent', colors.secondary);
-        }
-      } catch (e) {}
-    } else {
-      const savedColor = localStorage.getItem('themeColor');
-      if (savedColor) {
-        document.documentElement.style.setProperty('--primary', savedColor);
-        document.documentElement.style.setProperty('--primary-dark', savedColor);
-      }
-    }
+    // Load global theme colors and mode (removed localstorage overrides to enforce index.css theme)
 
     const savedMode = localStorage.getItem('themeMode');
     if (savedMode === 'dark') {
@@ -151,7 +137,9 @@ function App() {
             <Route path="properties/*" element={<div style={{padding:'2rem'}}><h2>Properties Module</h2><p>Coming soon...</p></div>} />
             <Route path="documents/*" element={<div style={{padding:'2rem'}}><h2>Documents Module</h2><p>Coming soon...</p></div>} />
             <Route path="workflow/*" element={<div style={{padding:'2rem'}}><h2>Workflow Module</h2><p>Coming soon...</p></div>} />
-            <Route path="payments/*" element={<div style={{padding:'2rem'}}><h2>Payments Module</h2><p>Coming soon...</p></div>} />
+            <Route path="payments" element={<PaymentsList />} />
+            <Route path="payments/:id" element={<PaymentDetail />} />
+            <Route path="quotations" element={<Quotations />} />
             <Route path="submissions/*" element={<div style={{padding:'2rem'}}><h2>Submissions Module</h2><p>Coming soon...</p></div>} />
             <Route path="tasks/*" element={<div style={{padding:'2rem'}}><h2>Tasks Module</h2><p>Coming soon...</p></div>} />
             <Route path="followups" element={<FollowUpsList />} />

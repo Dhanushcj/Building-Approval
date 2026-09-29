@@ -34,8 +34,8 @@ const ApplicationPipeline: React.FC = () => {
   const pipelineStages = [
     { name: 'New',          count: counts.New,          icon: <FilePlus size={24} strokeWidth={1.5} />,   color: 'var(--text-secondary)',                bgColor: 'var(--bg-secondary)' },
     { name: 'Documents',    count: counts.Documents,    icon: <FileText size={24} strokeWidth={1.5} />,   color: 'var(--warning)',                bgColor: 'rgba(214, 167, 86, 0.1)' },
-    { name: 'Verification', count: counts.Verification, icon: <CheckCircle size={24} strokeWidth={1.5} />,color: 'var(--primary)',                bgColor: 'rgba(11, 36, 27, 0.05)' },
-    { name: 'Submitted',    count: counts.Submitted,    icon: <Send size={24} strokeWidth={1.5} />,        color: 'var(--primary-dark)',                bgColor: 'rgba(18, 55, 42, 0.05)' },
+    { name: 'Verification', count: counts.Verification, icon: <CheckCircle size={24} strokeWidth={1.5} />,color: 'var(--primary)',                bgColor: 'rgba(23, 37, 84, 0.05)' },
+    { name: 'Submitted',    count: counts.Submitted,    icon: <Send size={24} strokeWidth={1.5} />,        color: 'var(--primary-dark)',                bgColor: 'rgba(30, 58, 138, 0.05)' },
     { name: 'Inspection',   count: counts.Inspection,   icon: <Eye size={24} strokeWidth={1.5} />,         color: 'var(--accent)',                bgColor: 'rgba(201, 106, 74, 0.1)' },
     { name: 'Approval',     count: counts.Approval,     icon: <Stamp size={24} strokeWidth={1.5} />,       color: 'var(--success-green)',   bgColor: 'rgba(47, 125, 90, 0.1)' },
   ];

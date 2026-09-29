@@ -275,7 +275,7 @@ const TrackApplication: React.FC = () => {
                             </div>
                             <div style={{ fontWeight: 600, color: isCurrent ? 'var(--primary)' : isDone ? 'var(--primary-dark)' : 'var(--text-secondary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               {stage.label}
-                              {isCurrent && <span style={{ fontSize: '0.65rem', backgroundColor: 'rgba(18, 55, 42, 0.05)', color: 'var(--primary)', padding: '0.1rem 0.5rem', borderRadius: '1rem', fontWeight: 700 }}>CURRENT</span>}
+                              {isCurrent && <span style={{ fontSize: '0.65rem', backgroundColor: 'rgba(30, 58, 138, 0.05)', color: 'var(--primary)', padding: '0.1rem 0.5rem', borderRadius: '1rem', fontWeight: 700 }}>CURRENT</span>}
                             </div>
                             <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{stage.description}</div>
                             {isDone && (

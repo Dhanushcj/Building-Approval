@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Eye, MoreVertical, FileText, Copy } from 'lucide-react';
-import FilterPanel from '../../components/admin/FilterPanel';
+import { Plus, Info, Pencil, ArrowUpDown, Search, FileText } from 'lucide-react';
 import StatusBadge from '../../components/admin/StatusBadge';
 import { recentApplications } from '../../data/mockData';
 
@@ -9,7 +8,8 @@ import { recentApplications } from '../../data/mockData';
 const ApplicationsList: React.FC = () => {
   const [applications, setApplications] = React.useState(recentApplications);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [filterValues, setFilterValues] = React.useState<Record<string, string>>({});
+  const [filterOn, setFilterOn] = React.useState('select');
+  const [subFilter, setSubFilter] = React.useState('select');
 
   React.useEffect(() => {
     const fetchCases = async () => {
@@ -47,20 +47,7 @@ const ApplicationsList: React.FC = () => {
   }, []);
   const navigate = useNavigate();
 
-  const filterOptions = [
-    { key: 'status', label: 'Status', options: ['New', 'Documents Pending', 'Verification', 'Submitted', 'Approved', 'Rejected'] },
-    { key: 'type', label: 'Application Type', options: ['Building Approval', 'Plan Approval', 'Occupancy Cert', 'Regularisation'] },
-    { key: 'location', label: 'Location', options: ['Hosur', 'Krishnagiri', 'Shoolagiri'] }
-  ];
 
-  const handleFilterChange = (key: string, value: string) => {
-    setFilterValues(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleReset = () => {
-    setFilterValues({});
-    setSearchTerm('');
-  };
 
   const filteredApplications = applications.filter(app => {
     const matchesSearch = searchTerm === '' || 
@@ -70,45 +57,15 @@ const ApplicationsList: React.FC = () => {
       app.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (app.appType || '').toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = !filterValues.status || filterValues.status === '' ||
-      app.status.toLowerCase() === filterValues.status.toLowerCase();
+    let matchesFilter = true;
+    if (filterOn === 'Product' && subFilter !== 'select') {
+      matchesFilter = (app.appType || '').toLowerCase().includes(subFilter.toLowerCase());
+    } else if (filterOn === 'Status' && subFilter !== 'select') {
+      matchesFilter = app.status.toLowerCase() === subFilter.toLowerCase();
+    }
 
-    const matchesType = !filterValues.type || filterValues.type === '' ||
-      (app.appType || '').toLowerCase().includes(filterValues.type.toLowerCase());
-
-    const matchesLocation = !filterValues.location || filterValues.location === '' ||
-      (app.location || '').toLowerCase().includes(filterValues.location.toLowerCase());
-
-    return matchesSearch && matchesStatus && matchesType && matchesLocation;
+    return matchesSearch && matchesFilter;
   });
-
-  const handleExport = () => {
-    if (filteredApplications.length === 0) return;
-    
-    const headers = ['Application ID', 'Customer Name', 'Mobile', 'Property Type', 'Location', 'Current Stage', 'Assigned Staff', 'Last Updated'];
-    const csvContent = [
-      headers.join(','),
-      ...filteredApplications.map(app => [
-        app.id,
-        `"${app.customer}"`,
-        `"${app.mobile || ''}"`,
-        `"${app.type} - ${app.appType}"`,
-        `"${app.location}"`,
-        `"${app.status}"`,
-        `"${app.staff || 'Unassigned'}"`,
-        `"${app.date}"`
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `applications_export_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <div>
@@ -118,91 +75,133 @@ const ApplicationsList: React.FC = () => {
         </button>
       </div>
 
-      <FilterPanel 
-        filters={filterOptions} 
-        onFilterChange={handleFilterChange} 
-        onReset={handleReset} 
-        onExport={handleExport} 
-        onSearch={setSearchTerm}
-      />
+      <div className="card" style={{ padding: 0, overflow: 'hidden', backgroundColor: '#e2f1f8' }}>
+        <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Proposal Process</h2>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Filter On:</label>
+                <select 
+                  value={filterOn} 
+                  onChange={(e) => { setFilterOn(e.target.value); setSubFilter('select'); }}
+                  style={{ padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', minWidth: '150px', backgroundColor: 'var(--bg-surface)' }}
+                >
+                  <option value="select">select</option>
+                  <option value="Product">Product</option>
+                  <option value="Status">Status</option>
+                </select>
+              </div>
+              
+              {filterOn !== 'select' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Select {filterOn}:</label>
+                  <select 
+                    value={subFilter} 
+                    onChange={(e) => setSubFilter(e.target.value)}
+                    style={{ padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', minWidth: '150px', backgroundColor: 'var(--bg-surface)' }}
+                  >
+                    <option value="select">select</option>
+                    {filterOn === 'Product' && (
+                      <>
+                        <option value="Building Approval">Building Approval</option>
+                        <option value="Plan Approval">Plan Approval</option>
+                        <option value="Occupancy Cert">Occupancy Cert</option>
+                        <option value="Regularisation">Regularisation</option>
+                      </>
+                    )}
+                    {filterOn === 'Status' && (
+                      <>
+                        <option value="New">New</option>
+                        <option value="Documents Pending">Documents Pending</option>
+                        <option value="Verification">Verification</option>
+                        <option value="Submitted">Submitted</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ position: 'relative', width: '300px', alignSelf: 'flex-end' }}>
+            <Search size={18} color="#94a3b8" style={{ position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)' }} />
+            <input 
+              type="text" 
+              placeholder="Search any Values.." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '0.625rem 2.5rem 0.625rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'transparent' }}
+            />
+          </div>
+        </div>
+        
+        <div style={{ padding: '0 1.5rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
+          Total {filteredApplications.length} Records
+        </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div className="table-responsive">
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
-              <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Application ID</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Customer</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Property & Type</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Current Stage</th>
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Assigned Staff</th>
-
-                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Last Updated</th>
-                <th style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>Actions</th>
+              <tr style={{ backgroundColor: '#1e3a8a', borderBottom: '1px solid var(--border-color)' }}>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>Edit</th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>View</th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal No <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Customer Name <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Mobile Number <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Current Status <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal Date (DD/MM/YYYY HH:MM) <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Product <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Source <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
               </tr>
             </thead>
             <tbody>
               {filteredApplications.length > 0 ? (
                 filteredApplications.map((app, index) => (
                   <tr key={index} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem' }}>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <button 
+                        onClick={() => navigate(`/admin/applications/${app.id}?edit=true`)}
+                        style={{ padding: '0.4rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
+                        title="Edit Application"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <button 
+                        onClick={() => navigate(`/admin/applications/${app.id}`)}
+                        style={{ padding: '0.4rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
+                        title="View Details"
+                      >
+                        <Info size={16} />
+                      </button>
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Link to={`/admin/applications/${app.id}`} style={{ fontWeight: 600, color: 'var(--primary)', textDecoration: 'none' }}>
                           {app.id}
                         </Link>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(app.id);
-                            const btn = e.currentTarget;
-                            btn.style.color = 'var(--success-green)';
-                            setTimeout(() => btn.style.color = 'var(--text-secondary)', 2000);
-                          }}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '0.2rem', display: 'flex', transition: 'color 0.2s' }}
-                          title="Copy Application ID"
-                        >
-                          <Copy size={14} />
-                        </button>
                       </div>
                     </td>
-                    <td style={{ padding: '1rem 1.5rem' }}>
+                    <td style={{ padding: '0.75rem 1rem' }}>
                       <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>{app.customer}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{app.mobile || '—'}</div>
                     </td>
-                    <td style={{ padding: '1rem 1.5rem' }}>
-                      <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.location}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{app.type} - {app.appType}</div>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{app.mobile || '—'}</div>
                     </td>
-                    <td style={{ padding: '1rem 1.5rem' }}>
+                    <td style={{ padding: '0.75rem 1rem' }}>
                       <StatusBadge type="status" value={app.status} />
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--primary-dark)' }}>
-                      {app.staff && app.staff !== 'Unassigned' ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontWeight: 500 }}>
-                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></div>
-                          {app.staff}
-                        </div>
-                      ) : (
-                        <span style={{ color: 'var(--text-secondary)' }}>Unassigned</span>
-                      )}
-                    </td>
-
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                    <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                       {app.date}
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                        <button 
-                          onClick={() => navigate(`/admin/applications/${app.id}`)}
-                          style={{ padding: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-secondary)', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                          title="View Details"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button style={{ padding: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                          <MoreVertical size={16} />
-                        </button>
-                      </div>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{app.type} - {app.appType}</div>
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{app.source || 'Web'}</div>
                     </td>
                   </tr>
                 ))

@@ -20,7 +20,7 @@ const TrackingSection: React.FC = () => {
         position: 'relative',
         padding: '2rem 0',
         backgroundColor: 'var(--primary-dark)',
-        backgroundImage: `linear-gradient(to right, rgba(11, 36, 27, 0.98) 40%, rgba(11, 36, 27, 0.85) 100%), url('/assets/hero_building_wide_1790316604179.jpg')`,
+        backgroundImage: `linear-gradient(to right, rgba(23, 37, 84, 0.98) 40%, rgba(23, 37, 84, 0.85) 100%), url('/assets/hero_building_wide_1790316604179.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
@@ -65,7 +65,7 @@ const TrackingSection: React.FC = () => {
               width: '100%', 
               minWidth: '380px', 
               padding: '1.25rem 1.5rem',
-              backgroundColor: 'rgba(18, 55, 42, 0.4)',
+              backgroundColor: 'rgba(30, 58, 138, 0.4)',
               backdropFilter: 'blur(8px)',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: '0.75rem',

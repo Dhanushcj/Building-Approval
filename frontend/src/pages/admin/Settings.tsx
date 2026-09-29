@@ -24,7 +24,7 @@ const ColorInput = ({ label, value, onChangeKey, desc, handleChange }: { label: 
 
 const Settings: React.FC = () => {
   const [colors, setColors] = useState({
-    primary: '#12372A',
+    primary: '#1e3a8a',
     secondary: '#C96A4A'
   });
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
@@ -108,7 +108,7 @@ const Settings: React.FC = () => {
 
   const resetDefault = () => {
     const defaultColors = {
-      primary: '#12372A',
+      primary: '#1e3a8a',
       secondary: '#C96A4A'
     };
     setColors(defaultColors);

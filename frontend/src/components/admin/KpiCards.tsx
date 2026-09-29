@@ -34,7 +34,7 @@ const KpiCards: React.FC = () => {
       label: 'Total Applications',
       value: kpi.total,
       sub: kpi.total === 0 ? 'No applications yet' : `${kpi.active} active`,
-      iconBg: 'rgba(18, 55, 42, 0.05)',
+      iconBg: 'rgba(30, 58, 138, 0.05)',
       iconColor: 'var(--primary-dark)',
       subColor: 'var(--success-green)',
       Icon: Users,
@@ -61,7 +61,7 @@ const KpiCards: React.FC = () => {
       label: 'Government Review',
       value: kpi.govReview,
       sub: kpi.govReview === 0 ? 'None submitted' : 'Processing',
-      iconBg: 'rgba(11, 36, 27, 0.05)',
+      iconBg: 'rgba(23, 37, 84, 0.05)',
       iconColor: 'var(--primary)',
       subColor: 'var(--text-secondary)',
       Icon: Building,
@@ -94,7 +94,7 @@ const KpiCards: React.FC = () => {
       <style>{`
         .kpi-card:hover {
           transform: translateY(-4px);
-          box-shadow: 0 12px 24px rgba(11, 36, 27, 0.08);
+          box-shadow: 0 12px 24px rgba(23, 37, 84, 0.08);
         }
       `}</style>
     </div>

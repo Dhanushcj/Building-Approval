@@ -67,7 +67,7 @@ const EmployeeApplicationDetail: React.FC = () => {
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             Application {application.id}
-            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: application.status === 'Approved' ? 'rgba(47, 125, 90, 0.1)' : 'rgba(18, 55, 42, 0.05)', color: application.status === 'Approved' ? 'var(--success-green)' : 'var(--primary)', verticalAlign: 'middle' }}>
+            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: application.status === 'Approved' ? 'rgba(47, 125, 90, 0.1)' : 'rgba(30, 58, 138, 0.05)', color: application.status === 'Approved' ? 'var(--success-green)' : 'var(--primary)', verticalAlign: 'middle' }}>
               {application.status}
             </span>
           </h2>

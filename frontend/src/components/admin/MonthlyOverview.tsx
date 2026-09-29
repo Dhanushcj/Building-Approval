@@ -22,7 +22,7 @@ const MonthlyOverview: React.FC = () => {
             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)', fontFamily: 'Inter, sans-serif' }} />
             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)', fontFamily: 'Inter, sans-serif' }} tickFormatter={(value) => `₹${value / 1000}k`} />
             <Tooltip 
-              cursor={{ fill: 'rgba(11, 36, 27, 0.03)' }}
+              cursor={{ fill: 'rgba(23, 37, 84, 0.03)' }}
               contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', fontFamily: 'var(--font-family)', backgroundColor: 'var(--bg-surface)' }}
               itemStyle={{ fontWeight: 600 }}
             />

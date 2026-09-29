@@ -33,14 +33,14 @@ const Navbar: React.FC = () => {
         {/* Logo */}
         <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
           <div style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center' }}>
-            <img src="/assets/logo_icon.png" alt="Buildwise Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+            <img src="/assets/logo.jpeg" alt="C.B. Building Approvals Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: '1.25rem', fontWeight: 800, lineHeight: 1, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', letterSpacing: '0.05em' }}>
-              BUILDWISE
+            <div style={{ fontSize: '1.15rem', fontWeight: 800, lineHeight: 1, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', letterSpacing: '0.05em' }}>
+              C.B. BUILDING APPROVALS
             </div>
             <div style={{ fontSize: '0.65rem', fontWeight: 500, color: 'var(--text-secondary)', letterSpacing: '0.02em', marginTop: '0.2rem' }}>
-              Building Approval & Documentation
+              QUALITY IS OUR SUCCESS
             </div>
           </div>
         </Link>
@@ -67,7 +67,7 @@ const Navbar: React.FC = () => {
             padding: '0.6rem 1.25rem', 
             borderRadius: '0.25rem',
             backgroundColor: 'var(--accent)', 
-            color: 'var(--bg-surface)',
+            color: 'var(--primary-dark)',
             fontWeight: 600,
             fontSize: '0.875rem',
             textDecoration: 'none'
@@ -114,7 +114,7 @@ const Navbar: React.FC = () => {
             </Link>
             <Link to="/apply" onClick={() => setIsMenuOpen(false)} style={{ 
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', 
-              padding: '0.75rem', backgroundColor: 'var(--accent)', borderRadius: '0.25rem', color: 'var(--bg-surface)', fontWeight: 600, textDecoration: 'none' 
+              padding: '0.75rem', backgroundColor: 'var(--accent)', borderRadius: '0.25rem', color: 'var(--primary-dark)', fontWeight: 600, textDecoration: 'none' 
             }}>
               Start Application <ArrowRight size={16} />
             </Link>

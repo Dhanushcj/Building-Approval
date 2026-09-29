@@ -19,7 +19,7 @@ const WhyChooseUsSection: React.FC = () => {
           
           {/* Column 1: Image */}
           <div style={{ height: '320px', borderRadius: '0.75rem', overflow: 'hidden', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)' }}>
-            <img src="/assets/why_choose_us_building_1790315574466.jpg" alt="Modern Building" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="/assets/Client.jpeg" alt="Our Client" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
           {/* Column 2: Why Choose Us Features */}
@@ -35,14 +35,14 @@ const WhyChooseUsSection: React.FC = () => {
               {/* Row 1 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(18, 55, 42, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--primary-dark)' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--primary-dark)' }}>
                     <FileCheck size={16} />
                   </div>
                   <h4 style={{ fontWeight: 700, fontSize: '0.8125rem', color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Clear Documentation</h4>
                   <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>Know what information is required before starting.</p>
                 </div>
                 <div>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(18, 55, 42, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--primary-dark)' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--primary-dark)' }}>
                     <CheckCircle2 size={16} />
                   </div>
                   <h4 style={{ fontWeight: 700, fontSize: '0.8125rem', color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Structured Process</h4>
@@ -55,14 +55,14 @@ const WhyChooseUsSection: React.FC = () => {
               {/* Row 2 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(18, 55, 42, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--primary-dark)' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--primary-dark)' }}>
                     <Navigation size={16} />
                   </div>
                   <h4 style={{ fontWeight: 700, fontSize: '0.8125rem', color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Transparent Tracking</h4>
                   <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>Know where your application currently stands.</p>
                 </div>
                 <div>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(18, 55, 42, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--primary-dark)' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(30, 58, 138, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--primary-dark)' }}>
                     <UserCheck size={16} />
                   </div>
                   <h4 style={{ fontWeight: 700, fontSize: '0.8125rem', color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Professional Assistance</h4>

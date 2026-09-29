@@ -165,7 +165,7 @@ const EmployeeDashboard: React.FC = () => {
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
         {[
-          { label: 'Active Applications', value: activeApps, icon: <FileText size={24} color="var(--primary)" />, bg: 'rgba(18, 55, 42, 0.05)', path: '/employee/applications' },
+          { label: 'Active Applications', value: activeApps, icon: <FileText size={24} color="var(--primary)" />, bg: 'rgba(30, 58, 138, 0.05)', path: '/employee/applications' },
           { label: 'In Progress', value: inProgressApps, icon: <Clock size={24} color="var(--warning-gold)" />, bg: 'rgba(214, 167, 86, 0.1)', path: '/employee/applications' },
           { label: 'Pending Docs', value: pendingDocs, icon: <AlertCircle size={24} color="var(--error-red)" />, bg: 'rgba(185, 74, 72, 0.1)', path: '/employee/applications' },
           { label: 'Approved', value: completedApps, icon: <CheckCircle2 size={24} color="var(--success-green)" />, bg: 'rgba(47, 125, 90, 0.1)', path: '/employee/applications' },

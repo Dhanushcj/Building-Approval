@@ -15,27 +15,35 @@ const ApplyNow: React.FC = () => {
     propertyDetails: ''
   });
 
-  const [aadharFile, setAadharFile] = useState<string | null>(null);
-  const [aadharFileName, setAadharFileName] = useState('');
-  const [buildingPhoto, setBuildingPhoto] = useState<string | null>(null);
-  const [buildingPhotoName, setBuildingPhotoName] = useState('');
+  const [files, setFiles] = useState<{ [key: string]: { data: string; name: string } }>({});
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'aadhar' | 'building') => {
+  const documentsList = [
+    { id: 'sale_deed', label: 'Sale Deed *', accept: 'image/*,application/pdf' },
+    { id: 'patta', label: 'Patta *', accept: 'image/*,application/pdf' },
+    { id: 'fmb', label: 'FMB *', accept: 'image/*,application/pdf' },
+    { id: 'pan', label: 'Pancard *', accept: 'image/*,application/pdf' },
+    { id: 'aadhar', label: 'Aadhar Card *', accept: 'image/*,application/pdf' },
+    { id: 'photo', label: 'Photo (Passport Size) *', accept: 'image/*' },
+    { id: 'signature', label: 'Signature *', accept: 'image/*' },
+    { id: 'building_plan', label: 'Building Plan *', accept: 'image/*,application/pdf' }
+  ];
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: string) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) { // 2MB limit for local storage
-        toast.success('File size should be less than 2MB');
+        toast.error('File size should be less than 2MB');
         return;
       }
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (type === 'aadhar') {
-          setAadharFile(event.target?.result as string);
-          setAadharFileName(file.name);
-        } else {
-          setBuildingPhoto(event.target?.result as string);
-          setBuildingPhotoName(file.name);
-        }
+        setFiles(prev => ({
+          ...prev,
+          [type]: {
+            data: event.target?.result as string,
+            name: file.name
+          }
+        }));
       };
       reader.readAsDataURL(file);
     }
@@ -51,16 +59,21 @@ const ApplyNow: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check if all required files are uploaded
+    for (const doc of documentsList) {
+      if (!files[doc.id]) {
+        toast.error(`Please upload ${doc.label.replace(' *', '')}`);
+        return;
+      }
+    }
+    
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
       
       const payload = {
         ...formData,
         type: 'Lead',
-        aadharFile,
-        aadharFileName,
-        buildingPhoto,
-        buildingPhotoName
+        files
       };
 
       const response = await fetch(`${apiUrl}/leads`, {
@@ -82,7 +95,7 @@ const ApplyNow: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '4rem 1rem' }}>
-      <div style={{ maxWidth: '600px', margin: '0 auto', backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: 'var(--bg-surface)', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
         
         {/* Header */}
         <div style={{ backgroundColor: 'var(--primary-dark)', padding: '2rem', textAlign: 'center', color: 'var(--bg-surface)' }}>
@@ -90,32 +103,32 @@ const ApplyNow: React.FC = () => {
             <Building2 size={32} color="var(--primary)" />
           </div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>Apply Now</h1>
-          <p style={{ color: '#cbd5e1', margin: 0 }}>Fill in your details below and our team will get in touch to assist with your building approval.</p>
+          <p style={{ color: '#cbd5e1', margin: 0 }}>Fill in your details and upload all required documents below.</p>
         </div>
 
         {/* Form */}
         <div style={{ padding: '2rem' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Full Name *</label>
-              <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#94a3b8' }}>
-                  <User size={18} />
-                </div>
-                <input 
-                  type="text" 
-                  name="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem' }}
-                />
-              </div>
-            </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Full Name *</label>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#94a3b8' }}>
+                    <User size={18} />
+                  </div>
+                  <input 
+                    type="text" 
+                    name="name"
+                    required
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem' }}
+                  />
+                </div>
+              </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Email Address</label>
                 <div style={{ position: 'relative' }}>
@@ -150,9 +163,7 @@ const ApplyNow: React.FC = () => {
                   />
                 </div>
               </div>
-            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Project Type</label>
                 <select 
@@ -200,27 +211,26 @@ const ApplyNow: React.FC = () => {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Upload Aadhar *</label>
-                <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', textAlign: 'center' }}>
-                  <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, 'aadhar')} style={{ display: 'none' }} id="aadharUpload" required={!aadharFile} />
-                  <label htmlFor="aadharUpload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.875rem', color: 'var(--primary)', fontWeight: 500 }}>{aadharFileName || 'Click to browse'}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Max size 2MB</span>
-                  </label>
+            <div style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', borderBottom: '2px solid var(--bg-secondary)', paddingBottom: '0.5rem' }}>Required Documents</h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Please upload clear copies of the following documents to process your application.</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+              {documentsList.map((doc) => (
+                <div key={doc.id}>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={doc.label}>{doc.label}</label>
+                  <div style={{ padding: '1rem 0.5rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', backgroundColor: files[doc.id] ? 'rgba(34, 160, 107, 0.1)' : 'var(--bg-secondary)', textAlign: 'center', borderColor: files[doc.id] ? 'var(--success-green)' : 'var(--border-color)' }}>
+                    <input type="file" accept={doc.accept} onChange={(e) => handleFileUpload(e, doc.id)} style={{ display: 'none' }} id={`upload-${doc.id}`} />
+                    <label htmlFor={`upload-${doc.id}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.875rem', color: files[doc.id] ? 'var(--success-green)' : 'var(--primary)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                        {files[doc.id]?.name || 'Click to browse'}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Max size 2MB</span>
+                    </label>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Building Photo with GPS *</label>
-                <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', textAlign: 'center' }}>
-                  <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'building')} style={{ display: 'none' }} id="buildingPhotoUpload" required={!buildingPhoto} />
-                  <label htmlFor="buildingPhotoUpload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.875rem', color: 'var(--primary)', fontWeight: 500 }}>{buildingPhotoName || 'Click to browse'}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Max size 2MB</span>
-                  </label>
-                </div>
-              </div>
+              ))}
             </div>
             
             <div>

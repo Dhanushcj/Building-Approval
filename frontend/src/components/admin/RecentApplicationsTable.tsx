@@ -23,7 +23,7 @@ const RecentApplicationsTable: React.FC = () => {
     switch(status) {
       case 'Gov Verification':
       case 'Under Review':
-        return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(11, 36, 27, 0.05)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600 }}>Under Review</span>;
+        return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(23, 37, 84, 0.05)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600 }}>Under Review</span>;
       case 'Documents Pending':
       case 'Action Required':
         return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(214, 167, 86, 0.1)', color: 'var(--warning)', fontSize: '0.75rem', fontWeight: 600 }}>Awaiting Documents</span>;
