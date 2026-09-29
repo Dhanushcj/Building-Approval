@@ -30,8 +30,9 @@ const NewApplication: React.FC = () => {
     const saved = localStorage.getItem('newApp_currentStep');
     return saved ? parseInt(saved, 10) : 1;
   });
-  const totalSteps = 4;
+  const totalSteps = 3;
   const [isUploading, setIsUploading] = useState(false);
+  const [isSaveMenuOpen, setSaveMenuOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isPartialSaveModalOpen, setIsPartialSaveModalOpen] = useState(false);
   const [saveReason, setSaveReason] = useState('Documents pending');
@@ -82,11 +83,11 @@ const NewApplication: React.FC = () => {
           setUploadedFiles(prev => ({ ...prev, [docUploadType]: imageUrl }));
           toast.success(`${file.name} attached for ${docUploadType}`, { id: loadingToast });
         } else {
-          throw new Error('Upload failed');
+          throw new Error(data.error?.message || 'Upload failed');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Cloudinary upload error:", error);
-        toast.error("Failed to upload image. Please try again.", { id: loadingToast });
+        toast.error(`Upload failed: ${error.message}`, { id: loadingToast, duration: 5000 });
       } finally {
         setIsUploading(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -288,7 +289,7 @@ const NewApplication: React.FC = () => {
   const renderStepIndicator = () => {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
-        {[1, 2, 3, 4].map((step) => (
+        {[1, 2, 3].map((step) => (
           <React.Fragment key={step}>
             <div style={{ 
               width: '32px', height: '32px', borderRadius: '50%', 
@@ -299,7 +300,7 @@ const NewApplication: React.FC = () => {
             }}>
               {step}
             </div>
-            {step < 4 && (
+            {step < 3 && (
               <div style={{ 
                 width: '60px', height: '4px', 
                 backgroundColor: currentStep > step ? 'var(--primary)' : 'var(--bg-secondary)',
@@ -651,43 +652,6 @@ const NewApplication: React.FC = () => {
     </div>
   );
 
-  const renderStep4 = () => (
-    <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-      <CheckCircle size={64} color="var(--success-green)" style={{ margin: '0 auto 1.5rem' }} />
-      <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Application Ready</h3>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
-        All required details have been captured. Please select how you want to proceed.
-      </p>
-      
-      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-        <button 
-          onClick={() => toast('Generate Invoice - Layout pending user instructions', { icon: 'ℹ️' })}
-          style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '2px solid var(--primary)', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <FileText size={18} /> Generate Invoice
-        </button>
-        <button 
-          onClick={() => toast('Generate Application - Layout pending user instructions', { icon: 'ℹ️' })}
-          className="btn-primary"
-          style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <CheckCircle size={18} /> Generate Application
-        </button>
-        <button 
-          onClick={async () => {
-            await saveApplicationData(false);
-            toast.success("Application successfully submitted and saved!");
-            if (isEmployee) navigate('/employee/applications');
-            else navigate('/admin/applications');
-          }}
-          className="btn-primary"
-          style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#10b981', borderColor: '#10b981' }}
-        >
-          <Save size={18} /> Submit & Save
-        </button>
-      </div>
-    </div>
-  );
 
   const renderUploadModal = () => {
     if (!isUploadModalOpen) return null;
@@ -809,10 +773,9 @@ const NewApplication: React.FC = () => {
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
         {currentStep === 3 && renderStep3()}
-        {currentStep === 4 && renderStep4()}
       </div>
 
-      {currentStep < 4 && (
+      {currentStep < 3 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           <button 
             onClick={handlePrev}
@@ -839,7 +802,7 @@ const NewApplication: React.FC = () => {
         </div>
       )}
       
-      {currentStep === 4 && (
+      {currentStep === 3 && (
         <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '1rem', backgroundColor: 'transparent' }}>
           <button 
             onClick={handlePrev}
@@ -852,7 +815,7 @@ const NewApplication: React.FC = () => {
               display: 'flex', alignItems: 'center', gap: '0.5rem'
             }}
           >
-            <ArrowLeft size={18} /> Back to Fees
+            <ArrowLeft size={18} /> Back to Property Details
           </button>
         </div>
       )}
@@ -912,32 +875,66 @@ const NewApplication: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Save Button */}
-      <button 
-        onClick={() => setIsPartialSaveModalOpen(true)}
+      {/* Floating Save Button with Menu */}
+      <div 
+        onMouseEnter={() => setSaveMenuOpen(true)}
+        onMouseLeave={() => setSaveMenuOpen(false)}
         style={{
           position: 'fixed',
           bottom: '2rem',
           right: '2rem',
-          padding: '1rem',
-          borderRadius: '50%',
-          backgroundColor: '#f59e0b',
-          color: 'white',
-          border: 'none',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           zIndex: 50,
-          transition: 'transform 0.2s',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '1rem',
         }}
-        title="Partially Save Application"
-        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
-        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
       >
-        <Save size={24} />
-      </button>
+        {isSaveMenuOpen && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem', animation: 'fadeIn 0.2s ease-in-out' }}>
+            <button 
+              onClick={async () => {
+                if (!checkAllDocumentsUploaded()) {
+                   toast.error("Please upload all required documents to submit!");
+                   return;
+                }
+                await saveApplicationData(false);
+                toast.success("Application Submitted for Verification!");
+                if (isEmployee) navigate('/employee/applications');
+                else navigate('/admin/applications');
+              }}
+              style={{ padding: '0.75rem 1.5rem', borderRadius: '2rem', backgroundColor: '#10b981', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+            >
+              <CheckCircle size={18} /> Submit Application
+            </button>
+            <button 
+              onClick={() => setIsPartialSaveModalOpen(true)}
+              style={{ padding: '0.75rem 1.5rem', borderRadius: '2rem', backgroundColor: 'white', color: '#f59e0b', border: '2px solid #f59e0b', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+            >
+              <Save size={18} /> Save as Draft
+            </button>
+          </div>
+        )}
+        <button 
+          style={{
+            padding: '1rem',
+            borderRadius: '50%',
+            backgroundColor: '#f59e0b',
+            color: 'white',
+            border: 'none',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'transform 0.2s',
+            transform: isSaveMenuOpen ? 'scale(1.1)' : 'scale(1)'
+          }}
+          title="Application Options"
+        >
+          <Save size={24} />
+        </button>
+      </div>
     </div>
   );
 };
