@@ -1181,26 +1181,28 @@ const ApplicationDetail: React.FC = () => {
       >
         {isSaveMenuOpen && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem', animation: 'fadeIn 0.2s ease-in-out' }}>
-            <button 
-              onClick={async () => {
-                if (!checkAllDocumentsUploaded()) {
-                   toast.error("Please upload all required documents to submit!");
-                   return;
-                }
-                await saveApplicationData(false);
-                toast.success("Application Submitted for Verification!");
-                if (isEmployee) navigate('/employee/applications');
-                else navigate('/admin/applications');
-              }}
-              style={{ padding: '0.75rem 1.5rem', borderRadius: '2rem', backgroundColor: '#10b981', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
-            >
-              <CheckCircle size={18} /> Submit Application
-            </button>
+            {currentStep === 3 && (
+              <button 
+                onClick={async () => {
+                  if (!checkAllDocumentsUploaded()) {
+                     toast.error("Please upload all required documents to submit!");
+                     return;
+                  }
+                  await saveApplicationData(false);
+                  toast.success("Application Submitted for Verification!");
+                  if (isEmployee) navigate('/employee/applications');
+                  else navigate('/admin/applications');
+                }}
+                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '2rem', backgroundColor: '#10b981', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+              >
+                <CheckCircle size={16} /> Submit Application
+              </button>
+            )}
             <button 
               onClick={() => setIsPartialSaveModalOpen(true)}
-              style={{ padding: '0.75rem 1.5rem', borderRadius: '2rem', backgroundColor: 'white', color: '#f59e0b', border: '2px solid #f59e0b', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+              style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '2rem', backgroundColor: 'white', color: '#f59e0b', border: '2px solid #f59e0b', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
             >
-              <Save size={18} /> Save as Draft
+              <Save size={16} /> Save as Draft
             </button>
           </div>
         )}
