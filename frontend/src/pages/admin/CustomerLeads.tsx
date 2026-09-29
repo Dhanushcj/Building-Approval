@@ -30,6 +30,13 @@ const CustomerLeads: React.FC = () => {
               projectType: lead.projectType || 'General Enquiry',
               propertyDetails: lead.propertyDetails || 'General Enquiry via Popup',
               date: new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+              days: (() => {
+                 if (!lead.created_at) return 0;
+                 const start = new Date(lead.created_at).getTime();
+                 const isCompleted = ['Rejected', 'Approved'].includes(lead.status);
+                 const end = isCompleted && lead.updated_at ? new Date(lead.updated_at).getTime() : new Date().getTime();
+                 return Math.ceil(Math.max(0, end - start) / (1000 * 60 * 60 * 24));
+              })(),
               status: lead.status,
               assignedTo: lead.assignedTo || '',
               aadharFile: lead.aadharFile,
@@ -174,9 +181,10 @@ const CustomerLeads: React.FC = () => {
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Customer Name <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Mobile Number <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Current Status <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
-                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal Date (DD/MM/YYYY HH:MM) <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal Date <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Product <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Source <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>No of Days <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
               </tr>
             </thead>
             <tbody>
@@ -224,18 +232,21 @@ const CustomerLeads: React.FC = () => {
                       </div>
                     )}
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{lead.date}</td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{lead.date}</td>
+                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                     {lead.projectType}
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                     {lead.source || 'Web'}
+                  </td>
+                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
+                    {lead.days !== undefined ? `${lead.days} ${lead.days === 1 ? 'day' : 'days'}` : '—'}
                   </td>
                 </tr>
               ))}
               {filteredLeads.length === 0 && (
                 <tr>
-                  <td colSpan={7} style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <td colSpan={10} style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     <FileText size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
                     <p>No customer leads found.</p>
                   </td>

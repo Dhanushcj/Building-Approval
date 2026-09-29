@@ -18,25 +18,90 @@ const ApplicationsList: React.FC = () => {
         const res = await fetch(`${apiUrl}/cases`);
         if (res.ok) {
           const casesData = await res.json();
-          const mappedApps = casesData.map((c: any) => ({
+          let mappedApps = casesData.map((c: any) => ({
             id: c.application_number || c.id,
             mongoId: c.id,
             customer: c.property?.owner_name || 'Unknown',
             mobile: c.property?.owner_phone || '',
             location: c.property?.jurisdiction || c.property?.village || '',
-            type: 'Building', // Frontend expects something like 'Residential'
+            type: 'Building',
             appType: c.approval_type,
             status: c.status,
             staff: c.assigned_staff?.name || 'Unassigned',
-            date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+            days: (() => {
+                 if (!c.created_at) return 0;
+                 const start = new Date(c.created_at).getTime();
+                 const isCompleted = ['Rejected', 'Approved'].includes(c.status);
+                 const end = isCompleted && c.updated_at ? new Date(c.updated_at).getTime() : new Date().getTime();
+                 return Math.ceil(Math.max(0, end - start) / (1000 * 60 * 60 * 24));
+            })()
           }));
+          
+          const localCasesStr = localStorage.getItem('mock_saved_cases');
+          if (localCasesStr) {
+            const localCases = JSON.parse(localCasesStr);
+            const mappedLocal = localCases.map((c: any) => ({
+              id: c.application_number || c.id,
+              mongoId: c.id,
+              customer: c.property?.owner_name || 'Unknown',
+              mobile: c.property?.owner_phone || '',
+              location: c.property?.jurisdiction || c.property?.village || '',
+              type: 'Building',
+              appType: c.approval_type,
+              status: c.status,
+              staff: c.assigned_staff?.name || 'Unassigned',
+              date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+              days: 0
+            }));
+            mappedApps = [...mappedLocal, ...mappedApps];
+          }
+          
           setApplications(mappedApps);
         } else {
-          setApplications([]);
+          const localCasesStr = localStorage.getItem('mock_saved_cases');
+          if (localCasesStr) {
+            const localCases = JSON.parse(localCasesStr);
+            const mappedLocal = localCases.map((c: any) => ({
+              id: c.application_number || c.id,
+              mongoId: c.id,
+              customer: c.property?.owner_name || 'Unknown',
+              mobile: c.property?.owner_phone || '',
+              location: c.property?.jurisdiction || c.property?.village || '',
+              type: 'Building',
+              appType: c.approval_type,
+              status: c.status,
+              staff: c.assigned_staff?.name || 'Unassigned',
+              date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+              days: 0
+            }));
+            setApplications(mappedLocal);
+          } else {
+            setApplications([]);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch cases:", err);
-        setApplications([]);
+        const localCasesStr = localStorage.getItem('mock_saved_cases');
+        if (localCasesStr) {
+          const localCases = JSON.parse(localCasesStr);
+          const mappedLocal = localCases.map((c: any) => ({
+            id: c.application_number || c.id,
+            mongoId: c.id,
+            customer: c.property?.owner_name || 'Unknown',
+            mobile: c.property?.owner_phone || '',
+            location: c.property?.jurisdiction || c.property?.village || '',
+            type: 'Building',
+            appType: c.approval_type,
+            status: c.status,
+            staff: c.assigned_staff?.name || 'Unassigned',
+            date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+            days: 0
+          }));
+          setApplications(mappedLocal);
+        } else {
+          setApplications([]);
+        }
       }
     };
     
@@ -75,7 +140,7 @@ const ApplicationsList: React.FC = () => {
         </button>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden', backgroundColor: '#e2f1f8' }}>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Proposal Process</h2>
@@ -151,9 +216,10 @@ const ApplicationsList: React.FC = () => {
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Customer Name <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Mobile Number <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Current Status <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
-                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal Date (DD/MM/YYYY HH:MM) <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal Date <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Product <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Source <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>No of Days <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
               </tr>
             </thead>
             <tbody>
@@ -203,11 +269,14 @@ const ApplicationsList: React.FC = () => {
                     <td style={{ padding: '0.75rem 1rem' }}>
                       <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{app.source || 'Web'}</div>
                     </td>
+                    <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
+                      {app.days !== undefined ? `${app.days} ${app.days === 1 ? 'day' : 'days'}` : '—'}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+                  <td colSpan={10} style={{ padding: '4rem 2rem', textAlign: 'center' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                       <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
                         <FileText size={32} color="var(--text-secondary)" />

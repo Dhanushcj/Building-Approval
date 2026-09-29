@@ -29,6 +29,7 @@ import Reports from './pages/admin/Reports';
 import PaymentsList from './pages/admin/PaymentsList';
 import PaymentDetail from './pages/admin/PaymentDetail';
 import Quotations from './pages/admin/Quotations';
+import ApplicationPDF from './pages/admin/ApplicationPDF';
 
 function App() {
   useEffect(() => {
@@ -115,6 +116,7 @@ function App() {
           <Route path="/upload/:id" element={<CustomerUpload />} />
           <Route path="/apply" element={<ApplyNow />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/print/application/:id" element={<ApplicationPDF />} />
           {/* Admin Layout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />

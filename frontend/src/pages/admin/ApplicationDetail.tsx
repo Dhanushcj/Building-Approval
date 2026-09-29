@@ -1,1159 +1,1219 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, Edit, FileText, CheckCircle2, User, Building, 
-  MapPin, Clock, Upload, MoreVertical, Link as LinkIcon, Download, X, Copy, Mail, Printer
-} from 'lucide-react';
-import StatusBadge from '../../components/admin/StatusBadge';
-import { recentApplications } from '../../data/mockData';
-import JSZip from 'jszip';
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, User, Building, FileText, Upload, CheckCircle, X, Save, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
-import html2pdf from 'html2pdf.js';
+import { recentApplications } from '../../data/mockData';
 
 const ApplicationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isAdmin = localStorage.getItem('loggedInUser') === 'Admin';
-  const [activeTab, setActiveTab] = useState('overview');
-  const [govtTrackingNumber, setGovtTrackingNumber] = useState('');
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
-  const [isRejected, setIsRejected] = useState(false);
-  const [rejectionNote, setRejectionNote] = useState('');
-  const [appReceipt, setAppReceipt] = useState('');           // base64 data
-  const [receiptFileName, setReceiptFileName] = useState('');  // display name
-  const [assignedStaff, setAssignedStaff] = useState('');
-  const receiptInputRef = useRef<HTMLInputElement>(null);
+  const [staffList, setStaffList] = useState<any[]>([]);
 
-  type DocumentItem = { id: string, name: string, uploadedBy: string, date: string, status: string, file: any, fileData?: string };
-  const [documents, setDocuments] = useState<DocumentItem[]>([
-    { id: 'sale_deed', name: 'Land document sale Deed', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'patta', name: 'Patta', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'fmb', name: 'FMB', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'pan', name: 'Pancard', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'aadhar', name: 'Aadhar card', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'photo', name: 'Photo (passport size)', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'signature', name: 'Signature', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'building_plan', name: 'Building plan', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'site_inspection_report', name: 'Site Inspection Report', uploadedBy: '-', date: '-', status: 'Missing', file: null },
-    { id: 'govt_approval', name: 'Government Approval (Final)', uploadedBy: '-', date: '-', status: 'Missing', file: null }
-  ]);
-
-  useEffect(() => {
-    const loadCustomerDocs = () => {
-      const stored = localStorage.getItem(`customerDocs_${id}`);
-      if (stored) {
-        const customerDocs = JSON.parse(stored);
-        
-        setDocuments(prevDocs => {
-          const updatedDocs = prevDocs.map(adminDoc => {
-            const match = customerDocs.find((d: any) => d.id === adminDoc.id);
-            if (match) {
-              return {
-                ...adminDoc,
-                uploadedBy: match.uploadedBy || 'Customer',
-                date: match.date || adminDoc.date,
-                status: match.status,
-                file: match.fileName || match.file,
-                fileData: match.fileData || adminDoc.fileData
-              };
-            }
-            return adminDoc;
-          });
-          
-          // Preserve custom admin docs
-          const customDocs = customerDocs.filter((d: any) => d.id.startsWith('custom_') && !updatedDocs.find(ud => ud.id === d.id));
-          return [...updatedDocs, ...customDocs];
-        });
-      }
-    };
-    
-    loadCustomerDocs();
-    window.addEventListener('storage', loadCustomerDocs);
-
-    // Load persisted state
-    const savedTracking = localStorage.getItem(`tracking_${id}`);
-    if (savedTracking) setGovtTrackingNumber(savedTracking);
-    
-    const savedReceipt = localStorage.getItem(`receipt_${id}`);
-    if (savedReceipt) {
-      try {
-        const parsed = JSON.parse(savedReceipt);
-        setAppReceipt(parsed.data || '');
-        setReceiptFileName(parsed.name || '');
-      } catch {
-        // legacy plain string
-        setAppReceipt(savedReceipt);
-      }
-    }
-
-    const savedStaff = localStorage.getItem(`assignedStaff_${id}`);
-    // Normalize: treat 'Unassigned' as empty string so dropdown shows placeholder option
-    const normalizedSavedStaff = savedStaff && savedStaff !== 'Unassigned' ? savedStaff : '';
-    // Also fall back to the staff saved on the application itself
-    const appStaff = recentApplications.find(a => a.id === id)?.staff || '';
-    const normalizedAppStaff = appStaff === 'Unassigned' ? '' : appStaff;
-    setAssignedStaff(normalizedSavedStaff || normalizedAppStaff);
-    
-    const savedRejection = localStorage.getItem(`rejection_${id}`);
-    if (savedRejection) {
-      try {
-        const { isRejected, rejectionNote } = JSON.parse(savedRejection);
-        setIsRejected(isRejected);
-        setRejectionNote(rejectionNote);
-      } catch (e) {}
-    }
-
-    return () => window.removeEventListener('storage', loadCustomerDocs);
-  }, [id]);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [workflowStages, setWorkflowStages] = useState([
-    { stage: 'Application Created', date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), staff: 'Admin', status: 'Current' },
-    { stage: 'Customer Documents Received', date: '-', staff: '-', status: 'Pending' },
-    { stage: 'Document Verification', date: '-', staff: '-', status: 'Pending' },
-    { stage: 'Application Prepared', date: '-', staff: '-', status: 'Pending' },
-    { stage: 'Government Submission', date: '-', staff: '-', status: 'Pending' },
-    { stage: 'Site Inspection', date: '-', staff: '-', status: 'Pending' },
-    { stage: 'Government Verification', date: '-', staff: '-', status: 'Pending' },
-    { stage: 'Approval', date: '-', staff: '-', status: 'Pending' }
-  ]);
-
-  useEffect(() => {
-    setWorkflowStages(prevStages => {
-      let changed = false;
-      const newStages = JSON.parse(JSON.stringify(prevStages));
-      const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      
-      if (newStages[0].status === 'Current') {
-        newStages[0].status = 'Completed';
-        newStages[1].status = 'Current';
-        newStages[1].date = 'Current Phase';
-        changed = true;
-      }
-
-      const customerDocIds = ['sale_deed', 'patta', 'fmb', 'pan', 'aadhar', 'photo', 'signature', 'building_plan'];
-      const customerDocs = documents.filter(d => customerDocIds.includes(d.id));
-      const allCustomerDocsReceived = customerDocs.every(d => d.status !== 'Missing');
-      
-      if (allCustomerDocsReceived && newStages[1].status === 'Current') {
-        newStages[1].status = 'Completed';
-        newStages[1].date = today;
-        newStages[2].status = 'Current';
-        newStages[2].date = 'Current Phase';
-        changed = true;
-      }
-
-      const allCustomerDocsVerified = customerDocs.every(d => d.status === 'Verified');
-      
-      if (allCustomerDocsVerified && newStages[2].status === 'Current') {
-        newStages[2].status = 'Completed';
-        newStages[2].date = today;
-        newStages[3].status = 'Current';
-        newStages[3].date = 'Current Phase';
-        changed = true;
-      }
-
-      const buildingPlan = documents.find(d => d.id === 'building_plan');
-      const buildingPlanUploaded = buildingPlan && buildingPlan.status !== 'Missing';
-      
-      if (allCustomerDocsVerified && buildingPlanUploaded && newStages[3].status === 'Current') {
-        newStages[3].status = 'Completed';
-        newStages[3].date = today;
-        newStages[4].status = 'Current';
-        newStages[4].date = 'Current Phase';
-        changed = true;
-      }
-      if (govtTrackingNumber && newStages[4].status === 'Current') {
-        newStages[4].status = 'Completed';
-        newStages[4].date = today;
-        newStages[5].status = 'Current';
-        newStages[5].date = 'Current Phase';
-        changed = true;
-      }
-
-      const siteInspection = documents.find(d => d.id === 'site_inspection_report');
-      const siteInspectionUploaded = siteInspection && siteInspection.status !== 'Missing';
-      
-      if (govtTrackingNumber && siteInspectionUploaded && newStages[5].status === 'Current') {
-        newStages[5].status = 'Completed';
-        newStages[5].date = today;
-        newStages[6].status = 'Current';
-        newStages[6].date = 'Current Phase';
-        changed = true;
-      }
-
-      const govtApproval = documents.find(d => d.id === 'govt_approval');
-      const govtApprovalUploaded = govtApproval && govtApproval.status !== 'Missing';
-      
-      if (govtTrackingNumber && siteInspectionUploaded && govtApprovalUploaded && newStages[6].status === 'Current') {
-        newStages[6].status = 'Completed';
-        newStages[6].date = today;
-        newStages[7].status = 'Completed'; // Automatically complete the Approval stage
-        newStages[7].date = today;
-        changed = true;
-
-        // Auto-update application status to 'Approved'
-        const appIdx = recentApplications.findIndex(a => a.id === id);
-        if (appIdx !== -1 && recentApplications[appIdx].status !== 'Approved') {
-          recentApplications[appIdx].status = 'Approved';
-          localStorage.setItem('recentApplications', JSON.stringify(recentApplications));
-          window.dispatchEvent(new Event('storage'));
-        }
-      }
-
-      return changed ? newStages : prevStages;
-    });
-  }, [documents, govtTrackingNumber]);
-
-  const [uploadingDocIndex, setUploadingDocIndex] = useState<number | null>(null);
-
-  const handleUploadClick = (index: number) => {
-    setUploadingDocIndex(index);
-    fileInputRef.current?.click();
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('caseId', id || 'BA-2026-00124');
-      
-      let docType = 'other';
-      if (uploadingDocIndex !== null) {
-        docType = documents[uploadingDocIndex].id;
-      }
-      formData.append('document_type', docType);
-
+  React.useEffect(() => {
+    const fetchStaff = async () => {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
-        const response = await fetch(`${apiUrl}/documents/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error('Upload failed');
-        }
-
-        const data = await response.json();
-        const fileUrl = data.url;
-
-        if (uploadingDocIndex !== null) {
-          const newDocs = [...documents];
-          newDocs[uploadingDocIndex] = {
-            ...newDocs[uploadingDocIndex],
-            uploadedBy: 'Admin',
-            date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-            status: 'Pending',
-            file: file.name,
-            fileData: fileUrl
-          };
-          setDocuments(newDocs);
-          setUploadingDocIndex(null);
-          if (id) {
-            localStorage.setItem(`customerDocs_${id}`, JSON.stringify(newDocs));
-            window.dispatchEvent(new Event('storage'));
-          }
-        } else {
-          const newDoc = {
-            id: `custom_${Date.now()}`,
-            name: file.name,
-            uploadedBy: 'Admin',
-            date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-            status: 'Pending',
-            file: file.name,
-            fileData: fileUrl
-          };
-          const newDocs = [...documents, newDoc];
-          setDocuments(newDocs);
-          if (id) {
-            localStorage.setItem(`customerDocs_${id}`, JSON.stringify(newDocs));
-            window.dispatchEvent(new Event('storage'));
-          }
-        }
-      } catch (error) {
-        console.error("Upload error:", error);
-        toast.error("Failed to upload document to Cloudinary via backend.");
-      }
-    }
-  };
-
-  const updateDocumentStatus = (index: number, newStatus: string) => {
-    const newDocs = [...documents];
-    newDocs[index].status = newStatus;
-    setDocuments(newDocs);
-    if (id) {
-      try {
-        localStorage.setItem(`customerDocs_${id}`, JSON.stringify(newDocs));
-        window.dispatchEvent(new Event('storage'));
-      } catch (e) {
-        toast.success("Storage limit exceeded.");
-      }
-    }
-  };
-
-  const [showShareModal, setShowShareModal] = useState(false);
-  const shareLink = `${window.location.origin}/upload/${id || 'BA-2026-00124'}`;
-
-  const handleShareLink = () => {
-    setShowShareModal(true);
-  };
-
-  const [isEmailingLink, setIsEmailingLink] = useState(false);
-  const handleEmailShareLink = async () => {
-    if (!app.email) {
-      toast.success('No email address available for this customer.');
-      return;
-    }
-    
-    setIsEmailingLink(true);
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
-      const response = await fetch(`${apiUrl}/notifications/upload-link`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: app.email, name: app.customer, uploadLink: shareLink })
-      });
-      
-      if (!response.ok) throw new Error('Failed to send email');
-      toast.success('Upload link successfully emailed to the customer!');
-      setShowShareModal(false);
-    } catch (error) {
-      console.error('Error sending link via email:', error);
-      toast.error('Failed to send email. Please try copying the link instead.');
-    } finally {
-      setIsEmailingLink(false);
-    }
-  };
-
-
-
-  const [viewingDoc, setViewingDoc] = useState<{name: string, fileData?: string} | null>(null);
-
-  const handleDownload = (doc: any) => {
-    if (doc.fileData) {
-      const element = document.createElement("a");
-      element.href = doc.fileData;
-      let ext = '.txt';
-      if (doc.fileData.startsWith('data:image/jpeg')) ext = '.jpg';
-      else if (doc.fileData.startsWith('data:image/png')) ext = '.png';
-      else if (doc.fileData.startsWith('data:application/pdf')) ext = '.pdf';
-      
-      const safeName = (doc.fileName || doc.name).replace(/\s+/g, '_').toLowerCase();
-      element.download = safeName.endsWith(ext) ? safeName : `${safeName}${ext}`;
-      
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-    } else {
-      toast.success('File data is not available for download.');
-    }
-  };
-
-  const handleView = (doc: any) => {
-    setViewingDoc({ name: doc.name, fileData: doc.fileData });
-  };
-
-  const handlePrintApplication = () => {
-    const element = document.getElementById('application-pdf-template');
-    if (!element) return;
-    
-    element.style.display = 'block';
-    const opt = {
-      margin:       10,
-      filename:     `Application_${app.id}.pdf`,
-      image:        { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
-    };
-    
-    html2pdf().set(opt).from(element).save().then(() => {
-      element.style.display = 'none';
-    });
-  };
-
-  const handleDownloadAll = async () => {
-    const zip = new JSZip();
-    const folder = zip.folder(`Application_${id}_Documents`);
-    
-    let hasFiles = false;
-    documents.forEach(doc => {
-      if (doc.fileData && doc.status !== 'Missing') {
-        const base64Data = doc.fileData.split(',')[1];
-        let ext = '.txt';
-        if (doc.fileData.startsWith('data:image/jpeg')) ext = '.jpg';
-        else if (doc.fileData.startsWith('data:image/png')) ext = '.png';
-        else if (doc.fileData.startsWith('data:application/pdf')) ext = '.pdf';
-        
-        const safeName = (doc.file || doc.name).replace(/\s+/g, '_').toLowerCase();
-        const fileName = safeName.endsWith(ext) ? safeName : `${safeName}${ext}`;
-        
-        folder?.file(fileName, base64Data, { base64: true });
-        hasFiles = true;
-      }
-    });
-
-    if (!hasFiles) {
-      toast.success("No documents available to download.");
-      return;
-    }
-
-    const content = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(content);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Application_${id}_Documents.zip`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const [app, setApp] = useState<any>(null);
-
-  useEffect(() => {
-    const fetchCase = async () => {
-      try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
-        const res = await fetch(`${apiUrl}/cases/${id}`);
+        const res = await fetch(`${apiUrl}/users`);
         if (res.ok) {
           const data = await res.json();
-          setApp({
-            id: data.application_number || data.id,
-            status: data.status,
-            priority: 'Medium',
-            customer: data.property?.owner_name || 'Unknown',
-            mobile: data.property?.owner_phone || '',
-            email: data.property?.owner_email || '',
-            location: data.property?.village || data.property?.jurisdiction || '',
-            address: data.property?.address || '',
-            propertyType: data.property?.property_type || 'Residential',
-            buildingType: 'Individual Villa',
-            surveyNo: data.property?.survey_number || '',
-            plotArea: data.property?.plot_area || 'N/A',
-            builtUpArea: data.property?.built_up_area || 'N/A',
-            floors: data.property?.floors || 'N/A',
-            staff: data.assigned_staff?.name || 'Unassigned',
-            createdAt: new Date(data.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-            updatedAt: new Date(data.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-            paymentStatus: 'Pending',
-            amount: '₹0',
-            appType: data.approval_type
-          });
+          setStaffList(data.filter((s: any) => s.status === 'Active' && s.role === 'STAFF'));
         }
-      } catch (err) {
-        console.error("Failed to fetch case details:", err);
+      } catch (e) {
+        console.error('Failed to fetch staff list', e);
       }
     };
-    fetchCase();
-  }, [id]);
+    fetchStaff();
+  }, []);
 
-  if (!app) return <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading application details...</div>;
+  const loggedInUser = localStorage.getItem('loggedInUser') || 'Admin';
+  const isEmployee = loggedInUser !== 'Admin';
 
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: <FileText size={16} /> },
-    { id: 'documents', label: 'Documents', icon: <Upload size={16} /> }
-  ];
-
-  const renderTabContent = () => {
-    switch(activeTab) {
-      case 'overview':
-        return (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-start' }}>
-            {/* Main Stage (Left Column) - Customer & Property */}
-            <div style={{ flex: '1 1 60%', minWidth: '320px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {isRejected && (
-                <div style={{ padding: '1rem', backgroundColor: 'rgba(185, 74, 72, 0.1)', border: '1px solid var(--error-red)', borderRadius: '0.5rem', color: 'var(--error-red)' }}>
-                  <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}><X size={16} /> Application Rejected</strong>
-                  <p style={{ margin: 0, fontSize: '0.875rem' }}><strong>Reason:</strong> {rejectionNote || 'No reason provided.'}</p>
-                </div>
-              )}
-
-              {/* Customer Info */}
-              <div style={{ backgroundColor: 'white', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', border: '1px solid var(--border-color)', borderTop: '4px solid #0ea5e9', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '0.75rem 1rem', backgroundColor: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '0.5rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                    <User size={14} />
-                  </div>
-                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', margin: 0 }}>Customer Information</h3>
-                </div>
-                <div style={{ padding: '1rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', flex: 1 }}>
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Name</div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>{app.customer}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Mobile</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.mobile}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Email</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.email}</div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Sidebar (Right Column) - Application Actions */}
-            <div style={{ flex: '1 1 30%', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {/* Application Info */}
-              <div style={{ backgroundColor: 'white', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', border: '1px solid var(--border-color)', borderTop: '4px solid var(--primary)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '0.75rem 1rem', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '0.5rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                    <FileText size={14} />
-                  </div>
-                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', margin: 0 }}>Application Information</h3>
-                </div>
-                <div style={{ padding: '1rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', flex: 1 }}>
-                  <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Application Type</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.appType}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Building Type</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.buildingType}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Created Date</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{app.createdAt}</div>
-                  </div>
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Assigned Staff</div>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <select
-                        value={assignedStaff}
-                        onChange={e => {
-                          const val = e.target.value;
-                          setAssignedStaff(val);
-                          localStorage.setItem(`assignedStaff_${id}`, val);
-                          const appIdx = recentApplications.findIndex(a => a.id === id);
-                          if (appIdx !== -1) {
-                            recentApplications[appIdx].staff = val || 'Unassigned';
-                            localStorage.setItem('recentApplications', JSON.stringify(recentApplications));
-                          }
-                        }}
-                        style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', fontWeight: 500, color: assignedStaff ? 'var(--primary-dark)' : 'var(--text-secondary)', outline: 'none', backgroundColor: '#f8fafc', cursor: 'pointer', minWidth: '220px', transition: 'all 0.2s' }}
-                      >
-                        <option value="">— Select Staff —</option>
-                        {(() => {
-                          const staffSaved = localStorage.getItem('staffMembers');
-                          const staffList: any[] = staffSaved ? JSON.parse(staffSaved).filter((s: any) => s.status === 'Active') : [];
-                          return staffList.length > 0
-                            ? staffList.map((s: any) => <option key={s.id} value={s.name}>{s.name} — {s.role}</option>)
-                            : <option value="" disabled>No staff added yet. Add staff in Staff & Users.</option>;
-                        })()}
-                      </select>
-                      {assignedStaff && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.25rem 0.75rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#059669', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600 }}>
-                          <CheckCircle2 size={14} /> Assigned
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {workflowStages[3].status === 'Completed' && (
-                    <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem', padding: '1.25rem', backgroundColor: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                      
-                      {/* Govt Tracking Number */}
-                      <div>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Govt. Tracking Number</div>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <input 
-                            type="text" 
-                            value={govtTrackingNumber} 
-                            onChange={e => setGovtTrackingNumber(e.target.value)} 
-                            placeholder="Enter tracking ID..." 
-                            style={{ flex: 1, minWidth: '150px', padding: '0.625rem 0.75rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', outline: 'none', fontSize: '0.875rem' }} 
-                          />
-                          <button 
-                            onClick={() => {
-                              localStorage.setItem(`tracking_${id}`, govtTrackingNumber);
-                              window.dispatchEvent(new Event('storage'));
-                            }}
-                            className="btn-primary" 
-                            style={{ padding: '0.625rem 1.25rem', fontSize: '0.875rem', borderRadius: '0.5rem', whiteSpace: 'nowrap', flexShrink: 0 }}
-                          >
-                            Save
-                          </button>
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.375rem' }}>Entering this will mark Government Submission as Completed.</div>
-                      </div>
-
-                      {/* Application Receipt - File Upload */}
-                      <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.25rem' }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Application Receipt</div>
-                        <input
-                          type="file"
-                          ref={receiptInputRef}
-                          accept="image/*,application/pdf"
-                          style={{ display: 'none' }}
-                          onChange={e => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            const reader = new FileReader();
-                            reader.onload = ev => {
-                              const data = ev.target?.result as string;
-                              setAppReceipt(data);
-                              setReceiptFileName(file.name);
-                              try {
-                                localStorage.setItem(`receipt_${id}`, JSON.stringify({ data, name: file.name }));
-                              } catch {
-                                toast.success('File too large to store.');
-                              }
-                            };
-                            reader.readAsDataURL(file);
-                          }}
-                        />
-                        {appReceipt ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', backgroundColor: 'white', border: '1px solid #cbd5e1', borderRadius: '0.5rem', flexWrap: 'wrap' }}>
-                            <FileText size={18} color="var(--primary)" />
-                            <span style={{ flex: 1, minWidth: '100px', fontSize: '0.875rem', color: '#334155', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{receiptFileName || 'Receipt uploaded'}</span>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button
-                                onClick={() => {
-                                  const a = document.createElement('a');
-                                  a.href = appReceipt;
-                                  a.download = receiptFileName || 'receipt';
-                                  a.click();
-                                }}
-                                style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--primary)', backgroundColor: 'transparent', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
-                              >
-                                View
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setAppReceipt('');
-                                  setReceiptFileName('');
-                                  localStorage.removeItem(`receipt_${id}`);
-                                  if (receiptInputRef.current) receiptInputRef.current.value = '';
-                                }}
-                                style={{ padding: '0.375rem 0.5rem', borderRadius: '0.375rem', border: 'none', backgroundColor: '#fee2e2', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer' }}
-                              >
-                                <X size={14} />
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => receiptInputRef.current?.click()}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '2px dashed #cbd5e1', backgroundColor: 'white', color: '#64748b', fontSize: '0.875rem', cursor: 'pointer', justifyContent: 'center', transition: 'all 0.2s' }}
-                            onMouseOver={e => {
-                              e.currentTarget.style.borderColor = 'var(--primary)';
-                              e.currentTarget.style.color = 'var(--primary)';
-                            }}
-                            onMouseOut={e => {
-                              e.currentTarget.style.borderColor = '#cbd5e1';
-                              e.currentTarget.style.color = '#64748b';
-                            }}
-                          >
-                            <Upload size={16} /> Upload Receipt (PDF / Image)
-                          </button>
-                        )}
-                      </div>
-
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Property Info */}
-              <div style={{ backgroundColor: 'white', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', border: '1px solid var(--border-color)', borderTop: '4px solid #f59e0b', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '0.75rem 1rem', backgroundColor: '#f59e0b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '0.5rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                    <Building size={14} />
-                  </div>
-                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white', margin: 0 }}>Property Information</h3>
-                </div>
-                <div style={{ padding: '1rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '1rem', flex: 1 }}>
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Address</div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 500, color: '#0f172a' }}>{app.address}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Survey No</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.surveyNo}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Plot Area</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.plotArea}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Built-up Area</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.builtUpArea}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.25rem', fontWeight: 600 }}>Floors</div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 500, color: '#334155' }}>{app.floors}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case 'documents':
-        return (
-          <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)' }}>Uploaded Documents</h3>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button onClick={handleDownloadAll} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', cursor: 'pointer', color: 'var(--primary-dark)' }}>
-                  <Download size={16} /> Download All (ZIP)
-                </button>
-                <button onClick={handleShareLink} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>
-                  <LinkIcon size={16} /> Share Upload Link
-                </button>
-                <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
-                <button onClick={() => fileInputRef.current?.click()} className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Upload size={16} /> Upload Document
-                </button>
-              </div>
-            </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Document Name</th>
-                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Uploaded By</th>
-                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Date</th>
-                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Status</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {documents.filter(doc => 
-                  (doc.id !== 'site_inspection_report' || workflowStages[4].status === 'Completed') &&
-                  (doc.id !== 'govt_approval' || workflowStages[5].status === 'Completed')
-                ).map((doc) => {
-                  const actualIdx = documents.findIndex(d => d.id === doc.id);
-                  return (
-                  <tr key={doc.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{doc.name}</td>
-                    <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{doc.uploadedBy}</td>
-                    <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{doc.date}</td>
-                    <td style={{ padding: '1rem' }}><StatusBadge type="status" value={doc.status} /></td>
-                    <td style={{ padding: '1rem', textAlign: 'right' }}>
-                      {doc.status === 'Missing' ? (
-                        <button onClick={() => handleUploadClick(actualIdx)} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <Upload size={14} /> Upload
-                        </button>
-                      ) : (
-                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', alignItems: 'center' }}>
-                          {doc.status === 'Pending' && isAdmin && (
-                            <>
-                              <button onClick={() => updateDocumentStatus(actualIdx, 'Verified')} style={{ background: 'none', border: 'none', color: 'var(--success-green)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <CheckCircle2 size={14} /> Verify
-                              </button>
-                              <button onClick={() => updateDocumentStatus(actualIdx, 'Needs Reupload')} style={{ background: 'none', border: 'none', color: 'var(--warning-gold)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <Upload size={14} /> Request Reupload
-                              </button>
-                            </>
-                          )}
-                          {doc.status === 'Pending' && !isAdmin && (
-                            <span style={{ fontSize: '0.75rem', color: 'var(--warning-gold)', fontWeight: 500 }}>Awaiting Admin Verification</span>
-                          )}
-                          <button onClick={() => handleView(documents[actualIdx])} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>View</button>
-                          <button onClick={() => handleDownload(doc)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <Download size={14} />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        );
-
-      default:
-        return <div className="card" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Content for {activeTab} goes here.</div>;
+  const [applicationStatus, setApplicationStatus] = useState<string>(() => {
+    if (id) {
+      const existingStr = localStorage.getItem('mock_saved_cases');
+      if (existingStr) {
+        const existing = JSON.parse(existingStr);
+        const app = existing.find((a: any) => a.id === id);
+        if (app && app.status) {
+          return app.status === 'Submitted' ? 'PENDING_DOCUMENTS' : app.status;
+        }
+      }
+      const apiApp = recentApplications.find((a: any) => a.id === id);
+      if (apiApp && apiApp.status) return apiApp.status === 'Submitted' ? 'PENDING_DOCUMENTS' : apiApp.status;
     }
+    return 'PENDING_DOCUMENTS';
+  });
+
+  const [currentStep, setCurrentStep] = useState(() => {
+    const saved = localStorage.getItem('newApp_currentStep');
+    return saved ? parseInt(saved, 10) : 1;
+  });
+  const totalSteps = 4;
+  const [isUploading, setIsUploading] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isPartialSaveModalOpen, setIsPartialSaveModalOpen] = useState(false);
+  const [saveReason, setSaveReason] = useState('Documents pending');
+  const [docUploadType, setDocUploadType] = useState('CUSTOMER PHOTOGRAPH');
+  const [modalTab, setModalTab] = useState<'upload' | 'view'>('upload');
+  const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<{
+    'CUSTOMER PHOTOGRAPH'?: string;
+    'CUSTOMER SIGNATURE'?: string;
+    'AADHAR CARD'?: string;
+    'PAN CARD'?: string;
+    'LAND DOCUMENT'?: string;
+    'SALE DEED'?: string;
+    'PATTA'?: string;
+    'FMB'?: string;
+    'PROPERTY SIGNATURE'?: string;
+    'BUILDING PLAN'?: string;
+    'RECEIPT'?: string;
+    'FINAL_APPROVAL'?: string;
+    receiptNumber?: string;
+  }>(() => {
+    if (id) {
+      const existingStr = localStorage.getItem('mock_saved_cases');
+      if (existingStr) {
+        const existing = JSON.parse(existingStr);
+        const app = existing.find((a: any) => a.id === id);
+        if (app && app.uploadedFiles) {
+          return app.uploadedFiles;
+        }
+      }
+    }
+    const saved = localStorage.getItem('newApp_uploadedFiles');
+    return saved && !id ? JSON.parse(saved) : {};
+  });
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      const loadingToast = toast.loading(`Uploading ${file.name}...`);
+      
+      try {
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        formDataUpload.append('upload_preset', 'ml_default');
+        
+        const response = await fetch(`https://api.cloudinary.com/v1_1/dfou7lxtg/image/upload`, {
+          method: 'POST',
+          body: formDataUpload,
+        });
+        
+        const data = await response.json();
+        
+        if (data.secure_url) {
+          const imageUrl = data.secure_url;
+          const newUploadedFiles = { ...uploadedFiles, [docUploadType]: imageUrl };
+          setUploadedFiles(newUploadedFiles);
+          
+          if (id) {
+            const existingStr = localStorage.getItem('mock_saved_cases');
+            if (existingStr) {
+              const existing = JSON.parse(existingStr);
+              const index = existing.findIndex((c: any) => c.id === id);
+              if (index !== -1) {
+                existing[index].uploadedFiles = newUploadedFiles;
+                if (existing[index].fullData) {
+                  existing[index].fullData.uploadedFiles = newUploadedFiles;
+                }
+                localStorage.setItem('mock_saved_cases', JSON.stringify(existing));
+              }
+            }
+          }
+          
+          toast.success(`${file.name} attached for ${docUploadType}`, { id: loadingToast });
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        toast.error("Failed to upload image. Please try again.", { id: loadingToast });
+      } finally {
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const [formData, setFormData] = useState(() => {
+    // If we have an ID, load that data instead
+    if (id) {
+      const existingStr = localStorage.getItem('mock_saved_cases');
+      if (existingStr) {
+        const existing = JSON.parse(existingStr);
+        const app = existing.find((a: any) => a.id === id);
+        if (app && app.fullData) {
+          return app.fullData;
+        }
+      }
+      
+      // Fallback to mock API data
+      const apiApp = recentApplications.find((a: any) => a.id === id);
+      if (apiApp) {
+        return {
+          serviceType: apiApp.approval_type === 'BUILDING_PLAN_APPROVAL' ? 'building' : 'plan',
+          customerName: apiApp.customer || '',
+          fatherName: '',
+          dob: '',
+          mobile: '',
+          email: '',
+          altMobile: '',
+          aadhar: '',
+          pan: '',
+          residentialAddress: { houseNo: '', streetName: '', area: apiApp.location || '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' },
+          permanentAddress: { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' },
+          staff: apiApp.staff || '',
+          propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
+          feesAmount: '',
+          feeNotes: '',
+        };
+      }
+    }
+    const saved = localStorage.getItem('newApp_formData');
+    if (saved && !id) {
+      const parsed = JSON.parse(saved);
+      if (typeof parsed.residentialAddress === 'string') {
+        parsed.residentialAddress = { houseNo: parsed.residentialAddress, streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' };
+        parsed.permanentAddress = { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' };
+      }
+      if (!parsed.propertyDetails) {
+        parsed.propertyDetails = { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' };
+      }
+      return parsed;
+    }
+    return {
+      // Page 1: Services & Personal Details
+      serviceType: '',
+      customerName: '',
+      fatherName: '',
+      dob: '',
+      mobile: '',
+      email: '',
+      altMobile: '',
+      aadhar: '',
+      pan: '',
+      residentialAddress: { houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' },
+      permanentAddress: { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' },
+      staff: isEmployee ? loggedInUser : '',
+      
+      // Page 2: Property Details
+      propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
+      
+      // Page 3: Fees Details
+      feesAmount: '',
+      feeNotes: '',
+    };
+  });
+
+  React.useEffect(() => {
+    if (!id) {
+      try {
+        localStorage.setItem('newApp_currentStep', currentStep.toString());
+      } catch (e) {
+        console.error("Storage quota exceeded", e);
+      }
+    }
+  }, [currentStep, id]);
+
+  React.useEffect(() => {
+    if (!id) {
+      try {
+        localStorage.setItem('newApp_uploadedFiles', JSON.stringify(uploadedFiles));
+      } catch (e) {
+        console.error("Storage quota exceeded", e);
+        toast.error("Storage limit reached! Please clear previous drafts or compress your images.");
+      }
+    }
+  }, [uploadedFiles, id]);
+
+  React.useEffect(() => {
+    if (!id) {
+      try {
+        localStorage.setItem('newApp_formData', JSON.stringify(formData));
+      } catch (e) {
+        console.error("Storage quota exceeded", e);
+      }
+    }
+  }, [formData, id]);
+
+  const checkAllDocumentsUploaded = () => {
+    return uploadedFiles['CUSTOMER PHOTOGRAPH'] && 
+           uploadedFiles['CUSTOMER SIGNATURE'] &&
+           uploadedFiles['AADHAR CARD'] && 
+           uploadedFiles['PAN CARD'] && 
+           uploadedFiles['LAND DOCUMENT'] &&
+           uploadedFiles['SALE DEED'] &&
+           uploadedFiles['PATTA'] &&
+           uploadedFiles['FMB'] &&
+           uploadedFiles['PROPERTY SIGNATURE'] &&
+           uploadedFiles['BUILDING PLAN'];
+  };
+
+  const saveApplicationData = async (isPartial: boolean, reason?: string) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      
+      const typeMap: Record<string, string> = {
+        'building': 'BUILDING_PLAN_APPROVAL',
+        'plan': 'LAYOUT_APPROVAL',
+        'occupancy': 'COMPLETION_CERTIFICATE',
+        'regularisation': 'PATTA_TRANSFER'
+      };
+
+      let newStatus = applicationStatus;
+      if (!isPartial) {
+        if (applicationStatus === 'PENDING_DOCUMENTS' || applicationStatus === 'Draft' || applicationStatus === 'INTAKE') {
+           if (checkAllDocumentsUploaded()) {
+              newStatus = 'DOCUMENTS_VERIFICATION';
+           } else {
+              newStatus = 'PENDING_DOCUMENTS';
+           }
+        }
+      } else {
+        if (applicationStatus === 'NEW' || !applicationStatus) newStatus = 'PENDING_DOCUMENTS';
+      }
+      setApplicationStatus(newStatus);
+      
+      const existingStr = localStorage.getItem('mock_saved_cases');
+      let existing = existingStr ? JSON.parse(existingStr) : [];
+      const mockCase = {
+        id: id || `APP-Draft-${Date.now()}`,
+        application_number: id || `APP-Draft-${Date.now()}`,
+        property: {
+          owner_name: formData.customerName || 'Draft Owner',
+          owner_phone: formData.mobile || '',
+          jurisdiction: 'DTCP',
+          village: formData.residentialAddress.area || ''
+        },
+        fullData: formData,
+        uploadedFiles: uploadedFiles,
+        approval_type: typeMap[formData.serviceType] || 'Draft',
+        status: newStatus,
+        assigned_staff: { name: formData.staff },
+        created_at: new Date().toISOString(),
+        reason: reason || ''
+      };
+      
+      if (id) {
+        const index = existing.findIndex((c: any) => c.id === id);
+        if (index !== -1) {
+          existing[index] = { ...existing[index], ...mockCase };
+        } else {
+          existing = [mockCase, ...existing];
+        }
+      } else {
+        existing = [mockCase, ...existing];
+      }
+      localStorage.setItem('mock_saved_cases', JSON.stringify(existing));
+
+      if (!id) {
+        localStorage.removeItem('newApp_formData');
+        localStorage.removeItem('newApp_currentStep');
+        localStorage.removeItem('newApp_uploadedFiles');
+      }
+
+      const payload = {
+        property: {
+          create: {
+            owner_name: formData.customerName || 'Draft Owner',
+            owner_phone: formData.mobile || '0000000000',
+            address: `${formData.propertyDetails?.dno || ''} ${formData.propertyDetails?.streetName || ''}`,
+            village: formData.propertyDetails?.village || formData.residentialAddress.area || 'Unknown',
+            taluk: formData.propertyDetails?.taluk || formData.residentialAddress.taluk || 'Unknown',
+            survey_number: formData.propertyDetails?.surveyNo || 'TBD',
+            jurisdiction: formData.propertyDetails?.panchayat || 'DTCP'
+          }
+        },
+        approval_type: typeMap[formData.serviceType] || 'BUILDING_PLAN_APPROVAL',
+        status: isPartial ? 'INTAKE' : 'SUBMITTED',
+      };
+      
+      await fetch(`${apiUrl}/cases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  };
+
+  const handlePartialSave = async () => {
+    await saveApplicationData(true, saveReason);
+    toast.success(`Application partially saved: ${saveReason}`);
+    setIsPartialSaveModalOpen(false);
+    if (isEmployee) {
+      navigate('/employee/applications');
+    } else {
+      navigate('/admin/applications');
+    }
+  };
+
+  const handleNext = () => {
+    let errors: string[] = [];
+    
+    // Validation for Step 1
+    if (currentStep === 1) {
+      if (!formData.serviceType) errors.push('serviceType');
+      if (!formData.staff) errors.push('staff');
+      if (!formData.customerName) errors.push('customerName');
+      if (!formData.fatherName) errors.push('fatherName');
+      if (!formData.dob) errors.push('dob');
+      if (!formData.mobile) errors.push('mobile');
+      if (!formData.email) errors.push('email');
+      if (!formData.aadhar) errors.push('aadhar');
+      if (!formData.pan) errors.push('pan');
+      
+      if (!formData.residentialAddress.houseNo) errors.push('res_houseNo');
+      if (!formData.residentialAddress.streetName) errors.push('res_streetName');
+      if (!formData.residentialAddress.city) errors.push('res_city');
+      if (!formData.residentialAddress.state) errors.push('res_state');
+      
+      const perm = formData.permanentAddress.sameAsResidential ? formData.residentialAddress : formData.permanentAddress;
+      if (!perm.houseNo) errors.push('perm_houseNo');
+      if (!perm.streetName) errors.push('perm_streetName');
+      if (!perm.city) errors.push('perm_city');
+      if (!perm.state) errors.push('perm_state');
+    }
+    
+    // Validation for Step 2
+    if (currentStep === 2) {
+      if (!formData.propertyDetails?.surveyNo) errors.push('prop_surveyNo');
+      if (!formData.propertyDetails?.pattaNo) errors.push('prop_pattaNo');
+    }
+
+    // Validation for Step 3
+    if (currentStep === 3) {
+      if (!formData.feesAmount) errors.push('feesAmount');
+    }
+
+    if (errors.length > 0) {
+      setFormErrors(errors);
+      toast.error("Please fill all mandatory fields (highlighted in red) to proceed.");
+      return;
+    }
+
+    setFormErrors([]);
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const renderStepIndicator = () => {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
+        {[1, 2, 3, 4].map((step) => (
+          <React.Fragment key={step}>
+            <div style={{ 
+              width: '32px', height: '32px', borderRadius: '50%', 
+              backgroundColor: currentStep >= step ? 'var(--primary)' : 'var(--bg-secondary)',
+              color: currentStep >= step ? 'white' : 'var(--text-secondary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 600, fontSize: '0.875rem', border: currentStep >= step ? 'none' : '1px solid var(--border-color)'
+            }}>
+              {step}
+            </div>
+            {step < 4 && (
+              <div style={{ 
+                width: '60px', height: '4px', 
+                backgroundColor: currentStep > step ? 'var(--primary)' : 'var(--bg-secondary)',
+                margin: '0 8px', borderRadius: '2px'
+              }} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
+
+  const getInputStyle = (fieldName: string, value: any) => {
+    const hasError = formErrors.includes(fieldName) && !value;
+    return { 
+      width: '100%', 
+      padding: '0.5rem', 
+      border: 'none', 
+      borderBottom: hasError ? '2px solid #ef4444' : '1px solid var(--border-color)', 
+      backgroundColor: hasError ? '#fef2f2' : 'transparent',
+      outline: 'none',
+      transition: 'all 0.2s ease-in-out'
+    };
+  };
+
+  const renderStep1 = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      
+      {/* Top Section - Service Details */}
+      <div className="card">
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <FileText size={20} color="var(--primary)" /> Service Details
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Service Type *</label>
+            <select value={formData.serviceType} onChange={e => setFormData({...formData, serviceType: e.target.value})} style={getInputStyle('serviceType', formData.serviceType)}>
+              <option value="">Select Service</option>
+              <option value="building">Building Approval</option>
+              <option value="plan">Plan Approval</option>
+              <option value="occupancy">Occupancy Certificate</option>
+              <option value="regularisation">Regularisation</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Source Details (Assigned Employee) *</label>
+            {isEmployee ? (
+              <input type="text" value={loggedInUser} disabled style={{ ...getInputStyle('staff', loggedInUser), backgroundColor: 'transparent', color: '#64748b' }} />
+            ) : (
+              <select value={formData.staff} onChange={e => setFormData({...formData, staff: e.target.value})} style={getInputStyle('staff', formData.staff)}>
+                <option value="">Select Employee</option>
+                {staffList.length > 0 ? (
+                  staffList.map((s: any) => (
+                    <option key={s.id} value={s.name}>{s.name} — Staff Member</option>
+                  ))
+                ) : (
+                  <option value="" disabled>No staff available</option>
+                )}
+              </select>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Section - Personal Details */}
+      <div className="card" style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 500px' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <User size={20} color="var(--primary)" /> Personal Information
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Customer Name *</label>
+              <input type="text" value={formData.customerName} onChange={e => setFormData({...formData, customerName: e.target.value})} placeholder="Full name" style={getInputStyle('customerName', formData.customerName)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Father Name *</label>
+              <input type="text" value={formData.fatherName} onChange={e => setFormData({...formData, fatherName: e.target.value})} placeholder="Father's name" style={getInputStyle('fatherName', formData.fatherName)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Date of Birth *</label>
+              <input type="date" value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} style={getInputStyle('dob', formData.dob)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Mobile Number *</label>
+              <input type="tel" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} placeholder="+91" style={getInputStyle('mobile', formData.mobile)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Alternative Number (Optional)</label>
+              <input type="tel" value={formData.altMobile} onChange={e => setFormData({...formData, altMobile: e.target.value})} placeholder="+91" style={getInputStyle('altMobile', formData.altMobile)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Aadhar Number *</label>
+              <input type="text" value={formData.aadhar} onChange={e => setFormData({...formData, aadhar: e.target.value})} placeholder="12-digit number" style={getInputStyle('aadhar', formData.aadhar)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>PAN Number *</label>
+              <input type="text" value={formData.pan} onChange={e => setFormData({...formData, pan: e.target.value})} placeholder="PAN number" style={getInputStyle('pan', formData.pan)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Email ID *</label>
+              <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="Email address" style={getInputStyle('email', formData.email)} />
+            </div>
+          </div>
+        </div>
+
+        {/* Photo & Signature Upload Area */}
+        <div style={{ flex: '0 0 160px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '100%', position: 'relative', marginTop: '2rem' }}>
+            <div style={{ width: '100%', aspectRatio: '3/4', border: '1px solid var(--border-color)', borderRadius: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', overflow: 'hidden' }}>
+              {uploadedFiles['CUSTOMER PHOTOGRAPH'] ? (
+                <img src={uploadedFiles['CUSTOMER PHOTOGRAPH']} alt="Customer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <User size={60} color="#cbd5e1" />
+              )}
+            </div>
+            {/* Top Right Upload Icons */}
+            <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', display: 'flex', gap: '0.25rem' }}>
+              <button 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  const link = `${window.location.origin}/upload/${id || 'NEW'}`;
+                  navigator.clipboard.writeText(link);
+                  toast.success('Upload link copied! Share this with the customer.');
+                }}
+                title="Copy Customer Upload Link" 
+                style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+                <Send size={18} />
+              </button>
+              <button 
+                onClick={(e) => { e.preventDefault(); setDocUploadType('CUSTOMER PHOTOGRAPH'); setIsUploadModalOpen(true); }}
+                title="Upload Customer Photo" 
+                style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+                <Upload size={18} />
+              </button>
+            </div>
+          </div>
+          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>Customer Photo *</div>
+
+          <div style={{ width: '100%', position: 'relative', marginTop: '0.5rem' }}>
+            <div style={{ width: '100%', aspectRatio: '2/1', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', overflow: 'hidden' }}>
+              {uploadedFiles['CUSTOMER SIGNATURE'] ? (
+                <img src={uploadedFiles['CUSTOMER SIGNATURE']} alt="Signature" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              ) : (
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Signature</span>
+              )}
+            </div>
+            {/* Top Right Upload Icon */}
+            <button 
+              onClick={(e) => { e.preventDefault(); setDocUploadType('CUSTOMER SIGNATURE'); setIsUploadModalOpen(true); }}
+              title="Upload Customer Signature" 
+              style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+              <Upload size={14} />
+            </button>
+          </div>
+          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>Customer Signature *</div>
+        </div>
+      </div>
+
+      {/* Address Section */}
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Building size={20} color="var(--primary)" /> Address Details
+        </h3>
+        
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+          {/* Correspondence Address */}
+          <div style={{ flex: 1, minWidth: '350px', backgroundColor: 'transparent', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>Correspondence Address *</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Dno</label>
+                <input type="text" value={formData.residentialAddress.houseNo} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, houseNo: e.target.value}})} style={getInputStyle('res_houseNo', formData.residentialAddress.houseNo)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Street Name</label>
+                <input type="text" value={formData.residentialAddress.streetName} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, streetName: e.target.value}})} style={getInputStyle('res_streetName', formData.residentialAddress.streetName)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Area</label>
+                <input type="text" value={formData.residentialAddress.area} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, area: e.target.value}})} style={getInputStyle('res_area', formData.residentialAddress.area)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>City</label>
+                <input type="text" value={formData.residentialAddress.city} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, city: e.target.value}})} style={getInputStyle('res_city', formData.residentialAddress.city)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Taluk/District</label>
+                <input type="text" value={formData.residentialAddress.taluk} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, taluk: e.target.value}})} style={getInputStyle('res_taluk', formData.residentialAddress.taluk)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>PinCode</label>
+                <input type="text" value={formData.residentialAddress.pincode} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, pincode: e.target.value}})} style={getInputStyle('res_pincode', formData.residentialAddress.pincode)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>State</label>
+                <input type="text" value={formData.residentialAddress.state} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, state: e.target.value}})} style={getInputStyle('res_state', formData.residentialAddress.state)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Landmark</label>
+                <input type="text" value={formData.residentialAddress.landmark} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, landmark: e.target.value}})} style={getInputStyle('res_landmark', formData.residentialAddress.landmark)} />
+              </div>
+            </div>
+          </div>
+
+          {/* Permanent Address */}
+          <div style={{ flex: 1, minWidth: '350px', backgroundColor: 'transparent', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)' }}>Permanent Address *</h4>
+              <label style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                <input type="checkbox" checked={formData.permanentAddress.sameAsResidential} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, sameAsResidential: e.target.checked}})} style={{ accentColor: 'var(--primary)' }} />
+                Same
+              </label>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem', opacity: formData.permanentAddress.sameAsResidential ? 0.5 : 1, pointerEvents: formData.permanentAddress.sameAsResidential ? 'none' : 'auto' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Dno</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.houseNo : formData.permanentAddress.houseNo} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, houseNo: e.target.value}})} style={getInputStyle('perm_houseNo', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.houseNo : formData.permanentAddress.houseNo)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Street Name</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.streetName : formData.permanentAddress.streetName} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, streetName: e.target.value}})} style={getInputStyle('perm_streetName', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.streetName : formData.permanentAddress.streetName)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Area</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.area : formData.permanentAddress.area} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, area: e.target.value}})} style={getInputStyle('perm_area', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.area : formData.permanentAddress.area)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>City</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.city : formData.permanentAddress.city} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, city: e.target.value}})} style={getInputStyle('perm_city', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.city : formData.permanentAddress.city)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Taluk/District</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.taluk : formData.permanentAddress.taluk} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, taluk: e.target.value}})} style={getInputStyle('perm_taluk', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.taluk : formData.permanentAddress.taluk)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>PinCode</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.pincode : formData.permanentAddress.pincode} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, pincode: e.target.value}})} style={getInputStyle('perm_pincode', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.pincode : formData.permanentAddress.pincode)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>State</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.state : formData.permanentAddress.state} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, state: e.target.value}})} style={getInputStyle('perm_state', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.state : formData.permanentAddress.state)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Landmark</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.landmark : formData.permanentAddress.landmark} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, landmark: e.target.value}})} style={getInputStyle('perm_landmark', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.landmark : formData.permanentAddress.landmark)} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="card" style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+          <Building size={20} color="var(--primary)" /> Property Details
+        </h3>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            onClick={(e) => { 
+              e.preventDefault(); 
+              const link = `${window.location.origin}/upload/${id || 'NEW'}`;
+              navigator.clipboard.writeText(link);
+              toast.success('Upload link copied! Share this with the customer.');
+            }}
+            title="Copy Customer Upload Link" 
+            style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+            <Send size={18} />
+          </button>
+          <button 
+            onClick={(e) => { e.preventDefault(); setDocUploadType('LAND DOCUMENT'); setIsUploadModalOpen(true); }}
+            title="Upload Property Documents" 
+            style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+            <Upload size={18} />
+          </button>
+        </div>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Survey Number *</label>
+          <input type="text" value={formData.propertyDetails?.surveyNo || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, surveyNo: e.target.value}})} style={getInputStyle('prop_surveyNo', formData.propertyDetails?.surveyNo)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Patta Number *</label>
+          <input type="text" value={formData.propertyDetails?.pattaNo || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, pattaNo: e.target.value}})} style={getInputStyle('prop_pattaNo', formData.propertyDetails?.pattaNo)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Dno</label>
+          <input type="text" value={formData.propertyDetails?.dno || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, dno: e.target.value}})} style={getInputStyle('prop_dno', formData.propertyDetails?.dno)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Street Name</label>
+          <input type="text" value={formData.propertyDetails?.streetName || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, streetName: e.target.value}})} style={getInputStyle('prop_streetName', formData.propertyDetails?.streetName)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Village</label>
+          <input type="text" value={formData.propertyDetails?.village || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, village: e.target.value}})} style={getInputStyle('prop_village', formData.propertyDetails?.village)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Panchayat</label>
+          <input type="text" value={formData.propertyDetails?.panchayat || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, panchayat: e.target.value}})} style={getInputStyle('prop_panchayat', formData.propertyDetails?.panchayat)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>City</label>
+          <input type="text" value={formData.propertyDetails?.city || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, city: e.target.value}})} style={getInputStyle('prop_city', formData.propertyDetails?.city)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Taluk/District</label>
+          <input type="text" value={formData.propertyDetails?.taluk || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, taluk: e.target.value}})} style={getInputStyle('prop_taluk', formData.propertyDetails?.taluk)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>PinCode</label>
+          <input type="text" value={formData.propertyDetails?.pincode || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, pincode: e.target.value}})} style={getInputStyle('prop_pincode', formData.propertyDetails?.pincode)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>State</label>
+          <input type="text" value={formData.propertyDetails?.state || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, state: e.target.value}})} style={getInputStyle('prop_state', formData.propertyDetails?.state)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Landmark</label>
+          <input type="text" value={formData.propertyDetails?.landmark || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, landmark: e.target.value}})} style={getInputStyle('prop_landmark', formData.propertyDetails?.landmark)} />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep3 = () => (
+    <div className="card">
+      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <FileText size={20} color="var(--primary)" /> Fees Details
+      </h3>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Estimated Total Amount (₹) *</label>
+          <input type="number" value={formData.feesAmount} onChange={e => setFormData({...formData, feesAmount: e.target.value})} placeholder="e.g. 50000" style={getInputStyle('feesAmount', formData.feesAmount)} />
+        </div>
+        
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Additional Notes regarding fees</label>
+          <textarea value={formData.feeNotes} onChange={e => setFormData({...formData, feeNotes: e.target.value})} rows={3} placeholder="Fee breakdown or notes..." style={{ ...getInputStyle('feeNotes', formData.feeNotes), resize: 'vertical' }}></textarea>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep4 = () => (
+    <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+      <CheckCircle size={64} color="var(--success-green)" style={{ margin: '0 auto 1.5rem' }} />
+      <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Application Ready</h3>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
+        All required details have been captured. Please select how you want to proceed.
+      </p>
+      
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        <button 
+          onClick={() => toast('Generate Invoice - Layout pending user instructions', { icon: 'ℹ️' })}
+          style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '2px solid var(--primary)', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          <FileText size={18} /> Generate Invoice
+        </button>
+        <button 
+          onClick={() => toast('Generate Application - Layout pending user instructions', { icon: 'ℹ️' })}
+          className="btn-primary"
+          style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          <CheckCircle size={18} /> Generate Application
+        </button>
+        <button 
+          onClick={async () => {
+            if (!checkAllDocumentsUploaded()) {
+               toast.error("Please upload all 5 required documents to proceed to Verification!");
+               return;
+            }
+            await saveApplicationData(false);
+            toast.success("All Documents Collected! Submitted for Verification.");
+            if (isEmployee) navigate('/employee/applications');
+            else navigate('/admin/applications');
+          }}
+          className="btn-primary"
+          style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#10b981', borderColor: '#10b981' }}
+        >
+          <Save size={18} /> Submit & Request Verification
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderDocumentVerificationScreen = () => (
+    <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
+      <CheckCircle size={48} color="var(--primary)" style={{ margin: '0 auto 1.5rem' }} />
+      <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Document Verification</h3>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Please review the uploaded documents and confirm verification.</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '3rem' }}>
+        {Object.entries(uploadedFiles).filter(([k,v]) => v && !['RECEIPT','FINAL_APPROVAL','receiptNumber'].includes(k)).map(([key, _value]) => (
+          <div key={key} style={{ padding: '1rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem' }}>
+             <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--primary-dark)' }}>{key}</div>
+             <button onClick={() => { setDocUploadType(key); setModalTab('view'); setIsUploadModalOpen(true); }} style={{ padding: '0.5rem', fontSize: '0.75rem', backgroundColor: 'var(--bg-secondary)', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}>View File</button>
+          </div>
+        ))}
+      </div>
+      <button 
+        onClick={async () => {
+           setApplicationStatus('DOCUMENTS_VERIFIED');
+           const existingStr = localStorage.getItem('mock_saved_cases');
+           if (existingStr && id) {
+             let existing = JSON.parse(existingStr);
+             const index = existing.findIndex((c: any) => c.id === id);
+             if (index !== -1) { existing[index].status = 'DOCUMENTS_VERIFIED'; localStorage.setItem('mock_saved_cases', JSON.stringify(existing)); }
+           }
+           toast.success('Documents verified successfully!');
+        }}
+        className="btn-primary"
+        style={{ padding: '1rem 2rem', fontSize: '1.125rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+      >
+        <CheckCircle size={24} /> Confirm Verification
+      </button>
+    </div>
+  );
+
+  const renderReceiptUploadScreen = () => (
+    <div className="card" style={{ padding: '3rem 2rem' }}>
+      <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem', textAlign: 'center' }}>Upload Receipt & Payment Info</h3>
+      <div style={{ maxWidth: '400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div>
+           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Receipt Number *</label>
+           <input type="text" value={uploadedFiles.receiptNumber || ''} onChange={e => setUploadedFiles(prev => ({...prev, receiptNumber: e.target.value}))} placeholder="Enter Receipt No" style={getInputStyle('receiptNumber', uploadedFiles.receiptNumber)} />
+        </div>
+        <div>
+           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Receipt File *</label>
+           <div 
+            onClick={() => { setDocUploadType('RECEIPT'); setModalTab('upload'); setIsUploadModalOpen(true); }}
+            style={{ padding: '2rem', border: '2px dashed var(--border-color)', borderRadius: '0.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer' }}>
+            {uploadedFiles['RECEIPT'] ? (
+              <div style={{ color: 'var(--success-green)', fontWeight: 600 }}><CheckCircle size={24} style={{ marginBottom: '0.5rem' }} /><div>Receipt Uploaded</div></div>
+            ) : (
+              <><Upload size={24} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} /><div style={{ fontSize: '0.875rem', fontWeight: 500 }}>Upload Receipt File</div></>
+            )}
+           </div>
+        </div>
+        <button 
+          onClick={async () => {
+             if (!uploadedFiles.receiptNumber || !uploadedFiles['RECEIPT']) { toast.error("Please enter receipt number and upload receipt file"); return; }
+             setApplicationStatus('SUBMITTED_FOR_APPROVAL');
+             const existingStr = localStorage.getItem('mock_saved_cases');
+             if (existingStr && id) {
+               let existing = JSON.parse(existingStr);
+               const index = existing.findIndex((c: any) => c.id === id);
+               if (index !== -1) { 
+                 existing[index].status = 'SUBMITTED_FOR_APPROVAL'; 
+                 existing[index].uploadedFiles = uploadedFiles;
+                 localStorage.setItem('mock_saved_cases', JSON.stringify(existing)); 
+               }
+             }
+             toast.success('Payment submitted for final approval!');
+          }}
+          className="btn-primary"
+          style={{ padding: '1rem', width: '100%' }}
+        >
+          Submit Payment & Receipt
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderFinalApprovalScreen = () => (
+    <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
+      <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Final Approval Upload</h3>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Upload the signed and approved document to complete the application process.</p>
+      <div style={{ maxWidth: '400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div>
+           <div 
+            onClick={() => { setDocUploadType('FINAL_APPROVAL'); setModalTab('upload'); setIsUploadModalOpen(true); }}
+            style={{ padding: '2rem', border: '2px dashed var(--border-color)', borderRadius: '0.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer' }}>
+            {uploadedFiles['FINAL_APPROVAL'] ? (
+              <div style={{ color: 'var(--success-green)', fontWeight: 600 }}><CheckCircle size={24} style={{ marginBottom: '0.5rem' }} /><div>Approval Uploaded</div></div>
+            ) : (
+              <><Upload size={24} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} /><div style={{ fontSize: '0.875rem', fontWeight: 500 }}>Upload Final Approval File</div></>
+            )}
+           </div>
+        </div>
+        <button 
+          onClick={async () => {
+             if (!uploadedFiles['FINAL_APPROVAL']) { toast.error("Please upload the final approval file"); return; }
+             setApplicationStatus('COMPLETED');
+             const existingStr = localStorage.getItem('mock_saved_cases');
+             if (existingStr && id) {
+               let existing = JSON.parse(existingStr);
+               const index = existing.findIndex((c: any) => c.id === id);
+               if (index !== -1) { 
+                 existing[index].status = 'COMPLETED'; 
+                 existing[index].uploadedFiles = uploadedFiles;
+                 localStorage.setItem('mock_saved_cases', JSON.stringify(existing)); 
+               }
+             }
+             toast.success('Application successfully completed!');
+             if (isEmployee) navigate('/employee/applications');
+             else navigate('/admin/applications');
+          }}
+          className="btn-primary"
+          style={{ padding: '1rem', width: '100%' }}
+        >
+          Upload Approval & Complete
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderUploadModal = () => {
+    if (!isUploadModalOpen) return null;
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '500px', backgroundColor: 'white', borderRadius: '0.5rem', overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+          {/* Header */}
+          <div style={{ backgroundColor: '#1e3a8a', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>IDProof</h3>
+            <button onClick={() => setIsUploadModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+              <X size={20} />
+            </button>
+          </div>
+          
+          {/* Tabs */}
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: '#f8fafc' }}>
+            <div 
+              onClick={() => setModalTab('upload')}
+              style={{ flex: 1, padding: '0.75rem', textAlign: 'center', borderRight: '1px solid var(--border-color)', color: modalTab === 'upload' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: modalTab === 'upload' ? 600 : 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', backgroundColor: modalTab === 'upload' ? 'white' : 'transparent' }}>
+              <Upload size={18} /> Upload File
+            </div>
+            <div 
+              onClick={() => setModalTab('view')}
+              style={{ flex: 1, padding: '0.75rem', textAlign: 'center', color: modalTab === 'view' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: modalTab === 'view' ? 600 : 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', backgroundColor: modalTab === 'view' ? 'white' : 'transparent' }}>
+              <FileText size={18} /> View File
+            </div>
+          </div>
+
+          <div style={{ padding: '1.5rem' }}>
+            {/* Doc Type Dropdown */}
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Doc Type</label>
+              <select value={docUploadType} onChange={e => setDocUploadType(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.25rem', outline: 'none', backgroundColor: '#f8fafc', color: 'var(--primary-dark)', fontWeight: 500 }}>
+                {['PENDING_DOCUMENTS', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) && currentStep === 1 && (
+                  <>
+                    <option value="CUSTOMER PHOTOGRAPH">CUSTOMER PHOTOGRAPH</option>
+                    <option value="CUSTOMER SIGNATURE">CUSTOMER SIGNATURE</option>
+                    <option value="AADHAR CARD">AADHAR CARD</option>
+                    <option value="PAN CARD">PAN CARD</option>
+                  </>
+                )}
+                {['PENDING_DOCUMENTS', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) && currentStep === 2 && (
+                  <>
+                    <option value="LAND DOCUMENT">LAND DOCUMENT</option>
+                    <option value="SALE DEED">SALE DEED</option>
+                    <option value="PATTA">PATTA</option>
+                    <option value="FMB">FMB</option>
+                    <option value="PROPERTY SIGNATURE">SIGNATURE</option>
+                    <option value="BUILDING PLAN">BUILDING PLAN</option>
+                  </>
+                )}
+                {applicationStatus === 'DOCUMENTS_VERIFICATION' && (
+                  <>
+                    <option value="CUSTOMER PHOTOGRAPH">CUSTOMER PHOTOGRAPH</option>
+                    <option value="CUSTOMER SIGNATURE">CUSTOMER SIGNATURE</option>
+                    <option value="AADHAR CARD">AADHAR CARD</option>
+                    <option value="PAN CARD">PAN CARD</option>
+                    <option value="LAND DOCUMENT">LAND DOCUMENT</option>
+                    <option value="SALE DEED">SALE DEED</option>
+                    <option value="PATTA">PATTA</option>
+                    <option value="FMB">FMB</option>
+                    <option value="PROPERTY SIGNATURE">SIGNATURE</option>
+                    <option value="BUILDING PLAN">BUILDING PLAN</option>
+                  </>
+                )}
+                {applicationStatus === 'DOCUMENTS_VERIFIED' && (
+                  <option value="RECEIPT">RECEIPT</option>
+                )}
+                {applicationStatus === 'SUBMITTED_FOR_APPROVAL' && (
+                  <option value="FINAL_APPROVAL">FINAL APPROVAL</option>
+                )}
+              </select>
+            </div>
+
+            {/* Dynamic Area: Upload or View */}
+            {modalTab === 'upload' ? (
+              <div style={{ padding: '2rem 1rem', border: '1px dashed var(--border-color)', borderRadius: '0.25rem', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                <span style={{ fontSize: '0.875rem', color: 'var(--primary)', fontWeight: 500 }}>
+                  {uploadedFiles[docUploadType as keyof typeof uploadedFiles] ? 'File Selected' : `${docUploadType}_1`}
+                </span>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} accept={docUploadType === 'CUSTOMER PHOTOGRAPH' ? 'image/*' : '*/*'} />
+                  <button onClick={() => fileInputRef.current?.click()} title="Browse" style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}><Upload size={24} /></button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding: '2rem 1rem', border: '1px solid var(--border-color)', borderRadius: '0.25rem', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', minHeight: '150px' }}>
+                {uploadedFiles[docUploadType as keyof typeof uploadedFiles] ? (
+                  (() => {
+                    const fileData = uploadedFiles[docUploadType as keyof typeof uploadedFiles] as string;
+                    if (fileData.startsWith('data:image/')) {
+                      return <img src={fileData} alt="Uploaded" style={{ maxHeight: '250px', maxWidth: '100%', objectFit: 'contain' }} />;
+                    } else if (fileData.startsWith('data:application/pdf')) {
+                      return <iframe src={fileData} title="PDF Preview" style={{ width: '100%', height: '350px', border: 'none' }} />;
+                    } else {
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--primary)' }}>
+                           <FileText size={48} style={{ marginBottom: '1rem' }} />
+                           <span style={{ fontWeight: 500 }}>Document Uploaded</span>
+                        </div>
+                      );
+                    }
+                  })()
+                ) : (
+                  <span style={{ color: 'var(--text-secondary)' }}>No file uploaded yet for {docUploadType}</span>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <button onClick={() => { setUploadedFiles(prev => ({ ...prev, [docUploadType]: undefined })); toast.success('File deleted'); }} style={{ padding: '0.5rem 1.5rem', backgroundColor: '#e2e8f0', color: '#64748b', border: 'none', borderRadius: '0.25rem', fontWeight: 600, cursor: 'pointer' }}>DELETE</button>
+              <button onClick={() => {toast.success(`${docUploadType} saved`); setIsUploadModalOpen(false);}} style={{ padding: '0.5rem 1.5rem', backgroundColor: '#0284c7', color: 'white', border: 'none', borderRadius: '0.25rem', fontWeight: 600, cursor: 'pointer' }}>SAVE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div>
-      {/* Back Button */}
-      <Link to={isAdmin ? "/admin/applications" : "/employee/applications"} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, marginBottom: '1.5rem' }}>
-        <ArrowLeft size={16} /> Back to Applications
-      </Link>
-
-      {/* Header */}
-      <div className="card" style={{ marginBottom: '1.5rem', padding: '0.5rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-            <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', margin: 0 }}>{app.id}</h2>
-            {isRejected ? (
-              <span style={{ padding: '0.125rem 0.5rem', borderRadius: '1rem', fontSize: '0.65rem', fontWeight: 600, backgroundColor: 'rgba(185, 74, 72, 0.1)', color: 'var(--error-red)' }}>Rejected</span>
-            ) : (
-              <StatusBadge type="status" value={app.status} />
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><User size={14} /> {app.customer}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><MapPin size={14} /> {app.location}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={14} /> Updated: {app.updatedAt}</span>
+    <div style={{ paddingBottom: '3rem', margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button 
+            onClick={() => isEmployee ? navigate('/employee/applications') : navigate('/admin/applications')}
+            style={{ padding: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <ArrowLeft size={20} color="var(--primary-dark)" />
+          </button>
+          <div>
+            <h2 className="heading-2" style={{ marginBottom: '0.25rem' }}>{id ? `Application Details - ${id}` : 'New Application Process'}</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              {['PENDING_DOCUMENTS', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) ? `Step ${currentStep} of ${totalSteps}` : `Status: ${applicationStatus.replace(/_/g, ' ')}`}
+            </p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+        {id && (
           <button 
-            onClick={() => navigate(isAdmin ? '/admin/applications/new' : '/employee/applications/new', { state: { editMode: true, appData: app } })}
-            style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer' }}
-          >
-            <Edit size={14} /> Edit
-          </button>
-          {!isRejected && (
-            <button onClick={() => setShowRejectModal(true)} style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--error-red)', color: 'var(--error-red)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer' }}>
-              <X size={14} /> Reject
-            </button>
-          )}
-          <button 
-            onClick={handlePrintApplication}
-            style={{ padding: '0.375rem 0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer', color: 'var(--primary)' }}
-          >
-            <Printer size={14} /> Print
-          </button>
-          <button className="btn-primary" style={{ padding: '0.375rem 1rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-            Update Status
-          </button>
-          <button style={{ padding: '0.375rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-            <MoreVertical size={14} />
-          </button>
-        </div>
-      </div>
-      {/* Workflow Tracker */}
-      <div className="card" style={{ marginBottom: '1.5rem', padding: '0.5rem 1rem', overflowX: 'auto' }}>
-        <h3 style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Status</h3>
-        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', minWidth: '600px' }}>
-          <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', height: '2px', backgroundColor: 'var(--border-color)', zIndex: 0 }}></div>
-          {workflowStages.map((stage, idx) => (
-            <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, width: '12%', textAlign: 'center' }}>
-              <div style={{ 
-                width: '20px', 
-                height: '20px', 
-                borderRadius: '50%', 
-                backgroundColor: isRejected && stage.status === 'Current' ? 'var(--error-red)' : stage.status === 'Completed' ? 'var(--success-green)' : stage.status === 'Current' ? 'var(--primary)' : 'var(--bg-surface)',
-                border: stage.status === 'Pending' ? '2px solid var(--border-color)' : 'none',
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                color: stage.status === 'Completed' ? 'white' : 'var(--border-color)',
-                marginBottom: '0.25rem',
-                boxShadow: isRejected && stage.status === 'Current' ? '0 0 0 3px rgba(185, 74, 72, 0.1)' : stage.status === 'Current' ? '0 0 0 3px rgba(30, 58, 138, 0.05)' : 'none'
-              }}>
-                {stage.status === 'Completed' && <CheckCircle2 size={12} color="white" />}
-                {stage.status === 'Current' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white' }}></div>}
-              </div>
-              <div style={{ fontSize: '0.7rem', fontWeight: stage.status === 'Pending' ? 400 : 600, color: stage.status === 'Pending' ? 'var(--text-secondary)' : 'var(--primary-dark)', lineHeight: '1.2' }}>
-                {stage.stage}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.5rem', overflowX: 'auto' }}>
-        {tabs.map(tab => (
-          <button 
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{ 
-              padding: '0.75rem 1.5rem', 
-              background: 'none', 
-              border: 'none', 
-              borderBottom: activeTab === tab.id ? '2px solid var(--primary)' : '2px solid transparent',
-              color: activeTab === tab.id ? 'var(--primary)' : 'var(--text-secondary)',
-              fontWeight: activeTab === tab.id ? 600 : 500,
-              fontSize: '0.875rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.2s'
+            onClick={() => {
+              const previewData = { ...formData, uploadedFiles };
+              localStorage.setItem('print_preview_data', JSON.stringify(previewData));
+              window.open(`/print/application/${id}`, '_blank');
             }}
+            className="btn-primary"
+            style={{ padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}
           >
-            {tab.icon} {tab.label}
+            <FileText size={18} /> Print Application
           </button>
-        ))}
+        )}
       </div>
 
-      {/* Tab Content */}
-      <div style={{ paddingBottom: '2rem' }}>
-        {renderTabContent()}
-      </div>
-
-      {/* Share Link Modal */}
-      {showShareModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '480px', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', position: 'relative' }}>
-            <button onClick={() => setShowShareModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-              <X size={20} />
-            </button>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(30, 58, 138, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
-                <LinkIcon size={24} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Share Upload Link</h3>
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>Send this link to the customer to upload documents directly.</p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-              <input 
-                type="text" 
-                readOnly 
-                value={shareLink} 
-                style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', outline: 'none', color: 'var(--primary-dark)', fontSize: '0.875rem' }} 
-              />
-              <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(shareLink);
-                  setShowShareModal(false);
-                }}
-                style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}
-              >
-                <Copy size={16} /> Copy
-              </button>
-              <button 
-                onClick={handleEmailShareLink}
-                disabled={isEmailingLink}
-                className="btn-primary" 
-                style={{ padding: '0.75rem 1.25rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: isEmailingLink ? 'not-allowed' : 'pointer', opacity: isEmailingLink ? 0.7 : 1 }}
-              >
-                <Mail size={16} /> {isEmailingLink ? 'Sending...' : 'Send via Email'}
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowShareModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', backgroundColor: 'transparent', border: 'none', color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer', fontSize: '0.875rem' }}>
-                Close
-              </button>
-            </div>
+      {['PENDING_DOCUMENTS', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) ? (
+        <>
+          {renderStepIndicator()}
+          <div style={{ marginBottom: '2rem' }}>
+            {currentStep === 1 && renderStep1()}
+            {currentStep === 2 && renderStep2()}
+            {currentStep === 3 && renderStep3()}
+            {currentStep === 4 && renderStep4()}
           </div>
+          {currentStep < 4 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <button onClick={handlePrev} disabled={currentStep === 1} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: currentStep === 1 ? 'var(--bg-secondary)' : 'var(--bg-surface)', border: '1px solid var(--border-color)', color: currentStep === 1 ? 'var(--text-secondary)' : 'var(--primary-dark)', fontWeight: 600, cursor: currentStep === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <ArrowLeft size={18} /> Back
+              </button>
+              <button onClick={handleNext} className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                Next <ArrowRight size={18} />
+              </button>
+            </div>
+          )}
+          {currentStep === 4 && (
+            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '1rem', backgroundColor: 'transparent' }}>
+              <button onClick={handlePrev} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--primary-dark)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <ArrowLeft size={18} /> Back to Fees
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div style={{ marginBottom: '2rem' }}>
+          {applicationStatus === 'DOCUMENTS_VERIFICATION' && renderDocumentVerificationScreen()}
+          {applicationStatus === 'DOCUMENTS_VERIFIED' && renderReceiptUploadScreen()}
+          {applicationStatus === 'SUBMITTED_FOR_APPROVAL' && renderFinalApprovalScreen()}
+          {applicationStatus === 'COMPLETED' && (
+             <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
+                <CheckCircle size={64} color="var(--success-green)" style={{ margin: '0 auto 1.5rem' }} />
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Application Completed</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>This application process has been completely verified and finalized.</p>
+             </div>
+          )}
         </div>
       )}
 
-
-      {/* Reject Modal */}
-      {showRejectModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, backdropFilter: 'blur(4px)' }}>
-          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '400px', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', position: 'relative' }}>
-            <button onClick={() => setShowRejectModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-              <X size={20} />
-            </button>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Reject Application</h3>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Reason for Rejection</label>
-              <textarea 
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Enter the reason for rejecting this application..."
-                style={{ width: '100%', minHeight: '100px', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', outline: 'none', resize: 'vertical' }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowRejectModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: 'none', fontWeight: 500, cursor: 'pointer' }}>Cancel</button>
-              <button 
-                onClick={() => {
-                  setIsRejected(true);
-                  setRejectionNote(rejectionReason);
-                  localStorage.setItem(`rejection_${id}`, JSON.stringify({ isRejected: true, rejectionNote: rejectionReason }));
-                  setShowRejectModal(false);
-                }} 
-                style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', backgroundColor: 'var(--error-red)', color: 'white', border: 'none', fontWeight: 500, cursor: 'pointer' }}
-              >
-                Confirm Rejection
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* View Document Modal */}
-      {viewingDoc && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)', padding: '2rem' }}>
-          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '800px', height: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', margin: 0 }}>{viewingDoc.name}</h3>
-              <button onClick={() => setViewingDoc(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+      {renderUploadModal()}
+      
+      {/* Partial Save Modal */}
+      {isPartialSaveModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '400px', backgroundColor: 'white', borderRadius: '0.5rem', overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <div style={{ backgroundColor: '#f59e0b', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Save size={20} /> Save Partially
+              </h3>
+              <button onClick={() => setIsPartialSaveModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
                 <X size={20} />
               </button>
             </div>
-            <div style={{ flex: 1, backgroundColor: '#f1f5f9', overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-              {viewingDoc.fileData ? (
-                viewingDoc.fileData.startsWith('data:image/') ? (
-                  <img src={viewingDoc.fileData} alt={viewingDoc.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                ) : viewingDoc.fileData.startsWith('data:application/pdf') ? (
-                  <iframe src={viewingDoc.fileData} title={viewingDoc.name} style={{ width: '100%', height: '100%', border: 'none' }} />
-                ) : (
-                  <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Preview not available for this file type.</div>
-                )
-              ) : (
-                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No file data available.</div>
-              )}
+            
+            <div style={{ padding: '1.5rem' }}>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+                Select a reason for saving the application partially. You can resume this application later.
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                {['Documents pending', 'Details not fully collected', 'Payment not confirmed', 'Verification pending'].map((reason) => (
+                  <label key={reason} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                    <input 
+                      type="radio" 
+                      name="saveReason" 
+                      value={reason} 
+                      checked={saveReason === reason} 
+                      onChange={() => setSaveReason(reason)}
+                      style={{ width: '1.25rem', height: '1.25rem', accentColor: '#f59e0b' }}
+                    />
+                    <span style={{ fontSize: '0.9375rem', color: 'var(--primary-dark)', fontWeight: 500 }}>{reason}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button 
+                  onClick={() => setIsPartialSaveModalOpen(false)}
+                  style={{ padding: '0.625rem 1rem', borderRadius: '0.25rem', backgroundColor: 'white', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handlePartialSave}
+                  style={{ padding: '0.625rem 1.5rem', borderRadius: '0.25rem', backgroundColor: '#f59e0b', border: 'none', color: 'white', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <Save size={18} /> Save Draft
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Hidden PDF Template */}
-      <div style={{ display: 'none' }}>
-        <div id="application-pdf-template" style={{ padding: '20px', backgroundColor: '#fff', color: '#000', width: '190mm', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px solid #1044C4', paddingBottom: '20px', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <img src="/assets/logo.jpeg" alt="Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
-              <div>
-                <h1 style={{ margin: 0, color: '#1044C4', fontSize: '28px', fontWeight: 800 }}>C.B. BUILDING APPROVALS</h1>
-                <p style={{ margin: '5px 0 0 0', color: '#E9A83A', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase' }}>Quality is our success</p>
-              </div>
-            </div>
-            <div style={{ textAlign: 'right', paddingTop: '10px' }}>
-              <p style={{ margin: 0, fontWeight: 'bold' }}>Date: {new Date().toLocaleDateString()}</p>
-            </div>
-          </div>
-          
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <h2 style={{ margin: 0, color: '#1044C4', fontSize: '24px', letterSpacing: '2px', textDecoration: 'underline' }}>APPLICATION DETAILS</h2>
-            <p style={{ margin: '5px 0 0 0', fontSize: '16px', fontWeight: 'bold' }}>Application No: {app.id}</p>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', marginBottom: '30px' }}>
-            <div style={{ flex: 1 }}>
-              <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Customer Information</h3>
-              <table style={{ width: '100%', fontSize: '14px' }}>
-                <tbody>
-                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold', width: '120px' }}>Name:</td><td>{app.customer}</td></tr>
-                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Mobile:</td><td>{app.mobile || 'N/A'}</td></tr>
-                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Email:</td><td>{app.email || 'N/A'}</td></tr>
-                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Status:</td><td>{app.status}</td></tr>
-                </tbody>
-              </table>
-            </div>
-            {documents.find(d => d.id === 'photo')?.fileData && (
-              <div style={{ width: '120px', height: '140px', border: '2px solid #ccc', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }}>
-                <img src={documents.find(d => d.id === 'photo')?.fileData} alt="Customer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-            )}
-          </div>
-
-          <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Property Details</h3>
-          <table style={{ width: '100%', fontSize: '14px', marginBottom: '30px', borderCollapse: 'collapse' }}>
-            <tbody>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee', width: '150px' }}>Location:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.location || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Address:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.address || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Property Type:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.propertyType || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Survey Number:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.surveyNo || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Plot Area:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.plotArea || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Built Up Area:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.builtUpArea || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Floors:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.floors || 'N/A'}</td></tr>
-            </tbody>
-          </table>
-
-          <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Application Timeline</h3>
-          <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse', marginBottom: '30px' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f5f5f5' }}>
-                <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Stage</th>
-                <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workflowStages.map((stage, i) => (
-                <tr key={i}>
-                  <td style={{ padding: '8px', border: '1px solid #ddd' }}>{stage.stage}</td>
-                  <td style={{ padding: '8px', border: '1px solid #ddd', color: stage.status === 'Completed' ? '#059669' : '#666' }}>{stage.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          <div style={{ textAlign: 'center', marginTop: '40px', color: '#666', fontSize: '12px' }}>
-            <p>This is a computer-generated document. No signature is required.</p>
-          </div>
-        </div>
-      </div>
-      {/* Hidden PDF Template */}
-      <div style={{ display: 'none' }}>
-        <div id="application-pdf-template" style={{ padding: '20px', backgroundColor: '#fff', color: '#000', width: '190mm', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px solid #1044C4', paddingBottom: '20px', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <img src="/assets/logo.jpeg" alt="Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
-              <div>
-                <h1 style={{ margin: 0, color: '#1044C4', fontSize: '28px', fontWeight: 800 }}>C.B. BUILDING APPROVALS</h1>
-                <p style={{ margin: '5px 0 0 0', color: '#E9A83A', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase' }}>Quality is our success</p>
-              </div>
-            </div>
-            <div style={{ textAlign: 'right', paddingTop: '10px' }}>
-              <p style={{ margin: 0, fontWeight: 'bold' }}>Date: {new Date().toLocaleDateString()}</p>
-            </div>
-          </div>
-          
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <h2 style={{ margin: 0, color: '#1044C4', fontSize: '24px', letterSpacing: '2px', textDecoration: 'underline' }}>APPLICATION DETAILS</h2>
-            <p style={{ margin: '5px 0 0 0', fontSize: '16px', fontWeight: 'bold' }}>Application No: {app.id}</p>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', marginBottom: '30px' }}>
-            <div style={{ flex: 1 }}>
-              <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Customer Information</h3>
-              <table style={{ width: '100%', fontSize: '14px' }}>
-                <tbody>
-                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold', width: '120px' }}>Name:</td><td>{app.customer}</td></tr>
-                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Mobile:</td><td>{app.mobile || 'N/A'}</td></tr>
-                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Email:</td><td>{app.email || 'N/A'}</td></tr>
-                  <tr><td style={{ padding: '5px 0', fontWeight: 'bold' }}>Status:</td><td>{app.status}</td></tr>
-                </tbody>
-              </table>
-            </div>
-            {documents.find(d => d.id === 'photo')?.fileData && (
-              <div style={{ width: '120px', height: '140px', border: '2px solid #ccc', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }}>
-                <img src={documents.find(d => d.id === 'photo')?.fileData} alt="Customer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-            )}
-          </div>
-
-          <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Property Details</h3>
-          <table style={{ width: '100%', fontSize: '14px', marginBottom: '30px', borderCollapse: 'collapse' }}>
-            <tbody>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee', width: '150px' }}>Location:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.location || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Address:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.address || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Property Type:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.propertyType || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Survey Number:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.surveyNo || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Plot Area:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.plotArea || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Built Up Area:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.builtUpArea || 'N/A'}</td></tr>
-              <tr><td style={{ padding: '8px 5px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Floors:</td><td style={{ padding: '8px 5px', borderBottom: '1px solid #eee' }}>{app.floors || 'N/A'}</td></tr>
-            </tbody>
-          </table>
-
-          <h3 style={{ color: '#1044C4', borderBottom: '1px solid #ccc', paddingBottom: '5px', marginBottom: '15px' }}>Application Timeline</h3>
-          <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse', marginBottom: '30px' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f5f5f5' }}>
-                <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Stage</th>
-                <th style={{ padding: '8px', textAlign: 'left', border: '1px solid #ddd' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workflowStages.map((stage, i) => (
-                <tr key={i}>
-                  <td style={{ padding: '8px', border: '1px solid #ddd' }}>{stage.stage}</td>
-                  <td style={{ padding: '8px', border: '1px solid #ddd', color: stage.status === 'Completed' ? '#059669' : '#666' }}>{stage.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          <div style={{ textAlign: 'center', marginTop: '40px', color: '#666', fontSize: '12px' }}>
-            <p>This is a computer-generated document. No signature is required.</p>
-          </div>
-        </div>
-      </div>
+      {/* Floating Save Button */}
+      <button 
+        onClick={() => setIsPartialSaveModalOpen(true)}
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          padding: '1rem',
+          borderRadius: '50%',
+          backgroundColor: '#f59e0b',
+          color: 'white',
+          border: 'none',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+          transition: 'transform 0.2s',
+        }}
+        title="Partially Save Application"
+        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        <Save size={24} />
+      </button>
     </div>
   );
 };

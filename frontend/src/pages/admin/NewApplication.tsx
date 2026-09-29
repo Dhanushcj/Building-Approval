@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Save, User, Building, FileText, Upload } from 'lucide-react';
-
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, User, Building, FileText, Upload, CheckCircle, X, Save, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-
 
 const NewApplication: React.FC = () => {
   const navigate = useNavigate();
@@ -29,107 +26,770 @@ const NewApplication: React.FC = () => {
   const loggedInUser = localStorage.getItem('loggedInUser') || 'Admin';
   const isEmployee = loggedInUser !== 'Admin';
 
-  const location = useLocation();
-  const editMode = location.state?.editMode || false;
-  const existingApp = location.state?.appData;
-
-  const [formData, setFormData] = useState({
-    customerName: existingApp?.customer || '',
-    mobile: existingApp?.mobile || '',
-    email: existingApp?.email || '',
-    aadhar: existingApp?.aadhar || '',
-    propertyType: existingApp?.propertyType?.toLowerCase() || '',
-    location: existingApp?.location?.toLowerCase() || '',
-    village: existingApp?.village || '',
-    taluk: existingApp?.taluk || '',
-    panchayat: existingApp?.panchayat || '',
-    address: existingApp?.address || '',
-    appType: existingApp?.appType === 'Building Approval' ? 'building' : existingApp?.appType === 'Plan Approval' ? 'plan' : existingApp?.appType === 'Occupancy Cert' ? 'occupancy' : existingApp?.appType?.toLowerCase() || '',
-    surveyNo: existingApp?.surveyNo || '',
-    plotArea: existingApp?.plotArea?.replace(' sq.ft', '') || '',
-    builtUpArea: existingApp?.builtUpArea?.replace(' sq.ft', '') || '',
-    floors: existingApp?.floors || '',
-    staff: existingApp?.staff && existingApp.staff !== 'Unassigned' ? existingApp.staff : (isEmployee ? loggedInUser : ''),
-    paymentAmount: existingApp?.paymentAmount || ''
+  const [currentStep, setCurrentStep] = useState(() => {
+    const saved = localStorage.getItem('newApp_currentStep');
+    return saved ? parseInt(saved, 10) : 1;
+  });
+  const totalSteps = 4;
+  const [isUploading, setIsUploading] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isPartialSaveModalOpen, setIsPartialSaveModalOpen] = useState(false);
+  const [saveReason, setSaveReason] = useState('Documents pending');
+  const [docUploadType, setDocUploadType] = useState('CUSTOMER PHOTOGRAPH');
+  const [modalTab, setModalTab] = useState<'upload' | 'view'>('upload');
+  const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<{
+    'CUSTOMER PHOTOGRAPH'?: string;
+    'CUSTOMER SIGNATURE'?: string;
+    'AADHAR CARD'?: string;
+    'PAN CARD'?: string;
+    'LAND DOCUMENT'?: string;
+    'SALE DEED'?: string;
+    'PATTA'?: string;
+    'FMB'?: string;
+    'PROPERTY SIGNATURE'?: string;
+    'BUILDING PLAN'?: string;
+    'RECEIPT'?: string;
+    'FINAL_APPROVAL'?: string;
+    receiptNumber?: string;
+  }>(() => {
+    const saved = localStorage.getItem('newApp_uploadedFiles');
+    return saved ? JSON.parse(saved) : {};
   });
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.customerName || !formData.mobile || !formData.propertyType || !formData.location || !formData.appType) {
-      toast.error("Please fill all required fields before saving.");
-      return;
-    }
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      const loadingToast = toast.loading(`Uploading ${file.name}...`);
+      
+      try {
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        formDataUpload.append('upload_preset', 'ml_default');
+        
+        const response = await fetch(`https://api.cloudinary.com/v1_1/dfou7lxtg/image/upload`, {
+          method: 'POST',
+          body: formDataUpload,
+        });
+        
+        const data = await response.json();
+        
+        if (data.secure_url) {
+          const imageUrl = data.secure_url;
+          setUploadedFiles(prev => ({ ...prev, [docUploadType]: imageUrl }));
+          toast.success(`${file.name} attached for ${docUploadType}`, { id: loadingToast });
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        toast.error("Failed to upload image. Please try again.", { id: loadingToast });
+      } finally {
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem('newApp_formData');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (typeof parsed.residentialAddress === 'string') {
+        parsed.residentialAddress = { houseNo: parsed.residentialAddress, streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' };
+        parsed.permanentAddress = { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' };
+      }
+      return parsed;
+    }
+    return {
+      // Page 1: Services & Personal Details
+      serviceType: '',
+      customerName: '',
+      fatherName: '',
+      dob: '',
+      mobile: '',
+      email: '',
+      altMobile: '',
+      aadhar: '',
+      pan: '',
+      residentialAddress: { houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' },
+      permanentAddress: { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' },
+      staff: isEmployee ? loggedInUser : '',
+      
+      // Page 2: Property Details
+      propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
+      
+      // Page 3: Fees Details
+      feesAmount: '',
+      feeNotes: '',
+    };
+  });
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('newApp_currentStep', currentStep.toString());
+    } catch (e) {
+      console.error("Storage quota exceeded", e);
+    }
+  }, [currentStep]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('newApp_uploadedFiles', JSON.stringify(uploadedFiles));
+    } catch (e) {
+      console.error("Storage quota exceeded", e);
+      toast.error("Storage limit reached! Please clear previous drafts or compress your images.");
+    }
+  }, [uploadedFiles]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('newApp_formData', JSON.stringify(formData));
+    } catch (e) {
+      console.error("Storage quota exceeded", e);
+    }
+  }, [formData]);
+
+  const saveApplicationData = async (isPartial: boolean, reason?: string) => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
       
+      const typeMap: Record<string, string> = {
+        'building': 'BUILDING_PLAN_APPROVAL',
+        'plan': 'LAYOUT_APPROVAL',
+        'occupancy': 'COMPLETION_CERTIFICATE',
+        'regularisation': 'PATTA_TRANSFER'
+      };
+      
+      const existingStr = localStorage.getItem('mock_saved_cases');
+      const existing = existingStr ? JSON.parse(existingStr) : [];
+      const mockCase = {
+        id: `APP-Draft-${Date.now()}`,
+        application_number: `APP-Draft-${Date.now()}`,
+        property: {
+          owner_name: formData.customerName || 'Draft Owner',
+          owner_phone: formData.mobile || '',
+          jurisdiction: 'DTCP',
+          village: formData.residentialAddress.area || ''
+        },
+        fullData: formData,
+        uploadedFiles: uploadedFiles,
+        approval_type: typeMap[formData.serviceType] || 'Draft',
+        status: isPartial ? 'Draft' : 'Submitted',
+        assigned_staff: { name: formData.staff },
+        created_at: new Date().toISOString(),
+        reason: reason || ''
+      };
+      localStorage.setItem('mock_saved_cases', JSON.stringify([mockCase, ...existing]));
+
+      localStorage.removeItem('newApp_formData');
+      localStorage.removeItem('newApp_currentStep');
+      localStorage.removeItem('newApp_uploadedFiles');
+
       const payload = {
-        approval_type: formData.appType === 'building' ? 'BUILDING_PLAN_APPROVAL' : 
-                       formData.appType === 'plan' ? 'LAYOUT_APPROVAL' : 
-                       formData.appType === 'occupancy' ? 'COMPLETION_CERTIFICATE' : 'BUILDING_PLAN_APPROVAL',
-        status: 'INTAKE',
         property: {
           create: {
-            owner_name: formData.customerName,
-            owner_phone: formData.mobile,
-            owner_email: formData.email || null,
-            address: formData.address || 'Not provided',
-            village: formData.village || formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
-            taluk: formData.taluk || formData.location.charAt(0).toUpperCase() + formData.location.slice(1),
-            panchayat: formData.panchayat || '',
-            survey_number: formData.surveyNo || 'N/A',
-            jurisdiction: 'DTCP',
-            plot_area: formData.plotArea || null,
-            built_up_area: formData.builtUpArea || null,
-            floors: formData.floors || null,
-            property_type: formData.propertyType || null
+            owner_name: formData.customerName || 'Draft Owner',
+            owner_phone: formData.mobile || '0000000000',
+            address: `${formData.propertyDetails?.dno || ''} ${formData.propertyDetails?.streetName || ''}`,
+            village: formData.propertyDetails?.village || formData.residentialAddress.area || 'Unknown',
+            taluk: formData.propertyDetails?.taluk || formData.residentialAddress.taluk || 'Unknown',
+            survey_number: formData.propertyDetails?.surveyNo || 'TBD',
+            jurisdiction: formData.propertyDetails?.panchayat || 'DTCP'
           }
-        }
-        
+        },
+        approval_type: typeMap[formData.serviceType] || 'BUILDING_PLAN_APPROVAL',
+        status: isPartial ? 'INTAKE' : 'SUBMITTED',
       };
-
-      if (formData.staff) {
-        const assignedStaffObj = staffList.find(s => s.name === formData.staff);
-        if (assignedStaffObj) {
-          (payload as any).assigned_staff_id = assignedStaffObj.id;
-        }
-      }
-
-      if (editMode && existingApp) {
-        toast.error("Editing existing applications via API is not implemented yet.");
-        return;
-      }
-
-      const res = await fetch(`${apiUrl}/cases`, {
+      
+      await fetch(`${apiUrl}/cases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       
-      const data = await res.json();
-      
-      if (formData.paymentAmount) {
-        const createdId = data.application_number || data.id;
-        if (createdId) {
-          localStorage.setItem(`paymentAmount_${createdId}`, formData.paymentAmount);
-        }
-      }
-      
-      toast.success("Application created successfully!");
-      if (isEmployee) {
-        navigate('/employee/applications');
-      } else {
-        navigate('/admin/applications');
-      }
-    } catch (err) {
-      console.error("Save error:", err);
-      toast.error("An error occurred while saving the application.");
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
     }
   };
 
+  const handlePartialSave = async () => {
+    await saveApplicationData(true, saveReason);
+    toast.success(`Application partially saved: ${saveReason}`);
+    setIsPartialSaveModalOpen(false);
+    if (isEmployee) {
+      navigate('/employee/applications');
+    } else {
+      navigate('/admin/applications');
+    }
+  };
+
+  const handleNext = () => {
+    let errors: string[] = [];
+    
+    // Validation for Step 1
+    if (currentStep === 1) {
+      if (!formData.serviceType) errors.push('serviceType');
+      if (!formData.staff) errors.push('staff');
+      if (!formData.customerName) errors.push('customerName');
+      if (!formData.fatherName) errors.push('fatherName');
+      if (!formData.dob) errors.push('dob');
+      if (!formData.mobile) errors.push('mobile');
+      if (!formData.email) errors.push('email');
+      if (!formData.aadhar) errors.push('aadhar');
+      if (!formData.pan) errors.push('pan');
+      
+      if (!formData.residentialAddress.houseNo) errors.push('res_houseNo');
+      if (!formData.residentialAddress.streetName) errors.push('res_streetName');
+      if (!formData.residentialAddress.city) errors.push('res_city');
+      if (!formData.residentialAddress.state) errors.push('res_state');
+      
+      const perm = formData.permanentAddress.sameAsResidential ? formData.residentialAddress : formData.permanentAddress;
+      if (!perm.houseNo) errors.push('perm_houseNo');
+      if (!perm.streetName) errors.push('perm_streetName');
+      if (!perm.city) errors.push('perm_city');
+      if (!perm.state) errors.push('perm_state');
+    }
+    
+    // Validation for Step 2
+    if (currentStep === 2) {
+      if (!formData.propertyDetails?.surveyNo) errors.push('prop_surveyNo');
+      if (!formData.propertyDetails?.pattaNo) errors.push('prop_pattaNo');
+    }
+
+    // Validation for Step 3
+    if (currentStep === 3) {
+      if (!formData.feesAmount) errors.push('feesAmount');
+    }
+
+    if (errors.length > 0) {
+      setFormErrors(errors);
+      toast.error("Please fill all mandatory fields (highlighted in red) to proceed.");
+      return;
+    }
+
+    setFormErrors([]);
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const renderStepIndicator = () => {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
+        {[1, 2, 3, 4].map((step) => (
+          <React.Fragment key={step}>
+            <div style={{ 
+              width: '32px', height: '32px', borderRadius: '50%', 
+              backgroundColor: currentStep >= step ? 'var(--primary)' : 'var(--bg-secondary)',
+              color: currentStep >= step ? 'white' : 'var(--text-secondary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 600, fontSize: '0.875rem', border: currentStep >= step ? 'none' : '1px solid var(--border-color)'
+            }}>
+              {step}
+            </div>
+            {step < 4 && (
+              <div style={{ 
+                width: '60px', height: '4px', 
+                backgroundColor: currentStep > step ? 'var(--primary)' : 'var(--bg-secondary)',
+                margin: '0 8px', borderRadius: '2px'
+              }} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
+
+  const getInputStyle = (fieldName: string, value: any) => {
+    const hasError = formErrors.includes(fieldName) && !value;
+    return { 
+      width: '100%', 
+      padding: '0.5rem', 
+      border: 'none', 
+      borderBottom: hasError ? '2px solid #ef4444' : '1px solid var(--border-color)', 
+      backgroundColor: hasError ? '#fef2f2' : 'transparent',
+      outline: 'none',
+      transition: 'all 0.2s ease-in-out'
+    };
+  };
+
+  const renderStep1 = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      
+      {/* Top Section - Service Details */}
+      <div className="card">
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <FileText size={20} color="var(--primary)" /> Service Details
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Service Type *</label>
+            <select value={formData.serviceType} onChange={e => setFormData({...formData, serviceType: e.target.value})} style={getInputStyle('serviceType', formData.serviceType)}>
+              <option value="">Select Service</option>
+              <option value="building">Building Approval</option>
+              <option value="plan">Plan Approval</option>
+              <option value="occupancy">Occupancy Certificate</option>
+              <option value="regularisation">Regularisation</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Source Details (Assigned Employee) *</label>
+            {isEmployee ? (
+              <input type="text" value={loggedInUser} disabled style={{ ...getInputStyle('staff', loggedInUser), backgroundColor: 'transparent', color: '#64748b' }} />
+            ) : (
+              <select value={formData.staff} onChange={e => setFormData({...formData, staff: e.target.value})} style={getInputStyle('staff', formData.staff)}>
+                <option value="">Select Employee</option>
+                {staffList.length > 0 ? (
+                  staffList.map((s: any) => (
+                    <option key={s.id} value={s.name}>{s.name} — Staff Member</option>
+                  ))
+                ) : (
+                  <option value="" disabled>No staff available</option>
+                )}
+              </select>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Section - Personal Details */}
+      <div className="card" style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 500px' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <User size={20} color="var(--primary)" /> Personal Information
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Customer Name *</label>
+              <input type="text" value={formData.customerName} onChange={e => setFormData({...formData, customerName: e.target.value})} placeholder="Full name" style={getInputStyle('customerName', formData.customerName)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Father Name *</label>
+              <input type="text" value={formData.fatherName} onChange={e => setFormData({...formData, fatherName: e.target.value})} placeholder="Father's name" style={getInputStyle('fatherName', formData.fatherName)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Date of Birth *</label>
+              <input type="date" value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} style={getInputStyle('dob', formData.dob)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Mobile Number *</label>
+              <input type="tel" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} placeholder="+91" style={getInputStyle('mobile', formData.mobile)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Alternative Number (Optional)</label>
+              <input type="tel" value={formData.altMobile} onChange={e => setFormData({...formData, altMobile: e.target.value})} placeholder="+91" style={getInputStyle('altMobile', formData.altMobile)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Aadhar Number *</label>
+              <input type="text" value={formData.aadhar} onChange={e => setFormData({...formData, aadhar: e.target.value})} placeholder="12-digit number" style={getInputStyle('aadhar', formData.aadhar)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>PAN Number *</label>
+              <input type="text" value={formData.pan} onChange={e => setFormData({...formData, pan: e.target.value})} placeholder="PAN number" style={getInputStyle('pan', formData.pan)} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Email ID *</label>
+              <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="Email address" style={getInputStyle('email', formData.email)} />
+            </div>
+          </div>
+        </div>
+
+        {/* Photo & Signature Upload Area */}
+        <div style={{ flex: '0 0 160px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '100%', position: 'relative', marginTop: '2rem' }}>
+            <div style={{ width: '100%', aspectRatio: '3/4', border: '1px solid var(--border-color)', borderRadius: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', overflow: 'hidden' }}>
+              {uploadedFiles['CUSTOMER PHOTOGRAPH'] ? (
+                <img src={uploadedFiles['CUSTOMER PHOTOGRAPH']} alt="Customer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <User size={60} color="#cbd5e1" />
+              )}
+            </div>
+            {/* Top Right Upload Icons */}
+            <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', display: 'flex', gap: '0.25rem' }}>
+              <button 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  const link = `${window.location.origin}/upload/NEW`;
+                  navigator.clipboard.writeText(link);
+                  toast.success('Upload link copied! Share this with the customer.');
+                }}
+                title="Copy Customer Upload Link" 
+                style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+                <Send size={18} />
+              </button>
+              <button 
+                onClick={(e) => { e.preventDefault(); setDocUploadType('CUSTOMER PHOTOGRAPH'); setIsUploadModalOpen(true); }}
+                title="Upload Customer Photo" 
+                style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+                <Upload size={18} />
+              </button>
+            </div>
+          </div>
+          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>Customer Photo *</div>
+
+          <div style={{ width: '100%', position: 'relative', marginTop: '0.5rem' }}>
+            <div style={{ width: '100%', aspectRatio: '2/1', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', overflow: 'hidden' }}>
+              {uploadedFiles['CUSTOMER SIGNATURE'] ? (
+                <img src={uploadedFiles['CUSTOMER SIGNATURE']} alt="Signature" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              ) : (
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Signature</span>
+              )}
+            </div>
+            {/* Top Right Upload Icon */}
+            <button 
+              onClick={(e) => { e.preventDefault(); setDocUploadType('CUSTOMER SIGNATURE'); setIsUploadModalOpen(true); }}
+              title="Upload Customer Signature" 
+              style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+              <Upload size={14} />
+            </button>
+          </div>
+          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>Customer Signature *</div>
+        </div>
+      </div>
+
+      {/* Address Section */}
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Building size={20} color="var(--primary)" /> Address Details
+        </h3>
+        
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+          {/* Correspondence Address */}
+          <div style={{ flex: 1, minWidth: '350px', backgroundColor: 'transparent', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>Correspondence Address *</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Dno</label>
+                <input type="text" value={formData.residentialAddress.houseNo} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, houseNo: e.target.value}})} style={getInputStyle('res_houseNo', formData.residentialAddress.houseNo)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Street Name</label>
+                <input type="text" value={formData.residentialAddress.streetName} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, streetName: e.target.value}})} style={getInputStyle('res_streetName', formData.residentialAddress.streetName)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Area</label>
+                <input type="text" value={formData.residentialAddress.area} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, area: e.target.value}})} style={getInputStyle('res_area', formData.residentialAddress.area)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>City</label>
+                <input type="text" value={formData.residentialAddress.city} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, city: e.target.value}})} style={getInputStyle('res_city', formData.residentialAddress.city)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Taluk/District</label>
+                <input type="text" value={formData.residentialAddress.taluk} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, taluk: e.target.value}})} style={getInputStyle('res_taluk', formData.residentialAddress.taluk)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>PinCode</label>
+                <input type="text" value={formData.residentialAddress.pincode} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, pincode: e.target.value}})} style={getInputStyle('res_pincode', formData.residentialAddress.pincode)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>State</label>
+                <input type="text" value={formData.residentialAddress.state} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, state: e.target.value}})} style={getInputStyle('res_state', formData.residentialAddress.state)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Landmark</label>
+                <input type="text" value={formData.residentialAddress.landmark} onChange={e => setFormData({...formData, residentialAddress: {...formData.residentialAddress, landmark: e.target.value}})} style={getInputStyle('res_landmark', formData.residentialAddress.landmark)} />
+              </div>
+            </div>
+          </div>
+
+          {/* Permanent Address */}
+          <div style={{ flex: 1, minWidth: '350px', backgroundColor: 'transparent', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)' }}>Permanent Address *</h4>
+              <label style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                <input type="checkbox" checked={formData.permanentAddress.sameAsResidential} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, sameAsResidential: e.target.checked}})} style={{ accentColor: 'var(--primary)' }} />
+                Same
+              </label>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem', opacity: formData.permanentAddress.sameAsResidential ? 0.5 : 1, pointerEvents: formData.permanentAddress.sameAsResidential ? 'none' : 'auto' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Dno</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.houseNo : formData.permanentAddress.houseNo} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, houseNo: e.target.value}})} style={getInputStyle('perm_houseNo', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.houseNo : formData.permanentAddress.houseNo)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Street Name</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.streetName : formData.permanentAddress.streetName} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, streetName: e.target.value}})} style={getInputStyle('perm_streetName', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.streetName : formData.permanentAddress.streetName)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Area</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.area : formData.permanentAddress.area} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, area: e.target.value}})} style={getInputStyle('perm_area', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.area : formData.permanentAddress.area)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>City</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.city : formData.permanentAddress.city} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, city: e.target.value}})} style={getInputStyle('perm_city', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.city : formData.permanentAddress.city)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Taluk/District</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.taluk : formData.permanentAddress.taluk} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, taluk: e.target.value}})} style={getInputStyle('perm_taluk', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.taluk : formData.permanentAddress.taluk)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>PinCode</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.pincode : formData.permanentAddress.pincode} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, pincode: e.target.value}})} style={getInputStyle('perm_pincode', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.pincode : formData.permanentAddress.pincode)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>State</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.state : formData.permanentAddress.state} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, state: e.target.value}})} style={getInputStyle('perm_state', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.state : formData.permanentAddress.state)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Landmark</label>
+                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.landmark : formData.permanentAddress.landmark} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, landmark: e.target.value}})} style={getInputStyle('perm_landmark', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.landmark : formData.permanentAddress.landmark)} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="card" style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+          <Building size={20} color="var(--primary)" /> Property Details
+        </h3>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            onClick={(e) => { 
+              e.preventDefault(); 
+              const link = `${window.location.origin}/upload/NEW`;
+              navigator.clipboard.writeText(link);
+              toast.success('Upload link copied! Share this with the customer.');
+            }}
+            title="Copy Customer Upload Link" 
+            style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+            <Send size={18} />
+          </button>
+          <button 
+            onClick={(e) => { e.preventDefault(); setDocUploadType('LAND DOCUMENT'); setIsUploadModalOpen(true); }}
+            title="Upload Property Documents" 
+            style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+            <Upload size={18} />
+          </button>
+        </div>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Survey Number *</label>
+          <input type="text" value={formData.propertyDetails?.surveyNo || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, surveyNo: e.target.value}})} style={getInputStyle('prop_surveyNo', formData.propertyDetails?.surveyNo)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Patta Number *</label>
+          <input type="text" value={formData.propertyDetails?.pattaNo || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, pattaNo: e.target.value}})} style={getInputStyle('prop_pattaNo', formData.propertyDetails?.pattaNo)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Dno</label>
+          <input type="text" value={formData.propertyDetails?.dno || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, dno: e.target.value}})} style={getInputStyle('prop_dno', formData.propertyDetails?.dno)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Street Name</label>
+          <input type="text" value={formData.propertyDetails?.streetName || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, streetName: e.target.value}})} style={getInputStyle('prop_streetName', formData.propertyDetails?.streetName)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Village</label>
+          <input type="text" value={formData.propertyDetails?.village || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, village: e.target.value}})} style={getInputStyle('prop_village', formData.propertyDetails?.village)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Panchayat</label>
+          <input type="text" value={formData.propertyDetails?.panchayat || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, panchayat: e.target.value}})} style={getInputStyle('prop_panchayat', formData.propertyDetails?.panchayat)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>City</label>
+          <input type="text" value={formData.propertyDetails?.city || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, city: e.target.value}})} style={getInputStyle('prop_city', formData.propertyDetails?.city)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Taluk/District</label>
+          <input type="text" value={formData.propertyDetails?.taluk || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, taluk: e.target.value}})} style={getInputStyle('prop_taluk', formData.propertyDetails?.taluk)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>PinCode</label>
+          <input type="text" value={formData.propertyDetails?.pincode || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, pincode: e.target.value}})} style={getInputStyle('prop_pincode', formData.propertyDetails?.pincode)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>State</label>
+          <input type="text" value={formData.propertyDetails?.state || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, state: e.target.value}})} style={getInputStyle('prop_state', formData.propertyDetails?.state)} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Landmark</label>
+          <input type="text" value={formData.propertyDetails?.landmark || ''} onChange={e => setFormData({...formData, propertyDetails: {...formData.propertyDetails, landmark: e.target.value}})} style={getInputStyle('prop_landmark', formData.propertyDetails?.landmark)} />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep3 = () => (
+    <div className="card">
+      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <FileText size={20} color="var(--primary)" /> Fees Details
+      </h3>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Estimated Total Amount (₹) *</label>
+          <input type="number" value={formData.feesAmount} onChange={e => setFormData({...formData, feesAmount: e.target.value})} placeholder="e.g. 50000" style={getInputStyle('feesAmount', formData.feesAmount)} />
+        </div>
+        
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Additional Notes regarding fees</label>
+          <textarea value={formData.feeNotes} onChange={e => setFormData({...formData, feeNotes: e.target.value})} rows={3} placeholder="Fee breakdown or notes..." style={{ ...getInputStyle('feeNotes', formData.feeNotes), resize: 'vertical' }}></textarea>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep4 = () => (
+    <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+      <CheckCircle size={64} color="var(--success-green)" style={{ margin: '0 auto 1.5rem' }} />
+      <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Application Ready</h3>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
+        All required details have been captured. Please select how you want to proceed.
+      </p>
+      
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        <button 
+          onClick={() => toast('Generate Invoice - Layout pending user instructions', { icon: 'ℹ️' })}
+          style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '2px solid var(--primary)', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          <FileText size={18} /> Generate Invoice
+        </button>
+        <button 
+          onClick={() => toast('Generate Application - Layout pending user instructions', { icon: 'ℹ️' })}
+          className="btn-primary"
+          style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          <CheckCircle size={18} /> Generate Application
+        </button>
+        <button 
+          onClick={async () => {
+            await saveApplicationData(false);
+            toast.success("Application successfully submitted and saved!");
+            if (isEmployee) navigate('/employee/applications');
+            else navigate('/admin/applications');
+          }}
+          className="btn-primary"
+          style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#10b981', borderColor: '#10b981' }}
+        >
+          <Save size={18} /> Submit & Save
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderUploadModal = () => {
+    if (!isUploadModalOpen) return null;
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '500px', backgroundColor: 'white', borderRadius: '0.5rem', overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+          {/* Header */}
+          <div style={{ backgroundColor: '#1e3a8a', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>IDProof</h3>
+            <button onClick={() => setIsUploadModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+              <X size={20} />
+            </button>
+          </div>
+          
+          {/* Tabs */}
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: '#f8fafc' }}>
+            <div 
+              onClick={() => setModalTab('upload')}
+              style={{ flex: 1, padding: '0.75rem', textAlign: 'center', borderRight: '1px solid var(--border-color)', color: modalTab === 'upload' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: modalTab === 'upload' ? 600 : 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', backgroundColor: modalTab === 'upload' ? 'white' : 'transparent' }}>
+              <Upload size={18} /> Upload File
+            </div>
+            <div 
+              onClick={() => setModalTab('view')}
+              style={{ flex: 1, padding: '0.75rem', textAlign: 'center', color: modalTab === 'view' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: modalTab === 'view' ? 600 : 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', backgroundColor: modalTab === 'view' ? 'white' : 'transparent' }}>
+              <FileText size={18} /> View File
+            </div>
+          </div>
+
+          <div style={{ padding: '1.5rem' }}>
+            {/* Doc Type Dropdown */}
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Doc Type</label>
+              <select value={docUploadType} onChange={e => setDocUploadType(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.25rem', outline: 'none', backgroundColor: '#f8fafc', color: 'var(--primary-dark)', fontWeight: 500 }}>
+                {currentStep === 1 && (
+                  <>
+                    <option value="CUSTOMER PHOTOGRAPH">CUSTOMER PHOTOGRAPH</option>
+                    <option value="CUSTOMER SIGNATURE">CUSTOMER SIGNATURE</option>
+                    <option value="AADHAR CARD">AADHAR CARD</option>
+                    <option value="PAN CARD">PAN CARD</option>
+                  </>
+                )}
+                {currentStep === 2 && (
+                  <>
+                    <option value="LAND DOCUMENT">LAND DOCUMENT</option>
+                    <option value="SALE DEED">SALE DEED</option>
+                    <option value="PATTA">PATTA</option>
+                    <option value="FMB">FMB</option>
+                    <option value="PROPERTY SIGNATURE">SIGNATURE</option>
+                    <option value="BUILDING PLAN">BUILDING PLAN</option>
+                  </>
+                )}
+              </select>
+            </div>
+
+            {/* Dynamic Area: Upload or View */}
+            {modalTab === 'upload' ? (
+              <div style={{ padding: '2rem 1rem', border: '1px dashed var(--border-color)', borderRadius: '0.25rem', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                <span style={{ fontSize: '0.875rem', color: 'var(--primary)', fontWeight: 500 }}>
+                  {uploadedFiles[docUploadType as keyof typeof uploadedFiles] ? 'File Selected' : `${docUploadType}_1`}
+                </span>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} accept={docUploadType === 'CUSTOMER PHOTOGRAPH' ? 'image/*' : '*/*'} />
+                  <button onClick={() => fileInputRef.current?.click()} title="Browse" style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}><Upload size={24} /></button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding: '2rem 1rem', border: '1px solid var(--border-color)', borderRadius: '0.25rem', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', minHeight: '150px' }}>
+                {uploadedFiles[docUploadType as keyof typeof uploadedFiles] ? (
+                  (() => {
+                    const fileData = uploadedFiles[docUploadType as keyof typeof uploadedFiles] as string;
+                    if (fileData.startsWith('data:image/')) {
+                      return <img src={fileData} alt="Uploaded" style={{ maxHeight: '250px', maxWidth: '100%', objectFit: 'contain' }} />;
+                    } else if (fileData.startsWith('data:application/pdf')) {
+                      return <iframe src={fileData} title="PDF Preview" style={{ width: '100%', height: '350px', border: 'none' }} />;
+                    } else {
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--primary)' }}>
+                           <FileText size={48} style={{ marginBottom: '1rem' }} />
+                           <span style={{ fontWeight: 500 }}>Document Uploaded</span>
+                        </div>
+                      );
+                    }
+                  })()
+                ) : (
+                  <span style={{ color: 'var(--text-secondary)' }}>No file uploaded yet for {docUploadType}</span>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <button onClick={() => { setUploadedFiles(prev => ({ ...prev, [docUploadType]: undefined })); toast.success('File deleted'); }} style={{ padding: '0.5rem 1.5rem', backgroundColor: '#e2e8f0', color: '#64748b', border: 'none', borderRadius: '0.25rem', fontWeight: 600, cursor: 'pointer' }}>DELETE</button>
+              <button onClick={() => {toast.success(`${docUploadType} saved`); setIsUploadModalOpen(false);}} style={{ padding: '0.5rem 1.5rem', backgroundColor: '#0284c7', color: 'white', border: 'none', borderRadius: '0.25rem', fontWeight: 600, cursor: 'pointer' }}>SAVE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div style={{ paddingBottom: '3rem' }}>
+    <div style={{ paddingBottom: '3rem', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
         <button 
           onClick={() => isEmployee ? navigate('/employee/applications') : navigate('/admin/applications')}
@@ -138,194 +798,146 @@ const NewApplication: React.FC = () => {
           <ArrowLeft size={20} color="var(--primary-dark)" />
         </button>
         <div>
-          <h2 className="heading-2" style={{ marginBottom: '0.25rem' }}>{editMode ? 'Edit Application' : 'New Application'}</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{editMode ? 'Update application details.' : 'Create a new building approval application.'}</p>
+          <h2 className="heading-2" style={{ marginBottom: '0.25rem' }}>New Application Process</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Step {currentStep} of {totalSteps}</p>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
-        {/* Left Side: Form */}
-        <div style={{ flex: '1' }}>
-          <div className="card" style={{ marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <User size={20} color="var(--primary)" /> Customer Information
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Customer Name *</label>
-                <input type="text" value={formData.customerName} onChange={e => setFormData({...formData, customerName: e.target.value})} placeholder="Enter full name" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Mobile Number *</label>
-                <input type="tel" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} placeholder="+91" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Email Address</label>
-                <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="Email (Optional)" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Aadhar Number</label>
-                <input type="text" value={formData.aadhar} onChange={e => setFormData({...formData, aadhar: e.target.value})} placeholder="Aadhar Number" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              
-              <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', marginTop: '0.5rem' }}>
-                <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer' }}>
-                  <Upload size={20} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Customer Photo</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Click or drag file</div>
-                </div>
-                <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer' }}>
-                  <Upload size={20} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Upload Aadhar</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Click or drag file</div>
-                </div>
-                <div style={{ padding: '1rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', cursor: 'pointer' }}>
-                  <Upload size={20} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Upload PAN</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Click or drag file</div>
-                </div>
-              </div>
-            </div>
-          </div>
+      {renderStepIndicator()}
 
-          <div className="card" style={{ marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Building size={20} color="var(--primary)" /> Property Details
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Property Type *</label>
-                <select value={formData.propertyType} onChange={e => setFormData({...formData, propertyType: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none', backgroundColor: 'var(--bg-surface)' }}>
-                  <option value="">Select Property Type</option>
-                  <option value="residential">Residential</option>
-                  <option value="commercial">Commercial</option>
-                  <option value="industrial">Industrial</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Location Area *</label>
-                <select value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none', backgroundColor: 'var(--bg-surface)' }}>
-                  <option value="">Select Area</option>
-                  <option value="hosur">Hosur</option>
-                  <option value="krishnagiri">Krishnagiri</option>
-                  <option value="shoolagiri">Shoolagiri</option>
-                  <option value="other">Other Area</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Village</label>
-                <input type="text" value={formData.village} onChange={e => setFormData({...formData, village: e.target.value})} placeholder="Village name" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Panchayat</label>
-                <input type="text" value={formData.panchayat} onChange={e => setFormData({...formData, panchayat: e.target.value})} placeholder="Panchayat name" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Taluk</label>
-                <input type="text" value={formData.taluk} onChange={e => setFormData({...formData, taluk: e.target.value})} placeholder="Taluk name" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Property Address *</label>
-                <textarea value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} rows={3} placeholder="Complete property address" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none', resize: 'vertical' }}></textarea>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Plot Area (Sq.ft)</label>
-                <input type="number" value={formData.plotArea} onChange={e => setFormData({...formData, plotArea: e.target.value})} placeholder="0" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Built-up Area (Sq.ft)</label>
-                <input type="number" value={formData.builtUpArea} onChange={e => setFormData({...formData, builtUpArea: e.target.value})} placeholder="0" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Survey No.</label>
-                <input type="text" value={formData.surveyNo} onChange={e => setFormData({...formData, surveyNo: e.target.value})} placeholder="e.g. 124/3B" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Total Floors</label>
-                <input type="text" value={formData.floors} onChange={e => setFormData({...formData, floors: e.target.value})} placeholder="e.g. G+1" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-            </div>
-          </div>
+      <div style={{ marginBottom: '2rem' }}>
+        {currentStep === 1 && renderStep1()}
+        {currentStep === 2 && renderStep2()}
+        {currentStep === 3 && renderStep3()}
+        {currentStep === 4 && renderStep4()}
+      </div>
 
-          <div className="card">
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <FileText size={20} color="var(--primary)" /> Application Setup
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Application Type *</label>
-                <select value={formData.appType} onChange={e => setFormData({...formData, appType: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none', backgroundColor: 'var(--bg-surface)' }}>
-                  <option value="">Select Service</option>
-                  <option value="building">Building Approval</option>
-                  <option value="plan">Plan Approval</option>
-                  <option value="occupancy">Occupancy Certificate</option>
-                  <option value="regularisation">Regularisation</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Assign Staff</label>
-                {isEmployee ? (
-                  <input type="text" value={loggedInUser} disabled style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none', backgroundColor: '#f1f5f9', color: '#64748b' }} />
-                ) : (
-                  <select value={formData.staff} onChange={e => setFormData({...formData, staff: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none', backgroundColor: 'var(--bg-surface)' }}>
-                    <option value="">Auto Assign</option>
-                    {staffList.length > 0 ? (
-                      staffList.map((s: any) => (
-                        <option key={s.id} value={s.name}>{s.name} — Staff Member</option>
-                      ))
-                    ) : (
-                      <option value="" disabled>No staff added yet</option>
-                    )}
-                  </select>
-                )}
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Total Amount (₹)</label>
-                <input type="number" value={formData.paymentAmount} onChange={e => setFormData({...formData, paymentAmount: e.target.value})} placeholder="e.g. 50000" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', outline: 'none' }} />
-              </div>
-            </div>
-
-            <div style={{ padding: '1.5rem', border: '1px dashed var(--border-color)', borderRadius: '0.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)' }}>
-              <Upload size={24} color="var(--text-secondary)" style={{ marginBottom: '0.5rem' }} />
-              <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>Upload Initial Documents (Optional)</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Drag and drop files here, or click to browse</div>
-            </div>
-          </div>
+      {currentStep < 4 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <button 
+            onClick={handlePrev}
+            disabled={currentStep === 1}
+            style={{ 
+              padding: '0.75rem 1.5rem', borderRadius: '0.5rem', 
+              backgroundColor: currentStep === 1 ? 'var(--bg-secondary)' : 'var(--bg-surface)', 
+              border: '1px solid var(--border-color)', 
+              color: currentStep === 1 ? 'var(--text-secondary)' : 'var(--primary-dark)', 
+              fontWeight: 600, cursor: currentStep === 1 ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', gap: '0.5rem'
+            }}
+          >
+            <ArrowLeft size={18} /> Back
+          </button>
+          
+          <button 
+            onClick={handleNext}
+            className="btn-primary"
+            style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            Next <ArrowRight size={18} />
+          </button>
         </div>
-
-        {/* Right Side: Summary & Actions */}
-        <div style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div className="card">
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Summary</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
-                <span style={{ fontWeight: 600, color: 'var(--primary)' }}>Draft</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Created By:</span>
-                <span style={{ fontWeight: 500, color: 'var(--primary-dark)' }}>{loggedInUser}</span>
-              </div>
+      )}
+      
+      {currentStep === 4 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '1rem', backgroundColor: 'transparent' }}>
+          <button 
+            onClick={handlePrev}
+            style={{ 
+              padding: '0.75rem 1.5rem', borderRadius: '0.5rem', 
+              backgroundColor: 'var(--bg-surface)', 
+              border: '1px solid var(--border-color)', 
+              color: 'var(--primary-dark)', 
+              fontWeight: 600, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '0.5rem'
+            }}
+          >
+            <ArrowLeft size={18} /> Back to Fees
+          </button>
+        </div>
+      )}
+      
+      {renderUploadModal()}
+      
+      {/* Partial Save Modal */}
+      {isPartialSaveModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '400px', backgroundColor: 'white', borderRadius: '0.5rem', overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <div style={{ backgroundColor: '#f59e0b', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Save size={20} /> Save Partially
+              </h3>
+              <button onClick={() => setIsPartialSaveModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
             </div>
             
-            <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
-              <button 
-                onClick={handleSave}
-                className="btn-primary" 
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.75rem' }}
-              >
-                <Save size={18} /> Save Application
-              </button>
-              <button 
-                onClick={() => isEmployee ? navigate('/employee/applications') : navigate('/admin/applications')}
-                style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer' }}
-              >
-                Cancel
-              </button>
+            <div style={{ padding: '1.5rem' }}>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+                Select a reason for saving the application partially. You can resume this application later.
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                {['Documents pending', 'Details not fully collected', 'Payment not confirmed', 'Verification pending'].map((reason) => (
+                  <label key={reason} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                    <input 
+                      type="radio" 
+                      name="saveReason" 
+                      value={reason} 
+                      checked={saveReason === reason} 
+                      onChange={() => setSaveReason(reason)}
+                      style={{ width: '1.25rem', height: '1.25rem', accentColor: '#f59e0b' }}
+                    />
+                    <span style={{ fontSize: '0.9375rem', color: 'var(--primary-dark)', fontWeight: 500 }}>{reason}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button 
+                  onClick={() => setIsPartialSaveModalOpen(false)}
+                  style={{ padding: '0.625rem 1rem', borderRadius: '0.25rem', backgroundColor: 'white', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handlePartialSave}
+                  style={{ padding: '0.625rem 1.5rem', borderRadius: '0.25rem', backgroundColor: '#f59e0b', border: 'none', color: 'white', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <Save size={18} /> Save Draft
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Floating Save Button */}
+      <button 
+        onClick={() => setIsPartialSaveModalOpen(true)}
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          padding: '1rem',
+          borderRadius: '50%',
+          backgroundColor: '#f59e0b',
+          color: 'white',
+          border: 'none',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+          transition: 'transform 0.2s',
+        }}
+        title="Partially Save Application"
+        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        <Save size={24} />
+      </button>
     </div>
   );
 };
