@@ -16,9 +16,18 @@ const menuItems = [
   { title: 'Quotations', icon: <FileText size={20} strokeWidth={1.5} />, path: '/admin/quotations' },
   { title: 'Attendance', icon: <CheckSquare size={20} strokeWidth={1.5} />, path: '/admin/attendance' },
   { title: 'Reports', icon: <BarChart3 size={20} strokeWidth={1.5} />, path: '/admin/reports' },
+  { title: 'Maintenance', icon: <Settings size={20} strokeWidth={1.5} />, path: '/admin/maintenance/logs', 
+    subItems: [
+      { title: 'Revert', path: '/admin/maintenance/revert' },
+      { title: 'View', path: '/admin/maintenance/view' },
+      { title: 'Logs', path: '/admin/maintenance/logs' },
+    ]
+  },
   { title: 'Staff & Users', icon: <UserCog size={20} strokeWidth={1.5} />, path: '/admin/staff' },
   { title: 'Settings', icon: <Settings size={20} strokeWidth={1.5} />, path: '/admin/settings' },
 ];
+
+import { useLocation } from 'react-router-dom';
 
 interface AdminSidebarProps {
   isOpen?: boolean;
@@ -26,6 +35,14 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
+  const location = useLocation();
+  const [maintenanceOpen, setMaintenanceOpen] = React.useState(location.pathname.includes('/admin/maintenance'));
+  
+  React.useEffect(() => {
+    if (location.pathname.includes('/admin/maintenance')) {
+      setMaintenanceOpen(true);
+    }
+  }, [location.pathname]);
   return (
     <aside className={`admin-sidebar sidebar-container ${isOpen ? 'sidebar-open' : ''}`} style={{ backgroundColor: 'var(--sidebar-bg)' }}>
       {/* Logo Area */}
@@ -48,33 +65,85 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: 0, margin: 0 }}>
           {menuItems.map((item, index) => (
             <li key={index}>
-              <NavLink
-                to={item.path}
-                end={item.path === '/admin'}
-                style={({ isActive }) => ({
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  padding: '0.75rem 1.5rem',
-                  color: isActive ? 'var(--bg-surface)' : 'rgba(255,255,255,0.6)',
-                  backgroundColor: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
-                  borderLeft: isActive ? '4px solid var(--accent)' : '4px solid transparent',
-                  textDecoration: 'none',
-                  fontSize: '0.9375rem',
-                  fontWeight: isActive ? 600 : 500,
-                  transition: 'all 0.2s'
-                })}
-                onClick={() => setIsOpen && setIsOpen(false)}
-              >
-                {({ isActive }) => (
-                  <>
-                    <span style={{ color: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.5)', minWidth: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {item.subItems ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '1rem',
+                      padding: '0.75rem 1.5rem',
+                      color: maintenanceOpen ? 'var(--bg-surface)' : 'rgba(255,255,255,0.6)',
+                      backgroundColor: maintenanceOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
+                      borderLeft: maintenanceOpen ? '4px solid var(--accent)' : '4px solid transparent',
+                      cursor: 'pointer',
+                      fontSize: '0.9375rem',
+                      fontWeight: maintenanceOpen ? 600 : 500,
+                      transition: 'all 0.2s'
+                    }}
+                    onClick={() => setMaintenanceOpen(!maintenanceOpen)}
+                  >
+                    <span style={{ color: maintenanceOpen ? 'var(--accent)' : 'rgba(255,255,255,0.5)', minWidth: '20px' }}>
                       {item.icon}
                     </span>
                     <span className="sidebar-text">{item.title}</span>
-                  </>
+                  </div>
+                ) : (
+                  <NavLink
+                    to={item.path}
+                    end={item.path === '/admin'}
+                    style={({ isActive }) => ({
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '1rem',
+                      padding: '0.75rem 1.5rem',
+                      color: isActive ? 'var(--bg-surface)' : 'rgba(255,255,255,0.6)',
+                      backgroundColor: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
+                      borderLeft: isActive ? '4px solid var(--accent)' : '4px solid transparent',
+                      textDecoration: 'none',
+                      fontSize: '0.9375rem',
+                      fontWeight: isActive ? 600 : 500,
+                      transition: 'all 0.2s'
+                    })}
+                    onClick={() => setIsOpen && setIsOpen(false)}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span style={{ color: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.5)', minWidth: '20px' }}>
+                          {item.icon}
+                        </span>
+                        <span className="sidebar-text">{item.title}</span>
+                      </>
+                    )}
+                  </NavLink>
                 )}
-              </NavLink>
+                {/* Sub Menu Items */}
+                {item.subItems && maintenanceOpen && (
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                    {item.subItems.map((sub, subIndex) => (
+                      <li key={subIndex}>
+                        <NavLink
+                          to={sub.path}
+                          style={({ isActive }) => ({
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0.6rem 1.5rem 0.6rem 3.5rem',
+                            color: isActive ? 'var(--bg-surface)' : 'rgba(255,255,255,0.5)',
+                            textDecoration: 'none',
+                            fontSize: '0.875rem',
+                            fontWeight: isActive ? 600 : 400,
+                            borderLeft: isActive ? '4px solid var(--accent)' : '4px solid transparent',
+                            transition: 'all 0.2s'
+                          })}
+                          onClick={() => setIsOpen && setIsOpen(false)}
+                        >
+                          <span className="sidebar-text">{sub.title}</span>
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </li>
           ))}
         </ul>

@@ -20,9 +20,7 @@ const HeroSection: React.FC = () => {
             <span style={{ color: 'var(--accent)' }}>Done Right.</span>
           </h1>
           
-          <p className="text-lead" style={{ marginBottom: '2rem', maxWidth: '480px', fontSize: '1.25rem', color: 'var(--text-secondary)', lineHeight: 1.5, fontWeight: 600 }}>
-            YOUR APPROVALS OUR RESPONSIBILITY
-          </p>
+
           
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '3rem' }}>
             <Link to="/apply" className="btn-primary" style={{ padding: '0.75rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, backgroundColor: 'var(--accent)', color: 'var(--primary-dark)', border: 'none', borderRadius: '0.25rem' }}>

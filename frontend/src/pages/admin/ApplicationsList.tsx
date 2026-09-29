@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Info, Pencil, ArrowUpDown, Search, FileText } from 'lucide-react';
 import StatusBadge from '../../components/admin/StatusBadge';
 import { recentApplications } from '../../data/mockData';
@@ -10,6 +10,13 @@ const ApplicationsList: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [filterOn, setFilterOn] = React.useState('select');
   const [subFilter, setSubFilter] = React.useState('select');
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const isMaintenanceLogs = location.pathname.includes('/maintenance/logs');
+  const isMaintenanceView = location.pathname.includes('/maintenance/view');
+  const isMaintenanceRevert = location.pathname.includes('/maintenance/revert');
+  const isMainList = !isMaintenanceLogs && !isMaintenanceView && !isMaintenanceRevert;
 
   React.useEffect(() => {
     const fetchCases = async () => {
@@ -110,9 +117,6 @@ const ApplicationsList: React.FC = () => {
     const interval = setInterval(fetchCases, 10000);
     return () => clearInterval(interval);
   }, []);
-  const navigate = useNavigate();
-
-
 
   const filteredApplications = applications.filter(app => {
     const matchesSearch = searchTerm === '' || 
@@ -129,15 +133,32 @@ const ApplicationsList: React.FC = () => {
       matchesFilter = app.status.toLowerCase() === subFilter.toLowerCase();
     }
 
-    return matchesSearch && matchesFilter;
+    let matchesMaintenance = true;
+    const isCompleted = ['Approved', 'Rejected'].includes(app.status);
+    
+    if (isMainList) {
+      matchesMaintenance = !isCompleted; // Hide completed in main list
+    } else if (isMaintenanceLogs) {
+      matchesMaintenance = isCompleted; // Only show completed in logs
+    }
+    // view and revert show all, so matchesMaintenance stays true
+
+    return matchesSearch && matchesFilter && matchesMaintenance;
   });
 
   return (
     <div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-        <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }} onClick={() => navigate('/admin/applications/new')}>
-          <Plus size={18} /> New Application
-        </button>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', margin: 0 }}>
+          {isMaintenanceLogs ? 'Maintenance Logs' : 
+           isMaintenanceView ? 'Maintenance View' : 
+           isMaintenanceRevert ? 'Maintenance Revert' : 'Applications'}
+        </h1>
+        {isMainList && (
+          <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }} onClick={() => navigate('/admin/applications/new')}>
+            <Plus size={18} /> New Application
+          </button>
+        )}
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -210,8 +231,16 @@ const ApplicationsList: React.FC = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ backgroundColor: '#1e3a8a', borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>Edit</th>
-                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>View</th>
+                {isMaintenanceRevert ? (
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>Revert</th>
+                ) : (
+                  <>
+                    {!isMaintenanceView && !isMaintenanceLogs && (
+                      <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>Edit</th>
+                    )}
+                    <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>View</th>
+                  </>
+                )}
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal No <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Customer Name <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Mobile Number <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
@@ -226,24 +255,55 @@ const ApplicationsList: React.FC = () => {
               {filteredApplications.length > 0 ? (
                 filteredApplications.map((app, index) => (
                   <tr key={index} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <button 
-                        onClick={() => navigate(`/admin/applications/${app.id}?edit=true`)}
-                        style={{ padding: '0.4rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
-                        title="Edit Application"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <button 
-                        onClick={() => navigate(`/admin/applications/${app.id}`)}
-                        style={{ padding: '0.4rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
-                        title="View Details"
-                      >
-                        <Info size={16} />
-                      </button>
-                    </td>
+                    {isMaintenanceRevert ? (
+                      <td style={{ padding: '0.75rem 1rem' }}>
+                        <button 
+                          onClick={async () => {
+                            if (window.confirm('Are you sure you want to revert this application to Documents Pending?')) {
+                              try {
+                                const localCasesStr = localStorage.getItem('mock_saved_cases');
+                                if (localCasesStr) {
+                                  const localCases = JSON.parse(localCasesStr);
+                                  const cIndex = localCases.findIndex((c: any) => c.id === app.id || c.application_number === app.id);
+                                  if (cIndex !== -1) {
+                                    localCases[cIndex].status = 'Documents Pending';
+                                    localStorage.setItem('mock_saved_cases', JSON.stringify(localCases));
+                                    window.dispatchEvent(new Event('storage'));
+                                    alert('Application reverted to Documents Pending.');
+                                  }
+                                }
+                              } catch(e) {}
+                            }
+                          }}
+                          style={{ padding: '0.4rem 0.8rem', borderRadius: '0.25rem', backgroundColor: '#ef4444', border: 'none', color: 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}
+                        >
+                          Revert
+                        </button>
+                      </td>
+                    ) : (
+                      <>
+                        {!isMaintenanceView && !isMaintenanceLogs && (
+                          <td style={{ padding: '0.75rem 1rem' }}>
+                            <button 
+                              onClick={() => navigate(`/admin/applications/${app.id}?edit=true`)}
+                              style={{ padding: '0.4rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
+                              title="Edit Application"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                          </td>
+                        )}
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <button 
+                            onClick={() => navigate(`/admin/applications/${app.id}`)}
+                            style={{ padding: '0.4rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
+                            title="View Details"
+                          >
+                            <Info size={16} />
+                          </button>
+                        </td>
+                      </>
+                    )}
                     <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Link to={`/admin/applications/${app.id}`} style={{ fontWeight: 600, color: 'var(--primary)', textDecoration: 'none' }}>

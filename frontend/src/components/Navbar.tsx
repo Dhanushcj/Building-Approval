@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Building2, Menu, X, Search, ArrowRight } from 'lucide-react';
+import { Menu, X, Search, ArrowRight } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,11 +36,11 @@ const Navbar: React.FC = () => {
             <img src="/assets/logo.jpeg" alt="C.B. Building Approvals Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: '1.15rem', fontWeight: 800, lineHeight: 1, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: '1.15rem', fontWeight: 900, lineHeight: 1, color: '#cc0000', fontFamily: 'var(--font-heading)', letterSpacing: '0.05em', WebkitTextStroke: '0.5px #cc0000', textShadow: '0px 0px 1px rgba(204,0,0,0.5)' }}>
               C.B. BUILDING APPROVALS
             </div>
-            <div style={{ fontSize: '0.65rem', fontWeight: 500, color: 'var(--text-secondary)', letterSpacing: '0.02em', marginTop: '0.2rem' }}>
-              QUALITY IS OUR SUCCESS
+            <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.02em', marginTop: '0.2rem' }}>
+              YOUR APPROVALS OUR RESPONSIBILITY
             </div>
           </div>
         </Link>

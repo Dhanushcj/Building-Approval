@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, User, Building, FileText, Upload, CheckCircle, X, Save, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const NewApplication: React.FC = () => {
+interface NewApplicationProps {
+  isCustomer?: boolean;
+}
+
+const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [staffList, setStaffList] = useState<any[]>([]);
 
   React.useEffect(() => {
@@ -26,11 +31,8 @@ const NewApplication: React.FC = () => {
   const loggedInUser = localStorage.getItem('loggedInUser') || 'Admin';
   const isEmployee = loggedInUser !== 'Admin';
 
-  const [currentStep, setCurrentStep] = useState(() => {
-    const saved = localStorage.getItem('newApp_currentStep');
-    return saved ? parseInt(saved, 10) : 1;
-  });
-  const totalSteps = 3;
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = isCustomer ? 2 : 3;
   const [isUploading, setIsUploading] = useState(false);
   const [isSaveMenuOpen, setSaveMenuOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -54,8 +56,25 @@ const NewApplication: React.FC = () => {
     'FINAL_APPROVAL'?: string;
     receiptNumber?: string;
   }>(() => {
-    const saved = localStorage.getItem('newApp_uploadedFiles');
-    return saved ? JSON.parse(saved) : {};
+    if (location.state?.lead) {
+      const lead = location.state.lead;
+      const files: any = {};
+      if (lead.aadharFile) files['AADHAR CARD'] = lead.aadharFile;
+      if (lead.buildingPhoto) files['CUSTOMER PHOTOGRAPH'] = lead.buildingPhoto;
+      // Copy files object from lead if it was submitted via older ApplyNow form
+      if (lead.files) {
+        if (lead.files.photo) files['CUSTOMER PHOTOGRAPH'] = lead.files.photo.data;
+        if (lead.files.signature) files['CUSTOMER SIGNATURE'] = lead.files.signature.data;
+        if (lead.files.aadhar) files['AADHAR CARD'] = lead.files.aadhar.data;
+        if (lead.files.pan) files['PAN CARD'] = lead.files.pan.data;
+        if (lead.files.sale_deed) files['SALE DEED'] = lead.files.sale_deed.data;
+        if (lead.files.patta) files['PATTA'] = lead.files.patta.data;
+        if (lead.files.fmb) files['FMB'] = lead.files.fmb.data;
+        if (lead.files.building_plan) files['BUILDING PLAN'] = lead.files.building_plan.data;
+      }
+      return files;
+    }
+    return {};
   });
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -96,14 +115,26 @@ const NewApplication: React.FC = () => {
   };
 
   const [formData, setFormData] = useState(() => {
-    const saved = localStorage.getItem('newApp_formData');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (typeof parsed.residentialAddress === 'string') {
-        parsed.residentialAddress = { houseNo: parsed.residentialAddress, streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' };
-        parsed.permanentAddress = { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' };
-      }
-      return parsed;
+    if (location.state?.lead) {
+      const lead = location.state.lead;
+      return {
+        serviceType: lead.projectType === 'Residential' ? 'building' : lead.projectType || '',
+        customerName: lead.name || '',
+        fatherName: '',
+        dob: '',
+        mobile: lead.phone || '',
+        email: lead.email || '',
+        altMobile: '',
+        aadhar: '',
+        pan: '',
+        residentialAddress: { houseNo: '', streetName: '', area: lead.location || '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' },
+        permanentAddress: { sameAsResidential: true, houseNo: '', streetName: '', area: lead.location || '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' },
+        staff: isEmployee ? loggedInUser : '',
+        propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: lead.location || '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
+        feesAmount: '',
+        feeNotes: '',
+        leadId: lead.id // Store the lead ID to delete or convert it later
+      };
     }
     return {
       // Page 1: Services & Personal Details
@@ -206,6 +237,17 @@ const NewApplication: React.FC = () => {
         status: isPartial ? 'INTAKE' : 'SUBMITTED',
       };
       
+      // If converting a lead, also delete the lead or update its status
+      if (formData.leadId) {
+        // Find lead in mock_saved_cases and remove or update it
+        const savedLeadsStr = localStorage.getItem('mock_saved_cases');
+        if (savedLeadsStr) {
+          let savedCases = JSON.parse(savedLeadsStr);
+          savedCases = savedCases.map((c: any) => c.id === formData.leadId ? { ...c, status: 'Application Created', type: 'Converted Lead' } : c);
+          localStorage.setItem('mock_saved_cases', JSON.stringify(savedCases));
+        }
+      }
+      
       await fetch(`${apiUrl}/cases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -303,7 +345,7 @@ const NewApplication: React.FC = () => {
   const renderStepIndicator = () => {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
-        {[1, 2, 3].map((step) => (
+        {[1, 2, 3].slice(0, totalSteps).map((step) => (
           <React.Fragment key={step}>
             <div style={{ 
               width: '32px', height: '32px', borderRadius: '50%', 
@@ -314,7 +356,7 @@ const NewApplication: React.FC = () => {
             }}>
               {step}
             </div>
-            {step < 3 && (
+            {step < totalSteps && (
               <div style={{ 
                 width: '60px', height: '4px', 
                 backgroundColor: currentStep > step ? 'var(--primary)' : 'var(--bg-secondary)',
@@ -359,23 +401,25 @@ const NewApplication: React.FC = () => {
               <option value="regularisation">Regularisation</option>
             </select>
           </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Source Details (Assigned Employee) *</label>
-            {isEmployee ? (
-              <input type="text" value={loggedInUser} disabled style={{ ...getInputStyle('staff', loggedInUser), backgroundColor: 'transparent', color: '#64748b' }} />
-            ) : (
-              <select value={formData.staff} onChange={e => setFormData({...formData, staff: e.target.value})} style={getInputStyle('staff', formData.staff)}>
-                <option value="">Select Employee</option>
-                {staffList.length > 0 ? (
-                  staffList.map((s: any) => (
-                    <option key={s.id} value={s.name}>{s.name} — Staff Member</option>
-                  ))
-                ) : (
-                  <option value="" disabled>No staff available</option>
-                )}
-              </select>
-            )}
-          </div>
+          {!isCustomer && (
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Source Details (Assigned Employee) *</label>
+              {isEmployee ? (
+                <input type="text" value={loggedInUser} disabled style={{ ...getInputStyle('staff', loggedInUser), backgroundColor: 'transparent', color: '#64748b' }} />
+              ) : (
+                <select value={formData.staff} onChange={e => setFormData({...formData, staff: e.target.value})} style={getInputStyle('staff', formData.staff)}>
+                  <option value="">Select Employee</option>
+                  {staffList.length > 0 ? (
+                    staffList.map((s: any) => (
+                      <option key={s.id} value={s.name}>{s.name} — Staff Member</option>
+                    ))
+                  ) : (
+                    <option value="" disabled>No staff available</option>
+                  )}
+                </select>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -789,7 +833,7 @@ const NewApplication: React.FC = () => {
         {currentStep === 3 && renderStep3()}
       </div>
 
-      {currentStep < 3 && (
+      {currentStep < totalSteps && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           <button 
             onClick={handlePrev}
@@ -816,7 +860,7 @@ const NewApplication: React.FC = () => {
         </div>
       )}
       
-      {currentStep === 3 && (
+      {currentStep === totalSteps && (
         <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '1rem', backgroundColor: 'transparent' }}>
           <button 
             onClick={handlePrev}
@@ -829,7 +873,7 @@ const NewApplication: React.FC = () => {
               display: 'flex', alignItems: 'center', gap: '0.5rem'
             }}
           >
-            <ArrowLeft size={18} /> Back to Property Details
+            <ArrowLeft size={18} /> {isCustomer ? 'Back to Personal Details' : 'Back to Property Details'}
           </button>
         </div>
       )}
@@ -889,8 +933,8 @@ const NewApplication: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Submit/Save Button (Step 3 only) */}
-      {currentStep === 3 && (
+      {/* Floating Submit/Save Button (Step 3 or Step 2 if Customer) */}
+      {(currentStep === totalSteps) && (
         <div 
           onMouseEnter={() => setSaveMenuOpen(true)}
           onMouseLeave={() => setSaveMenuOpen(false)}
@@ -905,7 +949,7 @@ const NewApplication: React.FC = () => {
             gap: '1rem',
           }}
         >
-          {isSaveMenuOpen && (
+          {!isCustomer && isSaveMenuOpen && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem', animation: 'fadeIn 0.2s ease-in-out' }}>
               <button 
                 onClick={() => setIsPartialSaveModalOpen(true)}

@@ -147,6 +147,11 @@ function App() {
             <Route path="followups" element={<FollowUpsList />} />
             <Route path="reports/*" element={<Reports />} />
             <Route path="settings/*" element={<Settings />} />
+            
+            {/* Maintenance Module */}
+            <Route path="maintenance/view" element={<ApplicationsList />} />
+            <Route path="maintenance/logs" element={<ApplicationsList />} />
+            <Route path="maintenance/revert" element={<ApplicationsList />} />
           </Route>
           {/* Employee Layout */}
           <Route path="/employee" element={<EmployeeLayout />}>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, FileText, X, Pencil, Info, ArrowUpDown } from 'lucide-react';
 
 const CustomerLeads: React.FC = () => {
+  const navigate = useNavigate();
   const [leads, setLeads] = useState<any[]>([]);
   const [rejectingLeadId, setRejectingLeadId] = useState<string | null>(null);
   const [rejectionRemarks, setRejectionRemarks] = useState('');
@@ -46,12 +48,25 @@ const CustomerLeads: React.FC = () => {
             }));
           setLeads(formattedLeads);
         } else {
-          // Fallback to empty if API fails
-          setLeads([]);
+          // Fallback to local storage if API fails
+          const saved = localStorage.getItem('mock_saved_cases');
+          if (saved) {
+            const localCases = JSON.parse(saved).filter((c: any) => c.type === 'Lead');
+            setLeads(localCases);
+          } else {
+            setLeads([]);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch leads:", error);
-        setLeads([]);
+        // Fallback to local storage
+        const saved = localStorage.getItem('mock_saved_cases');
+        if (saved) {
+          const localCases = JSON.parse(saved).filter((c: any) => c.type === 'Lead');
+          setLeads(localCases);
+        } else {
+          setLeads([]);
+        }
       }
     };
     
@@ -192,7 +207,7 @@ const CustomerLeads: React.FC = () => {
                 <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '0.75rem 1rem' }}>
                     <button 
-                      onClick={() => { /* Implement edit functionality here */ }}
+                      onClick={() => navigate('/admin/applications/new', { state: { lead } })}
                       style={{ padding: '0.4rem', borderRadius: '0.25rem', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
                       title="Edit Lead"
                     >
@@ -208,7 +223,7 @@ const CustomerLeads: React.FC = () => {
                       <Info size={16} />
                     </button>
                   </td>
-                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{lead.displayId}</td>
+                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{lead.application_number || lead.displayId}</td>
                   <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--primary-dark)', fontWeight: 500 }}>
                     {lead.name}
                   </td>

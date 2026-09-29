@@ -1062,13 +1062,13 @@ const ApplicationDetail: React.FC = () => {
           <div>
             <h2 className="heading-2" style={{ marginBottom: '0.25rem' }}>{id ? `Application Details - ${id}` : 'New Application Process'}</h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              {['PENDING_DOCUMENTS', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) ? `Step ${currentStep} of ${totalSteps}` : `Status: ${applicationStatus.replace(/_/g, ' ')}`}
+              {['PENDING_DOCUMENTS', 'Documents Pending', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) ? `Step ${currentStep} of ${totalSteps}` : `Status: ${applicationStatus.replace(/_/g, ' ')}`}
             </p>
           </div>
         </div>
       </div>
 
-      {['PENDING_DOCUMENTS', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) ? (
+      {['PENDING_DOCUMENTS', 'Documents Pending', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) ? (
         <>
           {renderStepIndicator()}
           <div style={{ marginBottom: '2rem' }}>
