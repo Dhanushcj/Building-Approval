@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Printer, FileText, User, MapPin, History, Download } from 'lucide-react';
+import { Printer, FileText, User, History } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 
 const Quotations: React.FC = () => {
@@ -57,7 +57,7 @@ const Quotations: React.FC = () => {
       const opt = {
         margin:       0,
         filename:     `${qtNo}_${customerName || 'Customer'}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
+        image:        { type: 'jpeg' as const, quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };

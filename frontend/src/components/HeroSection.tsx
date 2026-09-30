@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, Users, Clock, FileText, Bell, Check } from 'lucide-react';
+import { Users, Clock, FileText, Bell } from 'lucide-react';
 
 const HeroSection: React.FC = () => {
   return (

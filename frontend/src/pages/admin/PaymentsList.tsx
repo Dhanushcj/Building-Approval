@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FileText, Receipt, Edit, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Receipt } from 'lucide-react';
 import FilterPanel from '../../components/admin/FilterPanel';
 import { recentApplications } from '../../data/mockData';
 
@@ -9,8 +9,6 @@ const PaymentsList: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [filterValues, setFilterValues] = React.useState<Record<string, string>>({});
   
-  const navigate = useNavigate();
-
   React.useEffect(() => {
     const fetchCases = async () => {
       try {
@@ -23,7 +21,7 @@ const PaymentsList: React.FC = () => {
           casesData = recentApplications; // fallback
         }
         
-        const mappedPayments = casesData.map((c: any, index: number) => {
+        const mappedPayments = casesData.map((c: any) => {
           const statuses = ['Pending', 'Paid', 'Partial', 'Overdue'];
           const idStr = (c.application_number || c.id).toString();
           let seed = 0;

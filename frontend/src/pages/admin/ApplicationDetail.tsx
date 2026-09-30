@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, User, Building, FileText, Upload, CheckCircle, X, Save, Send } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, Building, FileText, Upload, CheckCircle, X, Save, Send, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { recentApplications } from '../../data/mockData';
 
@@ -48,7 +48,7 @@ const ApplicationDetail: React.FC = () => {
     const saved = localStorage.getItem('newApp_currentStep');
     return saved ? parseInt(saved, 10) : 1;
   });
-  const totalSteps = 3;
+  const totalSteps = 4;
   const [isUploading, setIsUploading] = useState(false);
   const [isSaveMenuOpen, setSaveMenuOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -430,7 +430,7 @@ const ApplicationDetail: React.FC = () => {
   const renderStepIndicator = () => {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
-        {[1, 2, 3].map((step) => (
+        {[1, 2, 3, 4].map((step) => (
           <React.Fragment key={step}>
             <div style={{ 
               width: '32px', height: '32px', borderRadius: '50%', 
@@ -441,7 +441,7 @@ const ApplicationDetail: React.FC = () => {
             }}>
               {step}
             </div>
-            {step < 3 && (
+            {step < 4 && (
               <div style={{ 
                 width: '60px', height: '4px', 
                 backgroundColor: currentStep > step ? 'var(--primary)' : 'var(--bg-secondary)',
@@ -810,6 +810,104 @@ const ApplicationDetail: React.FC = () => {
     </div>
   );
 
+  const renderStep4 = () => {
+    const handleDownload = (url: string, filename: string) => {
+      if (url.includes('cloudinary.com') && url.endsWith('.pdf')) {
+        const downloadUrl = url.replace('/upload/', '/upload/fl_attachment/');
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+        return;
+      }
+      
+      fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(new Blob([blob]));
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.setAttribute('download', filename);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode?.removeChild(link);
+        })
+        .catch(err => console.error("Error downloading file", err));
+    };
+
+    const handleBulkDownload = () => {
+      let delay = 0;
+      Object.entries(uploadedFiles).forEach(([key, url]) => {
+        if (url && typeof url === 'string' && (url.startsWith('http') || url.startsWith('data:'))) {
+          const isPdf = url.endsWith('.pdf');
+          setTimeout(() => handleDownload(url, `${key}${isPdf ? '.pdf' : '.jpg'}`), delay);
+          delay += 500;
+        }
+      });
+      toast.success("Downloading all documents...");
+    };
+
+    return (
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FileText size={20} color="var(--primary)" /> Uploaded Documents
+          </h3>
+          <button 
+            onClick={handleBulkDownload}
+            className="btn-primary" 
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
+          >
+            <Download size={18} /> Bulk Download
+          </button>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+          {Object.entries(uploadedFiles).filter(([_,v]) => v && typeof v === 'string' && (v.startsWith('http') || v.startsWith('data:'))).map(([key, value]) => (
+            <div key={key} style={{ border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', backgroundColor: '#f8fafc' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--primary-dark)', textAlign: 'center', minHeight: '40px', display: 'flex', alignItems: 'center' }}>
+                {key}
+              </div>
+              
+              <div style={{ width: '100%', height: '150px', backgroundColor: '#e2e8f0', borderRadius: '0.25rem', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {(value as string).endsWith('.pdf') ? (
+                  <FileText size={48} color="var(--text-secondary)" />
+                ) : (
+                  <img src={value as string} alt={key} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                <a 
+                  href={(value as string).endsWith('.pdf') ? (value as string).replace('.pdf', '.jpg') : (value as string)} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  style={{ flex: 1, padding: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '0.25rem', textAlign: 'center', color: 'var(--primary-dark)', fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none' }}
+                >
+                  View
+                </a>
+                <button 
+                  onClick={(e) => { e.preventDefault(); handleDownload(value as string, `${key}${(value as string).endsWith('.pdf') ? '.pdf' : '.jpg'}`); }}
+                  style={{ flex: 1, padding: '0.5rem', backgroundColor: 'var(--primary)', border: 'none', borderRadius: '0.25rem', color: 'white', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}
+                >
+                  <Download size={14} /> Download
+                </button>
+              </div>
+            </div>
+          ))}
+          
+          {Object.entries(uploadedFiles).filter(([_,v]) => v && typeof v === 'string' && (v.startsWith('http') || v.startsWith('data:'))).length === 0 && (
+            <div style={{ gridColumn: '1 / -1', padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              No documents uploaded yet.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderDocumentVerificationScreen = () => (
     <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
       <CheckCircle size={48} color="var(--primary)" style={{ margin: '0 auto 1.5rem' }} />
@@ -1068,15 +1166,23 @@ const ApplicationDetail: React.FC = () => {
         </div>
       </div>
 
-      {['PENDING_DOCUMENTS', 'Documents Pending', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) ? (
+      {['PENDING_DOCUMENTS', 'Documents Pending', 'INTAKE', 'Draft', 'NEW', 'Submitted', 'COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) ? (
         <>
+          {['COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) && (
+             <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '2rem', backgroundColor: applicationStatus === 'Rejected' ? '#fef2f2' : '#f0fdf4', border: applicationStatus === 'Rejected' ? '1px solid #fecaca' : '1px solid #bbf7d0' }}>
+                {applicationStatus === 'Rejected' ? <X size={48} color="#ef4444" style={{ margin: '0 auto 1rem' }} /> : <CheckCircle size={48} color="var(--success-green)" style={{ margin: '0 auto 1rem' }} />}
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Application {applicationStatus.toUpperCase()}</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>This application process has been completely verified and finalized.</p>
+             </div>
+          )}
           {renderStepIndicator()}
           <div style={{ marginBottom: '2rem' }}>
             {currentStep === 1 && renderStep1()}
             {currentStep === 2 && renderStep2()}
             {currentStep === 3 && renderStep3()}
+            {currentStep === 4 && renderStep4()}
           </div>
-          {currentStep < 3 && (
+          {currentStep < 4 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
               <button onClick={handlePrev} disabled={currentStep === 1} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: currentStep === 1 ? 'var(--bg-secondary)' : 'var(--bg-surface)', border: '1px solid var(--border-color)', color: currentStep === 1 ? 'var(--text-secondary)' : 'var(--primary-dark)', fontWeight: 600, cursor: currentStep === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <ArrowLeft size={18} /> Back
@@ -1086,10 +1192,10 @@ const ApplicationDetail: React.FC = () => {
               </button>
             </div>
           )}
-          {currentStep === 3 && (
+          {currentStep === 4 && (
             <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '1rem', backgroundColor: 'transparent' }}>
               <button onClick={handlePrev} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--primary-dark)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <ArrowLeft size={18} /> Back to Property Details
+                <ArrowLeft size={18} /> Back to Fees Details
               </button>
             </div>
           )}
@@ -1099,13 +1205,7 @@ const ApplicationDetail: React.FC = () => {
           {applicationStatus === 'DOCUMENTS_VERIFICATION' && renderDocumentVerificationScreen()}
           {applicationStatus === 'DOCUMENTS_VERIFIED' && renderReceiptUploadScreen()}
           {applicationStatus === 'SUBMITTED_FOR_APPROVAL' && renderFinalApprovalScreen()}
-          {applicationStatus === 'COMPLETED' && (
-             <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-                <CheckCircle size={64} color="var(--success-green)" style={{ margin: '0 auto 1.5rem' }} />
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '1rem' }}>Application Completed</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>This application process has been completely verified and finalized.</p>
-             </div>
-          )}
+
         </div>
       )}
 
@@ -1164,8 +1264,8 @@ const ApplicationDetail: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Submit/Save Button (Step 3 only) */}
-      {currentStep === 3 && (
+      {/* Floating Submit/Save Button (Step 4 only) */}
+      {currentStep === 4 && !['COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) && (
         <div 
           onMouseEnter={() => setSaveMenuOpen(true)}
           onMouseLeave={() => setSaveMenuOpen(false)}

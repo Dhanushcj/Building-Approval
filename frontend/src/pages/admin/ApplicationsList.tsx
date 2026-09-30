@@ -134,7 +134,7 @@ const ApplicationsList: React.FC = () => {
     }
 
     let matchesMaintenance = true;
-    const isCompleted = ['Approved', 'Rejected'].includes(app.status);
+    const isCompleted = ['Approved', 'Rejected', 'Completed', 'COMPLETED'].includes(app.status) || (app.status && typeof app.status === 'string' && app.status.toUpperCase() === 'COMPLETED');
     
     if (isMainList) {
       matchesMaintenance = !isCompleted; // Hide completed in main list

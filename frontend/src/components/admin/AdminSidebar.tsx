@@ -46,7 +46,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
   return (
     <aside className={`admin-sidebar sidebar-container ${isOpen ? 'sidebar-open' : ''}`} style={{ backgroundColor: 'var(--sidebar-bg)' }}>
       {/* Logo Area */}
-      <div style={{ padding: '2rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
+      <div style={{ padding: '2rem 15px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ backgroundColor: '#fff', borderRadius: '4px', padding: '2px', display: 'flex' }}>
             <img src="/assets/logo.jpeg" alt="C.B. Building Approvals Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
@@ -61,7 +61,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
 
       {/* Menu */}
       <nav style={{ flex: 1, padding: '1.5rem 0', overflowY: 'auto', overflowX: 'hidden' }}>
-        <div className="sidebar-main-menu-text" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 1.5rem', marginBottom: '0.75rem' }}>Main Menu</div>
+        <div className="sidebar-main-menu-text" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 15px', marginBottom: '0.75rem' }}>Main Menu</div>
         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: 0, margin: 0 }}>
           {menuItems.map((item, index) => (
             <li key={index}>
@@ -72,7 +72,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '1rem',
-                      padding: '0.75rem 1.5rem',
+                      padding: '0.75rem 15px',
                       color: maintenanceOpen ? 'var(--bg-surface)' : 'rgba(255,255,255,0.6)',
                       backgroundColor: maintenanceOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
                       borderLeft: maintenanceOpen ? '4px solid var(--accent)' : '4px solid transparent',
@@ -83,7 +83,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
                     }}
                     onClick={() => setMaintenanceOpen(!maintenanceOpen)}
                   >
-                    <span style={{ color: maintenanceOpen ? 'var(--accent)' : 'rgba(255,255,255,0.5)', minWidth: '20px' }}>
+                    <span style={{ color: maintenanceOpen ? 'var(--accent)' : 'rgba(255,255,255,0.5)', minWidth: '40px', display: 'flex', justifyContent: 'center' }}>
                       {item.icon}
                     </span>
                     <span className="sidebar-text">{item.title}</span>
@@ -96,7 +96,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '1rem',
-                      padding: '0.75rem 1.5rem',
+                      padding: '0.75rem 15px',
                       color: isActive ? 'var(--bg-surface)' : 'rgba(255,255,255,0.6)',
                       backgroundColor: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
                       borderLeft: isActive ? '4px solid var(--accent)' : '4px solid transparent',
@@ -109,7 +109,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
                   >
                     {({ isActive }) => (
                       <>
-                        <span style={{ color: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.5)', minWidth: '20px' }}>
+                        <span style={{ color: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.5)', minWidth: '40px', display: 'flex', justifyContent: 'center' }}>
                           {item.icon}
                         </span>
                         <span className="sidebar-text">{item.title}</span>
@@ -127,7 +127,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
                           style={({ isActive }) => ({
                             display: 'flex',
                             alignItems: 'center',
-                            padding: '0.6rem 1.5rem 0.6rem 3.5rem',
+                            padding: '0.6rem 15px 0.6rem 71px',
                             color: isActive ? 'var(--bg-surface)' : 'rgba(255,255,255,0.5)',
                             textDecoration: 'none',
                             fontSize: '0.875rem',
@@ -150,7 +150,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
       </nav>
 
       {/* Profile Area */}
-      <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+      <div style={{ padding: '1.5rem 15px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
         <div style={{ minWidth: '40px', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--accent)', color: 'var(--bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontFamily: 'var(--font-heading)' }}>
           AD
         </div>
