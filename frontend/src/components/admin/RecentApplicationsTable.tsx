@@ -25,21 +25,6 @@ const RecentApplicationsTable: React.FC = () => {
           }));
         }
 
-        const localCasesStr = localStorage.getItem('mock_saved_cases');
-        if (localCasesStr) {
-          const localCases = JSON.parse(localCasesStr);
-          const mappedLocal = localCases.map((c: any) => ({
-            id: c.application_number || c.id,
-            mongoId: c.id,
-            customer: c.property?.owner_name || 'Unknown',
-            type: c.property?.building_type || 'Residential',
-            location: c.property?.jurisdiction || c.property?.village || '',
-            status: getApplicationStatus(c.application_number || c.id, c.status),
-            date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-          }));
-          mappedApps = [...mappedLocal, ...mappedApps];
-        }
-
         setApplications(mappedApps.slice(0, 5));
       } catch (err) {
         console.error("Failed to fetch cases:", err);

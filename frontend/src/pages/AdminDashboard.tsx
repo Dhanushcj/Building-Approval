@@ -1,7 +1,7 @@
 import React from 'react';
 import KpiCards from '../components/admin/KpiCards';
 import ApplicationStatusChart from '../components/admin/ApplicationStatusChart';
-import ApplicationPipeline from '../components/admin/ApplicationPipeline';
+import CurrentMonthStatus from '../components/admin/CurrentMonthStatus';
 import RecentApplicationsTable from '../components/admin/RecentApplicationsTable';
 import UpcomingFollowups from '../components/admin/UpcomingFollowups';
 import ActivityTimeline from '../components/admin/ActivityTimeline';
@@ -17,7 +17,7 @@ const AdminDashboard: React.FC = () => {
       {/* Main Content Area */}
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
         <div style={{ flex: '1 1 600px' }}>
-          <ApplicationPipeline />
+          <CurrentMonthStatus />
           <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
              <RecentApplicationsTable />
           </div>

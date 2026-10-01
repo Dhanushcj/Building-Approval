@@ -41,28 +41,28 @@ const ApplicationPipeline: React.FC = () => {
   ];
 
   return (
-    <div className="card" style={{ marginBottom: '2rem' }}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.25rem', fontFamily: 'var(--font-heading)' }}>Application Pipeline</h3>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Current stage distribution of all active applications.</p>
+    <div className="card" style={{ padding: '1rem', marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1rem' }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.2rem', fontFamily: 'var(--font-heading)' }}>Application Pipeline</h3>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Current stage distribution of all active applications.</p>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
         {pipelineStages.map((stage, index) => (
           <React.Fragment key={index}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '100px', transition: 'transform 0.2s', cursor: 'default' }} className="pipeline-item">
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '80px', transition: 'transform 0.2s', cursor: 'default' }} className="pipeline-item">
               <div style={{ 
-                width: '64px', height: '64px', borderRadius: 'var(--border-radius-lg)', 
+                width: '48px', height: '48px', borderRadius: 'var(--border-radius-lg)', 
                 backgroundColor: stage.bgColor, color: stage.color,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem',
                 boxShadow: stage.count > 0 ? `0 4px 12px ${stage.color}20` : 'none',
                 transition: 'box-shadow 0.3s, transform 0.2s',
               }} className="pipeline-icon">
-                {stage.icon}
+                {React.cloneElement(stage.icon as any, { size: 20 })}
               </div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>{stage.name}</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.2rem' }}>{stage.name}</div>
               <div style={{ 
-                fontSize: '1.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)',
+                fontSize: '1.25rem', fontWeight: 700, fontFamily: 'var(--font-heading)',
                 color: stage.count > 0 ? stage.color : 'var(--text-secondary)' 
               }}>{stage.count}</div>
             </div>

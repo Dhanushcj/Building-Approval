@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, ChevronDown, Grid, LayoutDashboard, FileText, CreditCard, PhoneCall, BarChart3, UserCog, Settings, CheckSquare, Users, Receipt, Home, ClipboardList, Wallet } from 'lucide-react';
+import { Search, Bell, ChevronDown, Grid, LayoutDashboard, FileText, CreditCard, PhoneCall, BarChart3, UserCog, Settings, CheckSquare, Users, Receipt, Home, ClipboardList, Wallet, Wrench } from 'lucide-react';
 import { useLocation, NavLink } from 'react-router-dom';
 
 const menuCategories = [
@@ -38,6 +38,14 @@ const menuCategories = [
     items: [
       { title: 'Staff & Users', icon: <UserCog size={18} strokeWidth={1.5} />, path: '/admin/staff' },
       { title: 'Settings', icon: <Settings size={18} strokeWidth={1.5} />, path: '/admin/settings' },
+    ]
+  },
+  {
+    title: 'Maintenance',
+    items: [
+      { title: 'View Records', icon: <Wrench size={18} strokeWidth={1.5} />, path: '/admin/maintenance/view' },
+      { title: 'System Logs', icon: <Wrench size={18} strokeWidth={1.5} />, path: '/admin/maintenance/logs' },
+      { title: 'Revert Actions', icon: <Wrench size={18} strokeWidth={1.5} />, path: '/admin/maintenance/revert' },
     ]
   }
 ];

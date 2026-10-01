@@ -78,16 +78,16 @@ const KpiCards: React.FC = () => {
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
       {cards.map(({ label, value, sub, iconBg, iconColor, subColor, Icon }) => (
-        <div key={label} className="card kpi-card" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.5rem', transition: 'transform 0.2s, box-shadow 0.2s' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: iconBg, color: iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Icon size={26} strokeWidth={1.5} />
+        <div key={label} className="card kpi-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', transition: 'transform 0.2s, box-shadow 0.2s' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: iconBg, color: iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Icon size={20} strokeWidth={1.5} />
           </div>
           <div>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>{label}</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', lineHeight: 1 }}>{value}</div>
-            <div style={{ fontSize: '0.8125rem', color: subColor, fontWeight: 500, marginTop: '0.25rem' }}>{sub}</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>{label}</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', lineHeight: 1 }}>{value}</div>
+            <div style={{ fontSize: '0.75rem', color: subColor, fontWeight: 500, marginTop: '0.2rem' }}>{sub}</div>
           </div>
         </div>
       ))}

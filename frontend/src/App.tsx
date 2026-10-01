@@ -132,6 +132,7 @@ function App() {
             {/* Customers Module */}
             <Route path="customers" element={<CustomersList />} />
             <Route path="leads" element={<CustomerLeads />} />
+            <Route path="leads/new" element={<NewApplication isCustomer={true} />} />
             <Route path="enquiries" element={<EnquiriesList />} />
             
             {/* Staff Module */}

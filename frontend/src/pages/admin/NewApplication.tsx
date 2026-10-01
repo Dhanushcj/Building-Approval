@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, User, Building, FileText, Upload, CheckCircle, X, Save, Send } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, Building, FileText, Upload, CheckCircle, X, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface NewApplicationProps {
@@ -235,6 +235,7 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
         },
         approval_type: typeMap[formData.serviceType] || 'BUILDING_PLAN_APPROVAL',
         status: isPartial ? 'INTAKE' : 'SUBMITTED',
+        assigned_staff: formData.staff ? { name: formData.staff.split(' — ')[0] } : undefined
       };
       
       // If converting a lead, also delete the lead or update its status
@@ -477,17 +478,7 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
             </div>
             {/* Top Right Upload Icons */}
             <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', display: 'flex', gap: '0.25rem' }}>
-              <button 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  const link = `${window.location.origin}/upload/NEW`;
-                  navigator.clipboard.writeText(link);
-                  toast.success('Upload link copied! Share this with the customer.');
-                }}
-                title="Copy Customer Upload Link" 
-                style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
-                <Send size={18} />
-              </button>
+
               <button 
                 onClick={(e) => { e.preventDefault(); setDocUploadType('CUSTOMER PHOTOGRAPH'); setIsUploadModalOpen(true); }}
                 title="Upload Customer Photo" 
@@ -621,17 +612,7 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
           <Building size={20} color="var(--primary)" /> Property Details
         </h3>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button 
-            onClick={(e) => { 
-              e.preventDefault(); 
-              const link = `${window.location.origin}/upload/NEW`;
-              navigator.clipboard.writeText(link);
-              toast.success('Upload link copied! Share this with the customer.');
-            }}
-            title="Copy Customer Upload Link" 
-            style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
-            <Send size={18} />
-          </button>
+
           <button 
             onClick={(e) => { e.preventDefault(); setDocUploadType('LAND DOCUMENT'); setIsUploadModalOpen(true); }}
             title="Upload Property Documents" 

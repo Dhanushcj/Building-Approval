@@ -45,70 +45,13 @@ const ApplicationsList: React.FC = () => {
             })()
           }));
           
-          const localCasesStr = localStorage.getItem('mock_saved_cases');
-          if (localCasesStr) {
-            const localCases = JSON.parse(localCasesStr);
-            const mappedLocal = localCases.map((c: any) => ({
-              id: c.application_number || c.id,
-              mongoId: c.id,
-              customer: c.property?.owner_name || 'Unknown',
-              mobile: c.property?.owner_phone || '',
-              location: c.property?.jurisdiction || c.property?.village || '',
-              type: 'Building',
-              appType: c.approval_type,
-              status: c.status,
-              staff: c.assigned_staff?.name || 'Unassigned',
-              date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-              days: 0
-            }));
-            mappedApps = [...mappedLocal, ...mappedApps];
-          }
-          
-          setApplications(mappedApps);
-        } else {
-          const localCasesStr = localStorage.getItem('mock_saved_cases');
-          if (localCasesStr) {
-            const localCases = JSON.parse(localCasesStr);
-            const mappedLocal = localCases.map((c: any) => ({
-              id: c.application_number || c.id,
-              mongoId: c.id,
-              customer: c.property?.owner_name || 'Unknown',
-              mobile: c.property?.owner_phone || '',
-              location: c.property?.jurisdiction || c.property?.village || '',
-              type: 'Building',
-              appType: c.approval_type,
-              status: c.status,
-              staff: c.assigned_staff?.name || 'Unassigned',
-              date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-              days: 0
-            }));
-            setApplications(mappedLocal);
-          } else {
-            setApplications([]);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch cases:", err);
-        const localCasesStr = localStorage.getItem('mock_saved_cases');
-        if (localCasesStr) {
-          const localCases = JSON.parse(localCasesStr);
-          const mappedLocal = localCases.map((c: any) => ({
-            id: c.application_number || c.id,
-            mongoId: c.id,
-            customer: c.property?.owner_name || 'Unknown',
-            mobile: c.property?.owner_phone || '',
-            location: c.property?.jurisdiction || c.property?.village || '',
-            type: 'Building',
-            appType: c.approval_type,
-            status: c.status,
-            staff: c.assigned_staff?.name || 'Unassigned',
-            date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-            days: 0
-          }));
-          setApplications(mappedLocal);
+            setApplications(mappedApps);
         } else {
           setApplications([]);
         }
+      } catch (err) {
+        console.error("Failed to fetch cases:", err);
+        setApplications([]);
       }
     };
     
@@ -247,7 +190,7 @@ const ApplicationsList: React.FC = () => {
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Current Status <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Proposal Date <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Product <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
-                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Source <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
+                <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>Assigned To <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
                 <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>No of Days <ArrowUpDown size={12} style={{ opacity: 0.7 }} /></div></th>
               </tr>
             </thead>
@@ -327,7 +270,7 @@ const ApplicationsList: React.FC = () => {
                       <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{app.type} - {app.appType}</div>
                     </td>
                     <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{app.source || 'Web'}</div>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{app.staff || 'Unassigned'}</div>
                     </td>
                     <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
                       {app.days !== undefined ? `${app.days} ${app.days === 1 ? 'day' : 'days'}` : '—'}

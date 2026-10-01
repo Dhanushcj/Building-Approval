@@ -15,29 +15,44 @@ const STATUS_COLORS: Record<string, string> = {
   'Rejected':           'var(--error-red)',
 };
 
-const getChartData = () => {
-  const stored = localStorage.getItem('recentApplications');
-  const apps: any[] = stored ? JSON.parse(stored) : [];
-
-  const buckets: Record<string, number> = {};
-  apps.forEach(app => {
-    const status = getApplicationStatus(app.id, app.status);
-    buckets[status] = (buckets[status] || 0) + 1;
-  });
-
-  return Object.entries(buckets)
-    .filter(([, v]) => v > 0)
-    .map(([name, value]) => ({ name, value, color: STATUS_COLORS[name] || 'var(--text-muted)' }));
-};
-
 const ApplicationStatusChart: React.FC = () => {
-  const [data, setData] = useState(getChartData());
+  const [data, setData] = useState<{name: string, value: number, color: string}[]>([]);
 
   useEffect(() => {
-    const update = () => setData(getChartData());
-    update();
-    window.addEventListener('storage', update);
-    return () => window.removeEventListener('storage', update);
+    const fetchCases = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+        const res = await fetch(`${apiUrl}/cases`);
+        let apps: any[] = [];
+        if (res.ok) {
+          apps = await res.json();
+        }
+
+        const buckets: Record<string, number> = {};
+        apps.forEach(app => {
+          let status = getApplicationStatus(app.application_number || app.id, app.status);
+          
+          // Map backend specific statuses to chart friendly names if getApplicationStatus doesn't
+          if (status === 'INTAKE') status = 'New';
+          if (status === 'COMPLETED') status = 'Approved';
+          if (status === 'DOCUMENT_COLLECTION') status = 'Documents Pending';
+
+          buckets[status] = (buckets[status] || 0) + 1;
+        });
+
+        const chartData = Object.entries(buckets)
+          .filter(([, v]) => v > 0)
+          .map(([name, value]) => ({ name, value, color: STATUS_COLORS[name] || 'var(--text-muted)' }));
+
+        setData(chartData);
+      } catch (err) {
+        console.error("Failed to fetch cases for chart:", err);
+      }
+    };
+
+    fetchCases();
+    window.addEventListener('storage', fetchCases);
+    return () => window.removeEventListener('storage', fetchCases);
   }, []);
 
   const total = data.reduce((sum, d) => sum + d.value, 0);
