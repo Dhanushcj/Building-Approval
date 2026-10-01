@@ -1,28 +1,19 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminTopbar from '../components/admin/AdminTopbar';
 
 const AdminLayout: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   return (
-    <div className="layout-wrapper">
-      <AdminSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <div className="layout-content">
+    <div className="layout-wrapper" style={{ display: 'block' }}>
+      <div className="layout-content" style={{ marginLeft: 0, width: '100%' }}>
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh' }}>
-          <AdminTopbar toggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
+          <AdminTopbar />
           <main className="main-content-padding" style={{ flex: 1, padding: '2rem' }}>
             <Outlet />
           </main>
         </div>
       </div>
-      
-      {/* Mobile Overlay */}
-      <div 
-        className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`} 
-        onClick={() => setIsSidebarOpen(false)}
-      ></div>
     </div>
   );
 };

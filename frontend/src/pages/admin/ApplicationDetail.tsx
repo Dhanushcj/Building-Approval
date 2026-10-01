@@ -86,6 +86,42 @@ const ApplicationDetail: React.FC = () => {
     return saved && !id ? JSON.parse(saved) : {};
   });
 
+  React.useEffect(() => {
+    if (id) {
+      const loadCustomerDocs = () => {
+        const savedDocs = localStorage.getItem(`customerDocs_${id}`);
+        if (savedDocs) {
+          try {
+            const parsed = JSON.parse(savedDocs);
+            const mappedDocs: any = {};
+            parsed.forEach((d: any) => {
+              if (d.fileData) {
+                if (d.id === 'sale_deed') mappedDocs['SALE DEED'] = d.fileData;
+                if (d.id === 'patta') mappedDocs['PATTA'] = d.fileData;
+                if (d.id === 'fmb') mappedDocs['FMB'] = d.fileData;
+                if (d.id === 'pan') mappedDocs['PAN CARD'] = d.fileData;
+                if (d.id === 'aadhar') mappedDocs['AADHAR CARD'] = d.fileData;
+                if (d.id === 'photo') mappedDocs['CUSTOMER PHOTOGRAPH'] = d.fileData;
+                if (d.id === 'signature') mappedDocs['CUSTOMER SIGNATURE'] = d.fileData;
+                if (d.id === 'building_plan') mappedDocs['BUILDING PLAN'] = d.fileData;
+              }
+            });
+            
+            if (Object.keys(mappedDocs).length > 0) {
+              setUploadedFiles((prev: any) => ({ ...prev, ...mappedDocs }));
+            }
+          } catch (e) {
+            console.error('Error parsing customer docs', e);
+          }
+        }
+      };
+      
+      loadCustomerDocs();
+      window.addEventListener('storage', loadCustomerDocs);
+      return () => window.removeEventListener('storage', loadCustomerDocs);
+    }
+  }, [id]);
+
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,6 +205,7 @@ const ApplicationDetail: React.FC = () => {
           permanentAddress: { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' },
           staff: apiApp.staff || '',
           propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
+          referenceDetails: { source: '', name: '', mobile: '' },
           feesAmount: '',
           feeNotes: '',
         };
@@ -183,6 +220,9 @@ const ApplicationDetail: React.FC = () => {
       }
       if (!parsed.propertyDetails) {
         parsed.propertyDetails = { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' };
+      }
+      if (!parsed.referenceDetails) {
+        parsed.referenceDetails = { source: '', name: '', mobile: '' };
       }
       return parsed;
     }
@@ -203,6 +243,7 @@ const ApplicationDetail: React.FC = () => {
       
       // Page 2: Property Details
       propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
+      referenceDetails: { source: '', name: '', mobile: '' },
       
       // Page 3: Fees Details
       feesAmount: '',
@@ -561,17 +602,6 @@ const ApplicationDetail: React.FC = () => {
             {/* Top Right Upload Icons */}
             <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', display: 'flex', gap: '0.25rem' }}>
               <button 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  const link = `${window.location.origin}/upload/${id || 'NEW'}`;
-                  navigator.clipboard.writeText(link);
-                  toast.success('Upload link copied! Share this with the customer.');
-                }}
-                title="Copy Customer Upload Link" 
-                style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
-                <Send size={18} />
-              </button>
-              <button 
                 onClick={(e) => { e.preventDefault(); setDocUploadType('CUSTOMER PHOTOGRAPH'); setIsUploadModalOpen(true); }}
                 title="Upload Customer Photo" 
                 style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
@@ -698,23 +728,13 @@ const ApplicationDetail: React.FC = () => {
   );
 
   const renderStep2 = () => (
-    <div className="card" style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+    <>
+      <div className="card" style={{ position: 'relative' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
           <Building size={20} color="var(--primary)" /> Property Details
         </h3>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button 
-            onClick={(e) => { 
-              e.preventDefault(); 
-              const link = `${window.location.origin}/upload/${id || 'NEW'}`;
-              navigator.clipboard.writeText(link);
-              toast.success('Upload link copied! Share this with the customer.');
-            }}
-            title="Copy Customer Upload Link" 
-            style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '0.25rem', padding: '0.4rem', color: 'var(--primary)', cursor: 'pointer', display: 'flex', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
-            <Send size={18} />
-          </button>
           <button 
             onClick={(e) => { e.preventDefault(); setDocUploadType('LAND DOCUMENT'); setIsUploadModalOpen(true); }}
             title="Upload Property Documents" 
@@ -771,6 +791,48 @@ const ApplicationDetail: React.FC = () => {
         </div>
       </div>
     </div>
+
+    {/* Reference Details Island */}
+    <div className="card" style={{ position: 'relative', marginTop: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+          <User size={20} color="var(--primary)" /> Reference Details
+        </h3>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1rem' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Referred By</label>
+          <select 
+            value={formData.referenceDetails?.source || ''} 
+            onChange={e => setFormData({...formData, referenceDetails: { source: e.target.value, name: '', mobile: '' }})} 
+            style={{ width: '100%', padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'white' }}
+          >
+            <option value="">Select Option</option>
+            <option value="Newspaper Ad">Newspaper Ad</option>
+            <option value="Facebook">Facebook</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Friend">Friend</option>
+            <option value="Officers">Officers</option>
+            <option value="Previous Customer">Previous Customer</option>
+          </select>
+        </div>
+
+        {['Friend', 'Officers', 'Previous Customer'].includes(formData.referenceDetails?.source || '') && (
+          <>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Name</label>
+              <input type="text" value={formData.referenceDetails?.name || ''} onChange={e => setFormData({...formData, referenceDetails: {...formData.referenceDetails, name: e.target.value}})} style={{ width: '100%', padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', fontSize: '0.875rem' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Mobile Number</label>
+              <input type="text" value={formData.referenceDetails?.mobile || ''} onChange={e => setFormData({...formData, referenceDetails: {...formData.referenceDetails, mobile: e.target.value}})} style={{ width: '100%', padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', fontSize: '0.875rem' }} />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  </>
   );
 
   const renderStep3 = () => (
@@ -1149,25 +1211,25 @@ const ApplicationDetail: React.FC = () => {
 
   return (
     <div style={{ paddingBottom: '3rem', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button 
-            onClick={() => isEmployee ? navigate('/employee/applications') : navigate('/admin/applications')}
-            style={{ padding: '0.5rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <ArrowLeft size={20} color="var(--primary-dark)" />
-          </button>
-          <div>
-            <h2 className="heading-2" style={{ marginBottom: '0.25rem' }}>{id ? `Application Details - ${id}` : 'New Application Process'}</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              {['PENDING_DOCUMENTS', 'Documents Pending', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) ? `Step ${currentStep} of ${totalSteps}` : `Status: ${applicationStatus.replace(/_/g, ' ')}`}
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       {['PENDING_DOCUMENTS', 'Documents Pending', 'INTAKE', 'Draft', 'NEW', 'Submitted', 'COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) ? (
         <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <button 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                const link = `${window.location.origin}/upload/${id || 'NEW'}`;
+                navigator.clipboard.writeText(link);
+                toast.success('Upload link copied! Share this with the customer.');
+              }}
+              style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '0.5rem', padding: '0.6rem 1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, boxShadow: '0 2px 4px rgba(0,0,0,0.1)', transition: 'background-color 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-dark)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
+            >
+              <Send size={18} /> Share Upload Link
+            </button>
+          </div>
           {['COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) && (
              <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '2rem', backgroundColor: applicationStatus === 'Rejected' ? '#fef2f2' : '#f0fdf4', border: applicationStatus === 'Rejected' ? '1px solid #fecaca' : '1px solid #bbf7d0' }}>
                 {applicationStatus === 'Rejected' ? <X size={48} color="#ef4444" style={{ margin: '0 auto 1rem' }} /> : <CheckCircle size={48} color="var(--success-green)" style={{ margin: '0 auto 1rem' }} />}
@@ -1264,8 +1326,8 @@ const ApplicationDetail: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Submit/Save Button (Step 4 only) */}
-      {currentStep === 4 && !['COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) && (
+      {/* Floating Submit/Save Button */}
+      {!['COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) && (
         <div 
           onMouseEnter={() => setSaveMenuOpen(true)}
           onMouseLeave={() => setSaveMenuOpen(false)}
@@ -1280,45 +1342,70 @@ const ApplicationDetail: React.FC = () => {
             gap: '1rem',
           }}
         >
-          {isSaveMenuOpen && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem', animation: 'fadeIn 0.2s ease-in-out' }}>
+          {currentStep === 4 ? (
+            <>
+              {isSaveMenuOpen && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem', animation: 'fadeIn 0.2s ease-in-out' }}>
+                  <button 
+                    onClick={() => setIsPartialSaveModalOpen(true)}
+                    style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '2rem', backgroundColor: 'white', color: '#f59e0b', border: '2px solid #f59e0b', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+                  >
+                    <Save size={16} /> Save as Draft
+                  </button>
+                </div>
+              )}
               <button 
-                onClick={() => setIsPartialSaveModalOpen(true)}
-                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '2rem', backgroundColor: 'white', color: '#f59e0b', border: '2px solid #f59e0b', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+                onClick={async () => {
+                  if (!checkAllDocumentsUploaded()) {
+                     toast.error("Please upload all required documents to submit!");
+                     return;
+                  }
+                  await saveApplicationData(false);
+                  toast.success("Application Submitted for Verification!");
+                  if (isEmployee) navigate('/employee/applications');
+                  else navigate('/admin/applications');
+                }}
+                style={{
+                  padding: '1rem',
+                  borderRadius: '50%',
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'transform 0.2s',
+                  transform: isSaveMenuOpen ? 'scale(1.1)' : 'scale(1)'
+                }}
+                title="Submit Application"
               >
-                <Save size={16} /> Save as Draft
+                <CheckCircle size={24} />
               </button>
-            </div>
+            </>
+          ) : (
+            <button 
+              onClick={() => setIsPartialSaveModalOpen(true)}
+              style={{
+                padding: '1rem',
+                borderRadius: '50%',
+                backgroundColor: '#f59e0b',
+                color: 'white',
+                border: 'none',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'transform 0.2s',
+                transform: 'scale(1)'
+              }}
+              title="Save as Draft"
+            >
+              <Save size={24} />
+            </button>
           )}
-          <button 
-            onClick={async () => {
-              if (!checkAllDocumentsUploaded()) {
-                 toast.error("Please upload all required documents to submit!");
-                 return;
-              }
-              await saveApplicationData(false);
-              toast.success("Application Submitted for Verification!");
-              if (isEmployee) navigate('/employee/applications');
-              else navigate('/admin/applications');
-            }}
-            style={{
-              padding: '1rem',
-              borderRadius: '50%',
-              backgroundColor: '#10b981',
-              color: 'white',
-              border: 'none',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'transform 0.2s',
-              transform: isSaveMenuOpen ? 'scale(1.1)' : 'scale(1)'
-            }}
-            title="Submit Application"
-          >
-            <CheckCircle size={24} />
-          </button>
         </div>
       )}
     </div>

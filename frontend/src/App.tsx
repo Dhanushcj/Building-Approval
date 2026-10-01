@@ -28,8 +28,11 @@ import EnquiriesList from './pages/admin/EnquiriesList';
 import Reports from './pages/admin/Reports';
 import PaymentsList from './pages/admin/PaymentsList';
 import PaymentDetail from './pages/admin/PaymentDetail';
+import Expenses from './pages/admin/Expenses';
+import Receipts from './pages/admin/Receipts';
 import Quotations from './pages/admin/Quotations';
 import ApplicationPDF from './pages/admin/ApplicationPDF';
+import CashBook from './pages/admin/CashBook';
 
 function App() {
   useEffect(() => {
@@ -141,6 +144,9 @@ function App() {
             <Route path="workflow/*" element={<div style={{padding:'2rem'}}><h2>Workflow Module</h2><p>Coming soon...</p></div>} />
             <Route path="payments" element={<PaymentsList />} />
             <Route path="payments/:id" element={<PaymentDetail />} />
+            <Route path="expenses" element={<Expenses />} />
+            <Route path="receipts" element={<Receipts />} />
+            <Route path="cashbook" element={<CashBook />} />
             <Route path="quotations" element={<Quotations />} />
             <Route path="submissions/*" element={<div style={{padding:'2rem'}}><h2>Submissions Module</h2><p>Coming soon...</p></div>} />
             <Route path="tasks/*" element={<div style={{padding:'2rem'}}><h2>Tasks Module</h2><p>Coming soon...</p></div>} />
