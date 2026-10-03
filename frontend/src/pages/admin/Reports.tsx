@@ -5,15 +5,15 @@ import toast from 'react-hot-toast';
 const Reports: React.FC = () => {
   const [reportData, setReportData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filter state
   const [filterReportType, setFilterReportType] = useState('Approval Register');
   const [filterFromDate, setFilterFromDate] = useState('');
   const [filterToDate, setFilterToDate] = useState('');
   const [filterFileType, setFilterFileType] = useState('All');
-  
+
   const [isReportVisible, setIsReportVisible] = useState(false);
-  
+
   const [currentMonthYear, setCurrentMonthYear] = useState('');
   const [availableFileTypes, setAvailableFileTypes] = useState<string[]>([]);
 
@@ -29,40 +29,40 @@ const Reports: React.FC = () => {
     const fetchReport = async () => {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
-        
+
         // Fetch all API cases
         let apiCases: any[] = [];
         try {
-           const res = await fetch(`${apiUrl}/cases`);
-           if (res.ok) {
-             apiCases = await res.json();
-           }
+          const res = await fetch(`${apiUrl}/cases`);
+          if (res.ok) {
+            apiCases = await res.json();
+          }
         } catch (e) {
-           console.error("API cases fetch failed", e);
+          console.error("API cases fetch failed", e);
         }
 
         // Fetch local cases
         const localCasesStr = localStorage.getItem('mock_saved_cases');
         const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
-        
+
         const allCases = [...localCases, ...apiCases];
-        
+
         // Remove duplicates based on ID
-        const uniqueCases = allCases.filter((app: any, index: number, self: any[]) => 
+        const uniqueCases = allCases.filter((app: any, index: number, self: any[]) =>
           index === self.findIndex((a: any) => (a.application_number || a.id) === (app.application_number || app.id))
         );
 
         const formattedData = uniqueCases.map((c: any, index: number) => {
           const dateObj = new Date(c.created_at || Date.now());
           const dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-          
+
           let username = '';
           let password = '';
           if (c.uploadedFiles) {
-             username = c.uploadedFiles.username || '';
-             password = c.uploadedFiles.password || '';
+            username = c.uploadedFiles.username || '';
+            password = c.uploadedFiles.password || '';
           }
-          
+
           const fullData = c.fullData || {};
           const propDetails = fullData.propertyDetails || {};
           const reference = fullData.reference || '';
@@ -83,14 +83,14 @@ const Reports: React.FC = () => {
             status: c.uploadedFiles && Object.keys(c.uploadedFiles).length > 0 ? 'Uploaded' : 'Pending'
           };
         });
-        
+
         setReportData(formattedData);
-        
+
         // Set subtitle month-year
         const date = new Date();
         const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
         setCurrentMonthYear(`${monthNames[date.getMonth()]} - ${date.getFullYear()}`);
-        
+
       } catch (err) {
         console.error("Error fetching report data:", err);
         toast.error("Failed to load reports");
@@ -98,7 +98,7 @@ const Reports: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchReport();
   }, []);
 
@@ -109,14 +109,14 @@ const Reports: React.FC = () => {
   const getFilteredData = () => {
     return reportData.filter(row => {
       if (filterFromDate) {
-         const from = new Date(filterFromDate);
-         from.setHours(0,0,0,0);
-         if (row.rawDate < from) return false;
+        const from = new Date(filterFromDate);
+        from.setHours(0, 0, 0, 0);
+        if (row.rawDate < from) return false;
       }
       if (filterToDate) {
-         const to = new Date(filterToDate);
-         to.setHours(23,59,59,999);
-         if (row.rawDate > to) return false;
+        const to = new Date(filterToDate);
+        to.setHours(23, 59, 59, 999);
+        if (row.rawDate > to) return false;
       }
       if (filterFileType !== 'All' && row.fileType !== filterFileType) return false;
       return true;
@@ -133,7 +133,7 @@ const Reports: React.FC = () => {
     const headers = ['S.NO', 'DATE', 'FILE NO', 'NAME', 'MOBILE NO', 'VILLAGE NAME', 'PANCHYAT', 'REFERENCE BY', 'FILE TYPE', 'FILE STATUS', 'USER ID & PASSWORD', 'STATUS'];
     const csvContent = [
       headers.join(','),
-      ...dataToExport.map(row => 
+      ...dataToExport.map(row =>
         `"${row.sno}","${row.date}","${row.fileNo}","${row.name}","${row.mobile}","${row.village}","${row.panchayat}","${row.reference}","${row.fileType}","${row.fileStatus}","${row.userPass}","${row.status}"`
       )
     ].join('\n');
@@ -204,7 +204,7 @@ const Reports: React.FC = () => {
     <div>
       <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem' }}>Report Filters</h2>
-        
+
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '0.5rem' }}>
           <div style={{ flex: 1, minWidth: '150px' }}>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Report Type</label>

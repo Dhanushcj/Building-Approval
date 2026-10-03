@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MessageSquare, X, User, Phone, Mail, MapPin } from 'lucide-react';
 import HeroSection from '../components/HeroSection';
+import AboutUsSection from '../components/AboutUsSection';
 import ServicesSection from '../components/ServicesSection';
 import ProcessSection from '../components/ProcessSection';
 import TrackingSection from '../components/TrackingSection';
@@ -55,6 +56,7 @@ const Landing: React.FC = () => {
   return (
     <div style={{ width: '100%', overflowX: 'hidden' }}>
       <HeroSection />
+      <AboutUsSection />
       <ServicesSection />
       <ProcessSection />
       <TrackingSection />
