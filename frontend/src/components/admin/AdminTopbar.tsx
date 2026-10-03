@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, ChevronDown, Grid, LayoutDashboard, FileText, CreditCard, PhoneCall, BarChart3, UserCog, Settings, CheckSquare, Users, Receipt, Home, ClipboardList, Wallet, Wrench } from 'lucide-react';
-import { useLocation, NavLink } from 'react-router-dom';
+import { Search, Bell, ChevronDown, FileText, CreditCard, PhoneCall, BarChart3, UserCog, Settings, CheckSquare, Users, Receipt, Home, ClipboardList, Wallet, Wrench } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 
 const menuCategories = [
   {
@@ -66,26 +66,6 @@ const AdminTopbar: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      {/* Top row: Dark Blue Bar (Logo & Company Name) */}
-      <div style={{ 
-        backgroundColor: 'var(--sidebar-bg, #0f2b5b)', 
-        height: '24px', 
-        display: 'flex', 
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '0 1.5rem',
-        color: '#fff' 
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ backgroundColor: '#fff', borderRadius: '4px', padding: '1px', display: 'flex' }}>
-            <img src="/assets/logo.jpeg" alt="Logo" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
-          </div>
-          <div style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.02em', color: '#fff', fontFamily: 'var(--font-heading)' }}>
-            C.B. BUILDING APPROVALS
-          </div>
-        </div>
-      </div>
-
       {/* Second row: Tools (Grid Menu, Search, Profile) */}
       <header className="topbar-container" style={{ 
         backgroundColor: '#fff', 

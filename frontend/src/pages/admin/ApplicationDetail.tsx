@@ -71,6 +71,8 @@ const ApplicationDetail: React.FC = () => {
     'RECEIPT'?: string;
     'FINAL_APPROVAL'?: string;
     receiptNumber?: string;
+    username?: string;
+    password?: string;
   }>(() => {
     if (id) {
       const existingStr = localStorage.getItem('mock_saved_cases');
@@ -336,9 +338,34 @@ const ApplicationDetail: React.FC = () => {
       
       const existingStr = localStorage.getItem('mock_saved_cases');
       let existing = existingStr ? JSON.parse(existingStr) : [];
+      
+      let finalAppNumber = id || '';
+      if (!id) {
+        let nextAppNum = 7001;
+        let existingApi = [];
+        try {
+          const allCasesRes = await fetch(`${apiUrl}/cases`);
+          if (allCasesRes.ok) existingApi = await allCasesRes.json();
+        } catch (e) {
+          console.error(e);
+        }
+        const allCases = [...existing, ...existingApi];
+        allCases.forEach((c: any) => {
+          const appNum = c.application_number || '';
+          if (appNum.startsWith('APP-')) {
+            const num = parseInt(appNum.replace('APP-', ''), 10);
+            if (!isNaN(num) && num >= nextAppNum) nextAppNum = num + 1;
+          } else if (appNum) {
+            const num = parseInt(appNum, 10);
+            if (!isNaN(num) && num >= nextAppNum) nextAppNum = num + 1;
+          }
+        });
+        finalAppNumber = `${nextAppNum}`;
+      }
+
       const mockCase = {
-        id: id || `APP-Draft-${Date.now()}`,
-        application_number: id || `APP-Draft-${Date.now()}`,
+        id: finalAppNumber,
+        application_number: finalAppNumber,
         property: {
           owner_name: formData.customerName || 'Draft Owner',
           owner_phone: formData.mobile || '',
@@ -373,6 +400,7 @@ const ApplicationDetail: React.FC = () => {
       }
 
       const payload = {
+        application_number: finalAppNumber,
         property: {
           create: {
             owner_name: formData.customerName || 'Draft Owner',
@@ -1011,6 +1039,14 @@ const ApplicationDetail: React.FC = () => {
            <input type="text" value={uploadedFiles.receiptNumber || ''} onChange={e => setUploadedFiles(prev => ({...prev, receiptNumber: e.target.value}))} placeholder="Enter Receipt No" style={getInputStyle('receiptNumber', uploadedFiles.receiptNumber)} />
         </div>
         <div>
+           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Username *</label>
+           <input type="text" value={uploadedFiles.username || ''} onChange={e => setUploadedFiles(prev => ({...prev, username: e.target.value}))} placeholder="Enter Username" style={getInputStyle('username', uploadedFiles.username)} />
+        </div>
+        <div>
+           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Password *</label>
+           <input type="password" value={uploadedFiles.password || ''} onChange={e => setUploadedFiles(prev => ({...prev, password: e.target.value}))} placeholder="Enter Password" style={getInputStyle('password', uploadedFiles.password)} />
+        </div>
+        <div>
            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Receipt File *</label>
            <div 
             onClick={() => { setDocUploadType('RECEIPT'); setModalTab('upload'); setIsUploadModalOpen(true); }}
@@ -1024,7 +1060,17 @@ const ApplicationDetail: React.FC = () => {
         </div>
         <button 
           onClick={async () => {
-             if (!uploadedFiles.receiptNumber || !uploadedFiles['RECEIPT']) { toast.error("Please enter receipt number and upload receipt file"); return; }
+             const newErrors = [];
+             if (!uploadedFiles.receiptNumber) newErrors.push('receiptNumber');
+             if (!uploadedFiles.username) newErrors.push('username');
+             if (!uploadedFiles.password) newErrors.push('password');
+             setFormErrors(newErrors);
+             
+             if (newErrors.length > 0 || !uploadedFiles['RECEIPT']) { 
+               toast.error("Please fill all mandatory fields and upload receipt file"); 
+               return; 
+             }
+             
              setApplicationStatus('SUBMITTED_FOR_APPROVAL');
              const existingStr = localStorage.getItem('mock_saved_cases');
              if (existingStr && id) {
@@ -1179,15 +1225,36 @@ const ApplicationDetail: React.FC = () => {
                 {uploadedFiles[docUploadType as keyof typeof uploadedFiles] ? (
                   (() => {
                     const fileData = uploadedFiles[docUploadType as keyof typeof uploadedFiles] as string;
-                    if (fileData.startsWith('data:image/')) {
-                      return <img src={fileData} alt="Uploaded" style={{ maxHeight: '250px', maxWidth: '100%', objectFit: 'contain' }} />;
-                    } else if (fileData.startsWith('data:application/pdf')) {
-                      return <iframe src={fileData} title="PDF Preview" style={{ width: '100%', height: '350px', border: 'none' }} />;
+                    const isPdf = fileData.startsWith('data:application/pdf') || fileData.toLowerCase().endsWith('.pdf');
+                    
+                    if (isPdf) {
+                      return (
+                        <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                          <div style={{ padding: '0.5rem', backgroundColor: '#e0f2fe', textAlign: 'center', marginBottom: '0.5rem', borderRadius: '0.25rem' }}>
+                            <a href={fileData} target="_blank" rel="noreferrer" style={{ color: '#0284c7', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                              <FileText size={16} /> Open PDF in New Tab
+                            </a>
+                          </div>
+                          <embed src={fileData} type="application/pdf" width="100%" height="350px" style={{ border: 'none' }} />
+                        </div>
+                      );
                     } else {
                       return (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--primary)' }}>
-                           <FileText size={48} style={{ marginBottom: '1rem' }} />
-                           <span style={{ fontWeight: 500 }}>Document Uploaded</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--primary)', width: '100%' }}>
+                           <a href={fileData} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', width: '100%', display: 'flex', justifyContent: 'center' }}>
+                             <img src={fileData} alt="Uploaded Document" style={{ maxHeight: '250px', maxWidth: '100%', objectFit: 'contain' }} 
+                               onError={(e) => {
+                                 e.currentTarget.style.display = 'none';
+                                 if (e.currentTarget.nextElementSibling) {
+                                   (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                                 }
+                               }} 
+                             />
+                             <div style={{ display: 'none', flexDirection: 'column', alignItems: 'center', color: 'var(--primary)' }}>
+                               <FileText size={48} style={{ marginBottom: '1rem' }} />
+                               <span style={{ fontWeight: 500 }}>View Document</span>
+                             </div>
+                           </a>
                         </div>
                       );
                     }

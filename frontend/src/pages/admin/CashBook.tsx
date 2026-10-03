@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Calendar, Search, ArrowUpRight, ArrowDownRight, DollarSign, Wallet } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 const CashBook: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -129,7 +128,7 @@ const CashBook: React.FC = () => {
                 <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)', textAlign: 'right' }}>₹{openingBalance.toLocaleString()}</td>
               </tr>
 
-              {filteredTransactions.map((t, index) => {
+              {filteredTransactions.map((t) => {
                 if (t.type === 'Receipt') runningBalance += t.amount;
                 else runningBalance -= t.amount;
 

@@ -28,12 +28,12 @@ export const followUps: any[] = [];
 export const recentActivity: any[] = [];
 
 export const monthlyRevenueData = [
-  { name: 'Apr', collected: 0, pending: 0, overdue: 0 },
-  { name: 'May', collected: 0, pending: 0, overdue: 0 },
-  { name: 'Jun', collected: 0, pending: 0, overdue: 0 },
-  { name: 'Jul', collected: 0, pending: 0, overdue: 0 },
-  { name: 'Aug', collected: 0, pending: 0, overdue: 0 },
-  { name: 'Sep', collected: 0, pending: 0, overdue: 0 }
+  { name: 'Apr', collected: 0, pending: 0 },
+  { name: 'May', collected: 0, pending: 0 },
+  { name: 'Jun', collected: 0, pending: 0 },
+  { name: 'Jul', collected: 0, pending: 0 },
+  { name: 'Aug', collected: 0, pending: 0 },
+  { name: 'Sep', collected: 0, pending: 0 }
 ];
 
 export const locationData = [

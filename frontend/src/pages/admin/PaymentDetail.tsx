@@ -29,7 +29,7 @@ const PaymentDetail: React.FC = () => {
         }
         
         if (c) {
-          const statuses = ['Pending', 'Paid', 'Partial', 'Overdue'];
+          const statuses = ['Pending', 'Paid', 'Partial'];
           const idStr = (c.application_number || c.id || id).toString();
           let seed = 0;
           for (let i = 0; i < idStr.length; i++) seed += idStr.charCodeAt(i);
@@ -41,7 +41,7 @@ const PaymentDetail: React.FC = () => {
           const savedStatus = localStorage.getItem(`paymentStatus_${idStr}`);
           
           const status = savedStatus ? savedStatus : statuses[seed % statuses.length];
-          const paid = savedPaid ? Number(savedPaid) : (status === 'Paid' ? total : (status === 'Pending' || status === 'Overdue' ? 0 : Math.floor(total / 2)));
+          const paid = savedPaid ? Number(savedPaid) : (status === 'Paid' ? total : (status === 'Pending' ? 0 : Math.floor(total / 2)));
           
           setPayment({
             id: c.application_number || c.id || id,
@@ -153,10 +153,6 @@ const PaymentDetail: React.FC = () => {
     return <div style={{ padding: '2rem' }}>Loading payment details...</div>;
   }
 
-  // Calculate mock dates for display
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 15);
-  
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
@@ -246,7 +242,6 @@ const PaymentDetail: React.FC = () => {
                   <option value="Pending">Pending</option>
                   <option value="Partial">Partial</option>
                   <option value="Paid">Paid</option>
-                  <option value="Overdue">Overdue</option>
                 </select>
               </div>
             </div>
@@ -277,14 +272,6 @@ const PaymentDetail: React.FC = () => {
             <h3 className="heading-3" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Clock size={20} color="var(--primary)" /> Payment History
             </h3>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '0.5rem', borderLeft: '4px solid #C98A3D', marginBottom: '1.5rem' }}>
-              <Calendar size={24} color="#C98A3D" />
-              <div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Last Date for Final Payment</div>
-                <div style={{ fontWeight: 600, color: 'var(--primary-dark)' }}>{dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-              </div>
-            </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
               <thead>

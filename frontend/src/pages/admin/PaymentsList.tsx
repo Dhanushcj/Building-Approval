@@ -22,7 +22,7 @@ const PaymentsList: React.FC = () => {
         }
         
         const mappedPayments = casesData.map((c: any) => {
-          const statuses = ['Pending', 'Paid', 'Partial', 'Overdue'];
+          const statuses = ['Pending', 'Paid', 'Partial'];
           const idStr = (c.application_number || c.id).toString();
           let seed = 0;
           for (let i = 0; i < idStr.length; i++) seed += idStr.charCodeAt(i);
@@ -34,7 +34,7 @@ const PaymentsList: React.FC = () => {
           const savedStatus = localStorage.getItem(`paymentStatus_${idStr}`);
           
           const status = savedStatus ? savedStatus : statuses[seed % statuses.length];
-          const paid = savedPaid ? Number(savedPaid) : (status === 'Paid' ? total : (status === 'Pending' || status === 'Overdue' ? 0 : Math.floor(total / 2)));
+          const paid = savedPaid ? Number(savedPaid) : (status === 'Paid' ? total : (status === 'Pending' ? 0 : Math.floor(total / 2)));
           
           return {
             id: c.application_number || c.id,
@@ -58,7 +58,7 @@ const PaymentsList: React.FC = () => {
   }, []);
 
   const filterOptions = [
-    { key: 'status', label: 'Payment Status', options: ['Paid', 'Pending', 'Partial', 'Overdue'] }
+    { key: 'status', label: 'Payment Status', options: ['Paid', 'Pending', 'Partial'] }
   ];
 
   const handleFilterChange = (key: string, value: string) => {
@@ -87,7 +87,6 @@ const PaymentsList: React.FC = () => {
       case 'Paid': return { bg: 'rgba(47, 125, 90, 0.1)', text: '#2F7D5A' };
       case 'Pending': return { bg: 'rgba(201, 138, 61, 0.1)', text: '#C98A3D' };
       case 'Partial': return { bg: 'rgba(26, 75, 130, 0.1)', text: '#1A4B82' };
-      case 'Overdue': return { bg: 'rgba(185, 74, 72, 0.1)', text: '#B94A48' };
       default: return { bg: '#eee', text: '#333' };
     }
   };
@@ -103,7 +102,7 @@ const PaymentsList: React.FC = () => {
         </button>
       </div>
 
-      <div className="dashboard-grid" style={{ marginTop: '0', marginBottom: '2rem', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      <div className="dashboard-grid" style={{ marginTop: '0', marginBottom: '2rem', gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <div className="card" style={{ padding: '1.5rem' }}>
           <div className="stat-label">Total Revenue</div>
           <div className="stat-value" style={{ fontSize: '1.75rem', marginTop: '0.5rem' }}>₹{payments.reduce((sum, p) => sum + p.totalAmount, 0).toLocaleString()}</div>
@@ -115,10 +114,6 @@ const PaymentsList: React.FC = () => {
         <div className="card" style={{ padding: '1.5rem' }}>
           <div className="stat-label">Pending</div>
           <div className="stat-value" style={{ fontSize: '1.75rem', marginTop: '0.5rem', color: '#C98A3D' }}>₹{payments.reduce((sum, p) => sum + p.pendingAmount, 0).toLocaleString()}</div>
-        </div>
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div className="stat-label">Overdue</div>
-          <div className="stat-value" style={{ fontSize: '1.75rem', marginTop: '0.5rem', color: '#B94A48' }}>₹{payments.filter(p => p.status === 'Overdue').reduce((sum, p) => sum + p.pendingAmount, 0).toLocaleString()}</div>
         </div>
       </div>
 

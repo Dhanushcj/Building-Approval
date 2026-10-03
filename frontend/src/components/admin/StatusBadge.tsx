@@ -51,8 +51,6 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ type, value }) => {
       case 'partial':
       case 'pending':
         bgColor = '#fef3c7'; color = 'var(--warning-gold)'; break;
-      case 'overdue':
-        bgColor = '#fee2e2'; color = 'var(--error-red)'; break;
     }
   }
 

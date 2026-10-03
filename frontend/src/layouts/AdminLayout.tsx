@@ -1,18 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminTopbar from '../components/admin/AdminTopbar';
+import AdminSidebar from '../components/admin/AdminSidebar';
 
 const AdminLayout: React.FC = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="layout-wrapper" style={{ display: 'block' }}>
-      <div className="layout-content" style={{ marginLeft: 0, width: '100%' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh' }}>
-          <AdminTopbar />
-          <main className="main-content-padding" style={{ flex: 1, padding: '2rem' }}>
-            <Outlet />
-          </main>
-        </div>
+    <div className="layout-wrapper" style={{ display: 'flex', minHeight: '100vh' }}>
+      <AdminSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      <div className="layout-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <AdminTopbar />
+        <main className="main-content-padding" style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
+          <Outlet />
+        </main>
       </div>
     </div>
   );

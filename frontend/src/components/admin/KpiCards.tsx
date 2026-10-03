@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Users, FileText, AlertTriangle, Building, CheckCircle2 } from 'lucide-react';
-import { getApplicationStatus } from '../../utils/statusHelper';
 
 const KpiCards: React.FC = () => {
   const [kpi, setKpi] = useState({ total: 0, active: 0, docsPending: 0, govReview: 0, approved: 0 });

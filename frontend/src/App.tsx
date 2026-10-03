@@ -11,7 +11,7 @@ import TrackApplication from './pages/TrackApplication';
 import AdminLayout from './layouts/AdminLayout';
 import ApplicationsList from './pages/admin/ApplicationsList';
 import ApplicationDetail from './pages/admin/ApplicationDetail';
-import NewApplication from './pages/admin/NewApplication';
+import ReceiptPrint from './pages/admin/ReceiptPrint';
 import CustomersList from './pages/admin/CustomersList';
 import StaffList from './pages/admin/StaffList';
 import CustomerUpload from './pages/customer/CustomerUpload';
@@ -120,19 +120,20 @@ function App() {
           <Route path="/apply" element={<ApplyNow />} />
           <Route path="/login" element={<Login />} />
           <Route path="/print/application/:id" element={<ApplicationPDF />} />
+          <Route path="/print/receipt/:id" element={<ReceiptPrint />} />
           {/* Admin Layout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             
             {/* Applications Module */}
             <Route path="applications" element={<ApplicationsList />} />
-            <Route path="applications/new" element={<NewApplication />} />
+            <Route path="applications/new" element={<ApplicationDetail />} />
             <Route path="applications/:id" element={<ApplicationDetail />} />
             
             {/* Customers Module */}
             <Route path="customers" element={<CustomersList />} />
             <Route path="leads" element={<CustomerLeads />} />
-            <Route path="leads/new" element={<NewApplication isCustomer={true} />} />
+            <Route path="leads/new" element={<ApplicationDetail />} />
             <Route path="enquiries" element={<EnquiriesList />} />
             
             {/* Staff Module */}
@@ -166,7 +167,7 @@ function App() {
             
             {/* Application Module */}
             <Route path="applications" element={<MyApplications />} />
-            <Route path="applications/new" element={<NewApplication />} />
+            <Route path="applications/new" element={<ApplicationDetail />} />
             <Route path="applications/:id" element={<ApplicationDetail />} />
             
             {/* Fallbacks for other routes */}

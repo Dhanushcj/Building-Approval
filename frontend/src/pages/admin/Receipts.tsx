@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Calendar, Plus, Eye, IndianRupee } from 'lucide-react';
+import { Search, Calendar, Plus, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const DenseField = ({ label, type = 'text', value, onChange, icon, options, readOnly, disabled, extraIcon, onIconClick }: any) => {
@@ -328,11 +328,8 @@ const Receipts: React.FC = () => {
       setReceipts([receipt, ...receipts]);
       toast.success('Payment confirmed! Receipt is ready for print.');
       
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(generateReceiptHTML(receipt));
-        printWindow.document.close();
-      }
+      sessionStorage.setItem('print_receipt_data', JSON.stringify(receipt));
+      window.open(`/print/receipt/${receipt.id}`, '_blank');
 
       setView('disabled');
       setFormData(initialFormState);
@@ -356,11 +353,8 @@ const Receipts: React.FC = () => {
       services: formData.services
     };
 
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(generateReceiptHTML(receipt));
-      printWindow.document.close();
-    }
+    sessionStorage.setItem('print_receipt_data', JSON.stringify(receipt));
+    window.open(`/print/receipt/${receipt.id}`, '_blank');
   };
 
   const handleCancel = (e: React.FormEvent) => {
@@ -562,9 +556,18 @@ const Receipts: React.FC = () => {
                             });
                             setIsReceiptSearchModalOpen(false);
                           }}
-                          style={{ padding: '0.25rem 0.75rem', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                          style={{ padding: '0.25rem 0.75rem', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', marginRight: '0.5rem' }}
                         >
                           View
+                        </button>
+                        <button 
+                          onClick={() => {
+                            sessionStorage.setItem('print_receipt_data', JSON.stringify(rec));
+                            window.open(`/print/receipt/${rec.id}`, '_blank');
+                          }}
+                          style={{ padding: '0.25rem 0.75rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          Print
                         </button>
                       </td>
                     </tr>

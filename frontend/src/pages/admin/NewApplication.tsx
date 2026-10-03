@@ -31,7 +31,7 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
   const loggedInUser = localStorage.getItem('loggedInUser') || 'Admin';
   const isEmployee = loggedInUser !== 'Admin';
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(2);
   const totalSteps = isCustomer ? 2 : 3;
   const [isUploading, setIsUploading] = useState(false);
   const [isSaveMenuOpen, setSaveMenuOpen] = useState(false);
@@ -133,7 +133,8 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
         propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: lead.location || '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
         feesAmount: '',
         feeNotes: '',
-        leadId: lead.id // Store the lead ID to delete or convert it later
+        leadId: lead.id, // Store the lead ID to delete or convert it later
+        reference: ''
       };
     }
     return {
@@ -150,6 +151,7 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
       residentialAddress: { houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' },
       permanentAddress: { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' },
       staff: isEmployee ? loggedInUser : '',
+      reference: '',
       
       // Page 2: Property Details
       propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
@@ -198,9 +200,35 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
       
       const existingStr = localStorage.getItem('mock_saved_cases');
       const existing = existingStr ? JSON.parse(existingStr) : [];
+      
+      let nextAppNum = 7001;
+      
+      // Fetch from API to get highest number
+      let existingApi = [];
+      try {
+        const allCasesRes = await fetch(`${apiUrl}/cases`);
+        if (allCasesRes.ok) existingApi = await allCasesRes.json();
+      } catch (e) {
+        console.error(e);
+      }
+      
+      const allCases = [...existing, ...existingApi];
+      allCases.forEach((c: any) => {
+        const appNum = c.application_number || '';
+        if (appNum.startsWith('APP-')) {
+          const num = parseInt(appNum.replace('APP-', ''), 10);
+          if (!isNaN(num) && num >= nextAppNum) nextAppNum = num + 1;
+        } else if (appNum) {
+          const num = parseInt(appNum, 10);
+          if (!isNaN(num) && num >= nextAppNum) nextAppNum = num + 1;
+        }
+      });
+      
+      const finalAppNumber = `${nextAppNum}`;
+
       const mockCase = {
-        id: `APP-Draft-${Date.now()}`,
-        application_number: `APP-Draft-${Date.now()}`,
+        id: finalAppNumber,
+        application_number: finalAppNumber,
         property: {
           owner_name: formData.customerName || 'Draft Owner',
           owner_phone: formData.mobile || '',
@@ -222,6 +250,7 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
       localStorage.removeItem('newApp_uploadedFiles');
 
       const payload = {
+        application_number: finalAppNumber,
         property: {
           create: {
             owner_name: formData.customerName || 'Draft Owner',
@@ -246,6 +275,16 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
           let savedCases = JSON.parse(savedLeadsStr);
           savedCases = savedCases.map((c: any) => c.id === formData.leadId ? { ...c, status: 'Application Created', type: 'Converted Lead' } : c);
           localStorage.setItem('mock_saved_cases', JSON.stringify(savedCases));
+        }
+
+        try {
+          await fetch(`${apiUrl}/leads/${formData.leadId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Application Created' })
+          });
+        } catch (e) {
+          console.error("Failed to update lead status:", e);
         }
       }
       
@@ -421,6 +460,10 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
               )}
             </div>
           )}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Reference Details</label>
+            <input type="text" value={formData.reference || ''} onChange={e => setFormData({...formData, reference: e.target.value})} placeholder="Reference details" style={getInputStyle('reference', formData.reference)} />
+          </div>
         </div>
       </div>
 
@@ -947,7 +990,7 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
                  return;
               }
               await saveApplicationData(false);
-              toast.success("Application Submitted for Verification!");
+              toast.success("Congratulations! Application Submitted successfully.");
               if (isEmployee) navigate('/employee/applications');
               else navigate('/admin/applications');
             }}

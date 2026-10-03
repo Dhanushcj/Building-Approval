@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Palette, CheckCircle, RefreshCcw, Moon, Sun, Camera } from 'lucide-react';
+import { Palette, CheckCircle, RefreshCcw, Moon, Sun, Camera, FileText, Plus, X } from 'lucide-react';
 
 const ColorInput = ({ label, value, onChangeKey, desc, handleChange }: { label: string, value: string, onChangeKey: string, desc?: string, handleChange: (key: string, value: string) => void }) => (
   <div style={{ marginBottom: '1.5rem' }}>
@@ -30,6 +30,11 @@ const Settings: React.FC = () => {
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  
+  const defaultFileTypes = ['Building Plan Approval', 'Layout Approval', 'Completion Certificate', 'Patta Transfer'];
+  const [fileTypes, setFileTypes] = useState<string[]>(defaultFileTypes);
+  const [newFileType, setNewFileType] = useState('');
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -44,6 +49,10 @@ const Settings: React.FC = () => {
     const savedPic = localStorage.getItem('profilePicture');
     if (savedPic) {
       setProfilePic(savedPic);
+    }
+    const savedFileTypesStr = localStorage.getItem('customFileTypes');
+    if (savedFileTypesStr) {
+      setFileTypes(JSON.parse(savedFileTypesStr));
     }
     
     // Cleanup to revert preview if not saved
@@ -88,6 +97,7 @@ const Settings: React.FC = () => {
     if (profilePic) {
       localStorage.setItem('profilePicture', profilePic);
     }
+    localStorage.setItem('customFileTypes', JSON.stringify(fileTypes));
     
     document.documentElement.style.setProperty('--primary', colors.primary);
     document.documentElement.style.setProperty('--primary-dark', colors.primary);
@@ -113,10 +123,12 @@ const Settings: React.FC = () => {
     };
     setColors(defaultColors);
     setThemeMode('light');
+    setFileTypes(defaultFileTypes);
     
     localStorage.setItem('themeColors', JSON.stringify(defaultColors));
     localStorage.setItem('themeColor', defaultColors.primary);
     localStorage.setItem('themeMode', 'light');
+    localStorage.setItem('customFileTypes', JSON.stringify(defaultFileTypes));
     
     document.documentElement.style.setProperty('--primary', defaultColors.primary);
     document.documentElement.style.setProperty('--primary-dark', defaultColors.primary);
@@ -205,6 +217,53 @@ const Settings: React.FC = () => {
                   <span style={{ fontWeight: themeMode === 'dark' ? 600 : 400 }}>Dark Mode</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Service/File Types Settings */}
+        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '2.5rem' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FileText size={20} color="var(--primary)" /> Service / File Types Customization
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input 
+                type="text" 
+                value={newFileType} 
+                onChange={(e) => setNewFileType(e.target.value)} 
+                placeholder="Enter new service or file type" 
+                style={{ flex: 1, padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.375rem', fontSize: '0.875rem' }} 
+              />
+              <button 
+                type="button" 
+                onClick={() => {
+                  if (newFileType.trim() && !fileTypes.includes(newFileType.trim())) {
+                    setFileTypes([...fileTypes, newFileType.trim()]);
+                    setNewFileType('');
+                  }
+                }} 
+                className="btn-primary" 
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', borderRadius: '0.375rem', cursor: 'pointer' }}
+              >
+                <Plus size={18} /> Add
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+              {fileTypes.map((type, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '0.375rem', border: '1px solid var(--border-color)' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{type}</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setFileTypes(fileTypes.filter(t => t !== type))}
+                    style={{ background: 'none', border: 'none', color: 'var(--error-red)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.25rem' }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+              {fileTypes.length === 0 && <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>No file types available. Add one above.</p>}
             </div>
           </div>
         </div>

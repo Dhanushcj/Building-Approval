@@ -4,7 +4,7 @@ export interface Task {
   title: string;
   description: string;
   priority: 'Low' | 'Medium' | 'High' | 'Urgent';
-  status: 'Pending Review' | 'Assigned' | 'In Progress' | 'Waiting for Documents' | 'Waiting for Customer' | 'Waiting for Government' | 'Completed' | 'Overdue';
+  status: 'Pending Review' | 'Assigned' | 'In Progress' | 'Waiting for Documents' | 'Waiting for Customer' | 'Waiting for Government' | 'Completed';
   dueDate: string;
   assignedDate: string;
   assignedTo: string; // e.g. "Naveen"

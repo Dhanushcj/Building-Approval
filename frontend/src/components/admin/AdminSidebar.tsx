@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, FileText,
   CreditCard, PhoneCall, BarChart3,
-  UserCog, Settings, LogOut, CheckSquare, Users, Receipt
+  UserCog, Settings, LogOut, CheckSquare, Users, Receipt, ClipboardList
 } from 'lucide-react';
 
 
@@ -12,10 +12,12 @@ const menuItems = [
   { title: 'Customer Leads', icon: <Users size={20} strokeWidth={1.5} />, path: '/admin/leads' },
   { title: 'Enquiries', icon: <PhoneCall size={20} strokeWidth={1.5} />, path: '/admin/enquiries' },
   { title: 'Applications', icon: <FileText size={20} strokeWidth={1.5} />, path: '/admin/applications' },
+  { title: 'Billing', icon: <ClipboardList size={20} strokeWidth={1.5} />, path: '/admin/receipts' },
   { title: 'Payments', icon: <CreditCard size={20} strokeWidth={1.5} />, path: '/admin/payments' },
   { title: 'Expenses', icon: <Receipt size={20} strokeWidth={1.5} />, path: '/admin/expenses' },
   { title: 'Quotations', icon: <FileText size={20} strokeWidth={1.5} />, path: '/admin/quotations' },
   { title: 'Attendance', icon: <CheckSquare size={20} strokeWidth={1.5} />, path: '/admin/attendance' },
+  { title: 'Cash Book', icon: <ClipboardList size={20} strokeWidth={1.5} />, path: '/admin/cashbook' },
   { title: 'Reports', icon: <BarChart3 size={20} strokeWidth={1.5} />, path: '/admin/reports' },
   { title: 'Maintenance', icon: <Settings size={20} strokeWidth={1.5} />, path: '/admin/maintenance/logs', 
     subItems: [

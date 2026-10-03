@@ -25,7 +25,11 @@ const ApplicationsList: React.FC = () => {
         const res = await fetch(`${apiUrl}/cases`);
         if (res.ok) {
           const casesData = await res.json();
-          let mappedApps = casesData.map((c: any) => ({
+          const localCasesStr = localStorage.getItem('mock_saved_cases');
+          const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
+          const allCases = [...localCases, ...casesData];
+          
+          let mappedApps = allCases.map((c: any) => ({
             id: c.application_number || c.id,
             mongoId: c.id,
             customer: c.property?.owner_name || 'Unknown',
@@ -45,13 +49,56 @@ const ApplicationsList: React.FC = () => {
             })()
           }));
           
-            setApplications(mappedApps);
+          // Remove duplicates based on ID (prefer local mock cases if they share an ID)
+          mappedApps = mappedApps.filter((app: any, index: number, self: any[]) => 
+            index === self.findIndex((a: any) => a.id === app.id)
+          );
+          
+          setApplications(mappedApps);
         } else {
-          setApplications([]);
+          const localCasesStr = localStorage.getItem('mock_saved_cases');
+          const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
+          if (localCases.length > 0) {
+            const mappedApps = localCases.map((c: any) => ({
+              id: c.application_number || c.id,
+              mongoId: c.id,
+              customer: c.property?.owner_name || 'Unknown',
+              mobile: c.property?.owner_phone || '',
+              location: c.property?.jurisdiction || c.property?.village || '',
+              type: 'Building',
+              appType: c.approval_type,
+              status: c.status,
+              staff: c.assigned_staff?.name || 'Unassigned',
+              date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+              days: 0
+            }));
+            setApplications(mappedApps);
+          } else {
+            setApplications([]);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch cases:", err);
-        setApplications([]);
+        const localCasesStr = localStorage.getItem('mock_saved_cases');
+        const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
+        if (localCases.length > 0) {
+          const mappedApps = localCases.map((c: any) => ({
+            id: c.application_number || c.id,
+            mongoId: c.id,
+            customer: c.property?.owner_name || 'Unknown',
+            mobile: c.property?.owner_phone || '',
+            location: c.property?.jurisdiction || c.property?.village || '',
+            type: 'Building',
+            appType: c.approval_type,
+            status: c.status,
+            staff: c.assigned_staff?.name || 'Unassigned',
+            date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+            days: 0
+          }));
+          setApplications(mappedApps);
+        } else {
+          setApplications([]);
+        }
       }
     };
     
