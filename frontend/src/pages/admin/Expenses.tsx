@@ -54,6 +54,15 @@ const Expenses: React.FC = () => {
   ]);
   
   const [formData, setFormData] = useState(initialFormState);
+  
+  const [expenseCategories, setExpenseCategories] = useState<string[]>(['Office Supplies', 'Travel', 'Marketing', 'Maintenance', 'Other']);
+
+  React.useEffect(() => {
+    const savedCats = localStorage.getItem('expenseCategories');
+    if (savedCats) {
+      setExpenseCategories(JSON.parse(savedCats));
+    }
+  }, []);
 
   const generateExpenseHTML = (expense: any) => {
     return `
@@ -401,7 +410,7 @@ const Expenses: React.FC = () => {
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem 1rem' }}>
             
-            <DenseField label="Category" value={formData.category} onChange={(e:any) => setFormData({...formData, category: e.target.value})} options={['<Select>', 'Office Supplies', 'Travel', 'Marketing', 'Maintenance', 'Other']} disabled={isFormDisabled} />
+            <DenseField label="Category" value={formData.category} onChange={(e:any) => setFormData({...formData, category: e.target.value})} options={['<Select>', ...expenseCategories]} disabled={isFormDisabled} />
             <DenseField label="Description" value={formData.description} onChange={(e:any) => setFormData({...formData, description: e.target.value})} disabled={isFormDisabled} />
             <DenseField label="Reference No." value={formData.referenceNo} readOnly={true} disabled={!isRefNoSearchEnabled} icon={isRefNoSearchEnabled ? <Search size={14}/> : null} onIconClick={() => isRefNoSearchEnabled && setIsExpenseSearchModalOpen(true)} />
             <DenseField label="Executive" value={formData.executive} readOnly={true} disabled={true} />

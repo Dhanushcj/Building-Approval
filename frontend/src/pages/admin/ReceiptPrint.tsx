@@ -163,9 +163,9 @@ const ReceiptPrint: React.FC = () => {
           {/* RECEIPT RAISED BY */}
           <div>
             <div style={{ fontSize: '9px', fontWeight: 700, color: '#0b63ce', textTransform: 'uppercase', marginBottom: '6px' }}>Receipt Raised By</div>
-            <div style={{ fontSize: '11px', color: '#0f172a', fontWeight: 600 }}>Arun Kumar</div>
-            <div style={{ fontSize: '10px', color: '#475569' }}>EMP-0024 | Approval Executive</div>
-            <div style={{ fontSize: '10px', color: '#475569' }}>Hosur Office</div>
+            <div style={{ fontSize: '11px', color: '#0f172a', fontWeight: 600 }}>{receiptData?.executive || 'Admin User'}</div>
+            <div style={{ fontSize: '10px', color: '#475569' }}>{receiptData?.empId || 'EMP-0001'} | {receiptData?.role || 'Administrator'}</div>
+            <div style={{ fontSize: '10px', color: '#475569' }}>Shoolagiri Office</div>
           </div>
           
           {/* VERIFICATION */}
@@ -184,10 +184,10 @@ const ReceiptPrint: React.FC = () => {
         <div style={{ backgroundColor: '#0f172a', color: 'white', padding: '12px', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px' }}>
-              <Phone size={10} color="#94a3b8" /> +91 94433 22100
+              <Phone size={10} color="#94a3b8" /> +91 8940206541
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px' }}>
-              <Mail size={10} color="#94a3b8" /> info@buildingapproval.in
+              <Mail size={10} color="#94a3b8" /> cb.construction2019@gmail.com
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px' }}>
               <Globe size={10} color="#94a3b8" /> www.buildingapproval.in

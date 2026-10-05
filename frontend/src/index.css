@@ -325,19 +325,44 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
   }
 }
 
-.sidebar-text, .sidebar-logo-text, .sidebar-profile-info, .sidebar-main-menu-text {
+.sidebar-text, .sidebar-logo-text, .sidebar-profile-info {
   white-space: nowrap;
   opacity: 0;
   transition: opacity 0.3s ease;
   visibility: hidden;
 }
 
+.sidebar-main-menu-text {
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  visibility: hidden;
+  height: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+.sidebar-group {
+  margin-bottom: 0.5rem;
+  transition: margin-bottom 0.3s ease;
+}
+
 .sidebar-container:hover .sidebar-text,
 .sidebar-container:hover .sidebar-logo-text,
-.sidebar-container:hover .sidebar-profile-info,
+.sidebar-container:hover .sidebar-profile-info {
+  opacity: 1;
+  visibility: visible;
+}
+
 .sidebar-container:hover .sidebar-main-menu-text {
   opacity: 1;
   visibility: visible;
+  height: auto;
+  margin-bottom: 0.75rem;
+}
+
+.sidebar-container:hover .sidebar-group {
+  margin-bottom: 1.5rem;
 }
 
 /* Mobile Overrides */

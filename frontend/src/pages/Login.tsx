@@ -78,11 +78,10 @@ const Login: React.FC = () => {
         zIndex: 10
       }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', color: 'var(--primary)' }}>
-            <Building2 size={40} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+            <img src="/assets/logo.jpeg" alt="CB Building Approvals Logo" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '0.5rem', borderRadius: '8px', mixBlendMode: 'multiply' }} />
+            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#cc0000', fontFamily: 'var(--font-heading)', letterSpacing: '0.05em', WebkitTextStroke: '0.5px #cc0000', textShadow: '0px 0px 1px rgba(204,0,0,0.5)', whiteSpace: 'nowrap' }}>CB BUILDING APPROVALS</div>
           </div>
-          <h2 className="heading-2" style={{ fontSize: '1.75rem', marginBottom: '0.25rem', color: 'var(--primary-dark)' }}>Welcome Back</h2>
-          <p style={{ color: '#4b5563', fontSize: '0.95rem' }}>Sign in to continue to BuildApprove</p>
         </div>
 
         <form onSubmit={handleLogin}>

@@ -227,8 +227,8 @@ const Receipts: React.FC = () => {
                 <img src="\${window.location.origin}/assets/logo.jpeg" alt="Logo" class="logo-img" onerror="this.style.display='none'" />
                 <div class="company-info">
                   <h1>C.B. BUILDING APPROVALS</h1>
-                  <p>No. 45, Anna Salai, Chennai, Tamil Nadu - 600002</p>
-                  <p>contact@cbapprovals.com | +91 98765 43210</p>
+                  <p>Near KVB Bank, Manjunatha Hardwares, 1st Floor, Shoolagiri - 635117</p>
+                  <p>cb.construction2019@gmail.com | +91 8940206541</p>
                 </div>
               </div>
               <div class="receipt-meta">
@@ -322,7 +322,8 @@ const Receipts: React.FC = () => {
         mode: formData.receiptMode,
         status: 'Confirmed',
         applicationNo: formData.applicationNo,
-        services: formData.services
+        services: formData.services,
+        executive: formData.executive
       };
 
       setReceipts([receipt, ...receipts]);
@@ -350,7 +351,8 @@ const Receipts: React.FC = () => {
       amount: Number(formData.receiptAmt),
       mode: formData.receiptMode,
       applicationNo: formData.applicationNo,
-      services: formData.services
+      services: formData.services,
+      executive: formData.executive
     };
 
     sessionStorage.setItem('print_receipt_data', JSON.stringify(receipt));

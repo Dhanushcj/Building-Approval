@@ -90,8 +90,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
       {/* Menu */}
       <nav style={{ flex: 1, padding: '1.5rem 0', overflowY: 'auto', overflowX: 'hidden' }}>
         {menuGroups.map((group, groupIndex) => (
-          <div key={groupIndex} style={{ marginBottom: '1.5rem' }}>
-            <div className="sidebar-main-menu-text" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 15px', marginBottom: '0.75rem' }}>{group.category}</div>
+          <div key={groupIndex} className="sidebar-group">
+            <div className="sidebar-main-menu-text" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 15px' }}>{group.category}</div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: 0, margin: 0 }}>
               {group.items.map((item, index) => (
                 <li key={index}>

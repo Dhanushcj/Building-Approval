@@ -35,7 +35,7 @@ function generateEmailTemplate({
           <tr>
             <td align="center" style="padding: 30px 20px; background-color: #ffffff;">
               <div style="display: inline-block; background-color: #1c3d2e; color: #ffffff; width: 32px; height: 32px; line-height: 32px; text-align: center; font-weight: bold; font-size: 20px; border-radius: 4px; margin-bottom: 10px;">B</div>
-              <div style="color: #1c3d2e; font-size: 24px; font-weight: bold; letter-spacing: 1px;">BUILDWISE</div>
+              <div style="color: #1c3d2e; font-size: 24px; font-weight: bold; letter-spacing: 1px;">CB BUILDING APPROVALS</div>
               <div style="color: #8a8578; font-size: 12px; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Building Approval & Documentation</div>
             </td>
           </tr>
@@ -76,7 +76,7 @@ function generateEmailTemplate({
               </div>
               ` : ''}
               
-              <p style="color: #1c3d2e; font-size: 16px; margin-top: 40px; margin-bottom: 0;">Best regards,<br><strong>The Buildwise Team</strong></p>
+              <p style="color: #1c3d2e; font-size: 16px; margin-top: 40px; margin-bottom: 0;">Best regards,<br><strong>The CB Building Approvals Team</strong></p>
             </td>
           </tr>
           
@@ -108,7 +108,7 @@ export class BrevoNotificationService implements NotificationService {
     this.apiKey = process.env.BREVO_API_KEY || '';
     // Brevo requires the sender email to be verified in your account
     this.sender = { 
-      name: 'Buildwise', 
+      name: 'CB Building Approvals', 
       email: process.env.BREVO_SENDER_EMAIL || 'forgeindiaconnectfic@gmail.com' 
     };
   }
@@ -247,13 +247,13 @@ export class BrevoNotificationService implements NotificationService {
   }
 
   async notifyLeadThanks(email: string, name: string): Promise<void> {
-    const subject = `We received your enquiry - Buildwise`;
+    const subject = `We received your enquiry - CB Building Approvals`;
     const htmlContent = generateEmailTemplate({
       eyebrow: 'Enquiry Received',
       headline: 'Your Project. Our Priority.',
       customerName: name,
       bodyParagraphs: [
-        'Thank you for reaching out to Buildwise. We have successfully received your enquiry regarding building approval and documentation.',
+        'Thank you for reaching out to CB Building Approvals. We have successfully received your enquiry regarding building approval and documentation.',
         'One of our expert consultants will review your details and get in touch with you shortly to discuss your project requirements.'
       ],
       cta: {
@@ -265,7 +265,7 @@ export class BrevoNotificationService implements NotificationService {
   }
 
   async notifyUploadLink(email: string, name: string, uploadLink: string): Promise<void> {
-    const subject = `Document Upload Required - Buildwise`;
+    const subject = `Document Upload Required - CB Building Approvals`;
     const htmlContent = generateEmailTemplate({
       eyebrow: 'Action Required',
       headline: 'Missing Documents. Upload Needed.',

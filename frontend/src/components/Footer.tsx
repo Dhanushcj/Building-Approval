@@ -11,11 +11,11 @@ const Footer: React.FC = () => {
           <div style={{ flex: '1 1 250px' }}>
             <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', marginBottom: '1rem' }}>
               <div style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}>
-                <img src="/assets/logo_icon.png" alt="Buildwise Logo" style={{ width: '36px', height: '36px', objectFit: 'contain', filter: 'grayscale(1) contrast(4) invert(1) brightness(1.5)', mixBlendMode: 'screen' }} />
+                <img src="/assets/logo_icon.png" alt="CB Building Approvals Logo" style={{ width: '36px', height: '36px', objectFit: 'contain', filter: 'grayscale(1) contrast(4) invert(1) brightness(1.5)', mixBlendMode: 'screen' }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ fontSize: '1.125rem', fontWeight: 800, lineHeight: 1, color: 'var(--text-secondary)', fontFamily: 'var(--font-heading)', letterSpacing: '0.05em' }}>
-                  BUILDWISE
+                  CB BUILDING APPROVALS
                 </div>
                 <div style={{ fontSize: '0.6rem', fontWeight: 500, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.02em', marginTop: '0.125rem' }}>
                   Building Approval & Documentation
@@ -89,7 +89,7 @@ const Footer: React.FC = () => {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
             </div>
             <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', display: 'flex', gap: '1.25rem' }}>
-              <span>&copy; 2026 Buildwise. All rights reserved.</span>
+              <span>&copy; 2026 CB Building Approvals. All rights reserved.</span>
               <span>Privacy Policy | Terms & Conditions</span>
             </div>
           </div>

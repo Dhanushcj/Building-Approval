@@ -23,29 +23,20 @@ const ColorInput = ({ label, value, onChangeKey, desc, handleChange }: { label: 
 );
 
 const Settings: React.FC = () => {
-  const [colors, setColors] = useState({
-    primary: '#1e3a8a',
-    secondary: '#C96A4A'
-  });
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   
   const defaultFileTypes = ['Building Plan Approval', 'Layout Approval', 'Completion Certificate', 'Patta Transfer'];
   const [fileTypes, setFileTypes] = useState<string[]>(defaultFileTypes);
   const [newFileType, setNewFileType] = useState('');
+
+  const defaultExpenseCategories = ['Office Supplies', 'Travel', 'Meals & Entertainment', 'Utilities', 'Maintenance', 'Salaries'];
+  const [expenseCategories, setExpenseCategories] = useState<string[]>(defaultExpenseCategories);
+  const [newExpenseCategory, setNewExpenseCategory] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const savedColorsStr = localStorage.getItem('themeColors');
-    if (savedColorsStr) {
-      setColors(JSON.parse(savedColorsStr));
-    }
-    const savedMode = localStorage.getItem('themeMode');
-    if (savedMode === 'dark') {
-      setThemeMode('dark');
-    }
     const savedPic = localStorage.getItem('profilePicture');
     if (savedPic) {
       setProfilePic(savedPic);
@@ -54,30 +45,11 @@ const Settings: React.FC = () => {
     if (savedFileTypesStr) {
       setFileTypes(JSON.parse(savedFileTypesStr));
     }
-    
-    // Cleanup to revert preview if not saved
-    return () => {
-      const actualMode = localStorage.getItem('themeMode') || 'light';
-      if (actualMode === 'dark') {
-        document.body.classList.add('dark-mode');
-      } else {
-        document.body.classList.remove('dark-mode');
-      }
-    };
-  }, []);
-
-  const handleChange = (key: keyof typeof colors, value: string) => {
-    setColors(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleModeChange = (mode: 'light' | 'dark') => {
-    setThemeMode(mode);
-    if (mode === 'dark') {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
+    const savedExpenseCategories = localStorage.getItem('expenseCategories');
+    if (savedExpenseCategories) {
+      setExpenseCategories(JSON.parse(savedExpenseCategories));
     }
-  };
+  }, []);
 
   const handlePicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -91,23 +63,11 @@ const Settings: React.FC = () => {
   };
 
   const saveSettings = () => {
-    localStorage.setItem('themeColors', JSON.stringify(colors));
-    localStorage.setItem('themeColor', colors.primary);
-    localStorage.setItem('themeMode', themeMode);
     if (profilePic) {
       localStorage.setItem('profilePicture', profilePic);
     }
     localStorage.setItem('customFileTypes', JSON.stringify(fileTypes));
-    
-    document.documentElement.style.setProperty('--primary', colors.primary);
-    document.documentElement.style.setProperty('--primary-dark', colors.primary);
-    document.documentElement.style.setProperty('--accent', colors.secondary);
-    
-    if (themeMode === 'dark') {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
+    localStorage.setItem('expenseCategories', JSON.stringify(expenseCategories));
     
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -117,24 +77,11 @@ const Settings: React.FC = () => {
   };
 
   const resetDefault = () => {
-    const defaultColors = {
-      primary: '#1e3a8a',
-      secondary: '#C96A4A'
-    };
-    setColors(defaultColors);
-    setThemeMode('light');
     setFileTypes(defaultFileTypes);
+    setExpenseCategories(defaultExpenseCategories);
     
-    localStorage.setItem('themeColors', JSON.stringify(defaultColors));
-    localStorage.setItem('themeColor', defaultColors.primary);
-    localStorage.setItem('themeMode', 'light');
     localStorage.setItem('customFileTypes', JSON.stringify(defaultFileTypes));
-    
-    document.documentElement.style.setProperty('--primary', defaultColors.primary);
-    document.documentElement.style.setProperty('--primary-dark', defaultColors.primary);
-    document.documentElement.style.setProperty('--accent', defaultColors.secondary);
-    
-    document.body.classList.remove('dark-mode');
+    localStorage.setItem('expenseCategories', JSON.stringify(defaultExpenseCategories));
   };
 
   return (
@@ -176,47 +123,49 @@ const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* Theme Settings */}
+        {/* Expense Categories Settings */}
         <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '2.5rem' }}>
           <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Palette size={20} color="var(--primary)" /> Theme Customization
+            <FileText size={20} color="var(--primary)" /> Expense Categories Customization
           </h3>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-            <div>
-              <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Brand Colors</h4>
-              <ColorInput label="Primary Theme Color" value={colors.primary} onChangeKey="primary" desc="Changes the main green color." handleChange={(k, v) => handleChange(k as any, v)} />
-              <ColorInput label="Secondary Color" value={colors.secondary} onChangeKey="secondary" desc="Changes the accent/terracotta color." handleChange={(k, v) => handleChange(k as any, v)} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input 
+                type="text" 
+                value={newExpenseCategory} 
+                onChange={(e) => setNewExpenseCategory(e.target.value)} 
+                placeholder="Enter new expense category" 
+                style={{ flex: 1, padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.375rem', fontSize: '0.875rem' }} 
+              />
+              <button 
+                type="button" 
+                onClick={() => {
+                  if (newExpenseCategory.trim() && !expenseCategories.includes(newExpenseCategory.trim())) {
+                    setExpenseCategories([...expenseCategories, newExpenseCategory.trim()]);
+                    setNewExpenseCategory('');
+                  }
+                }} 
+                className="btn-primary" 
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', borderRadius: '0.375rem', cursor: 'pointer' }}
+              >
+                <Plus size={18} /> Add
+              </button>
             </div>
             
-            <div>
-              <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Appearance Mode</h4>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <button
-                  type="button"
-                  onClick={() => handleModeChange('light')}
-                  style={{ 
-                    flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', 
-                    border: themeMode === 'light' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                    borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer'
-                  }}
-                >
-                  <Sun size={24} color={themeMode === 'light' ? 'var(--primary)' : 'var(--text-muted)'} />
-                  <span style={{ fontWeight: themeMode === 'light' ? 600 : 400 }}>Light Mode</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleModeChange('dark')}
-                  style={{ 
-                    flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', 
-                    border: themeMode === 'dark' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                    borderRadius: '0.5rem', backgroundColor: '#1C2420', color: 'white', cursor: 'pointer'
-                  }}
-                >
-                  <Moon size={24} color={themeMode === 'dark' ? 'var(--primary)' : 'var(--text-muted)'} />
-                  <span style={{ fontWeight: themeMode === 'dark' ? 600 : 400 }}>Dark Mode</span>
-                </button>
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+              {expenseCategories.map((cat, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '0.375rem', border: '1px solid var(--border-color)' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--primary-dark)' }}>{cat}</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setExpenseCategories(expenseCategories.filter(t => t !== cat))}
+                    style={{ background: 'none', border: 'none', color: 'var(--error-red)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.25rem' }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+              {expenseCategories.length === 0 && <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>No expense categories available. Add one above.</p>}
             </div>
           </div>
         </div>
