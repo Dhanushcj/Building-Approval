@@ -1,26 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Palette, CheckCircle, RefreshCcw, Moon, Sun, Camera, FileText, Plus, X } from 'lucide-react';
+import { CheckCircle, RefreshCcw, Camera, FileText, Plus, X } from 'lucide-react';
 
-const ColorInput = ({ label, value, onChangeKey, desc, handleChange }: { label: string, value: string, onChangeKey: string, desc?: string, handleChange: (key: string, value: string) => void }) => (
-  <div style={{ marginBottom: '1.5rem' }}>
-    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>{label}</label>
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-      <input 
-        type="color" 
-        value={value} 
-        onChange={(e) => handleChange(onChangeKey, e.target.value)}
-        style={{ width: '50px', height: '50px', padding: '0', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}
-      />
-      <input 
-        type="text" 
-        value={value} 
-        onChange={(e) => handleChange(onChangeKey, e.target.value)}
-        style={{ padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.375rem', fontSize: '0.875rem' }}
-      />
-    </div>
-    {desc && <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{desc}</p>}
-  </div>
-);
 
 const Settings: React.FC = () => {
   const [profilePic, setProfilePic] = useState<string | null>(null);

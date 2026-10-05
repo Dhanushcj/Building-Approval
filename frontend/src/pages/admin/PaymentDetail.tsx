@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Receipt, Printer, FileText, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Save, Receipt, Printer, FileText, Clock } from 'lucide-react';
 import { recentApplications } from '../../data/mockData';
 import html2pdf from 'html2pdf.js';
 
@@ -405,7 +405,7 @@ const PaymentDetail: React.FC = () => {
               <h2 style={{ margin: 0, color: '#1044C4', fontSize: '28px', letterSpacing: '2px' }}>INVOICE</h2>
               <p style={{ margin: '8px 0 0 0', fontWeight: 'bold' }}>Invoice #: INV-{payment.id}</p>
               <p style={{ margin: '4px 0 0 0' }}>Date: {new Date().toLocaleDateString()}</p>
-              <p style={{ margin: '4px 0 0 0' }}>Due Date: {dueDate.toLocaleDateString()}</p>
+              <p style={{ margin: '4px 0 0 0' }}>Due Date: {new Date(new Date().setDate(new Date().getDate() + 15)).toLocaleDateString()}</p>
             </div>
           </div>
           

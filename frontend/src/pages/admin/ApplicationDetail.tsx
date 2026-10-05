@@ -1289,6 +1289,17 @@ const ApplicationDetail: React.FC = () => {
                 const link = `${window.location.origin}/upload/${id || 'NEW'}`;
                 navigator.clipboard.writeText(link);
                 toast.success('Upload link copied! Share this with the customer.');
+                if (formData.mobile) {
+                  // Format mobile number to remove any non-digit characters and ensure it starts with country code if needed (assuming India 91 if length is 10)
+                  let phoneNumber = formData.mobile.replace(/\D/g, '');
+                  if (phoneNumber.length === 10) {
+                    phoneNumber = '91' + phoneNumber;
+                  }
+                  const message = encodeURIComponent(`Hello ${formData.customerName || ''},\n\nPlease use the following link to upload your documents for building approval:\n${link}`);
+                  window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+                } else {
+                  toast.error('Please enter a mobile number to share via WhatsApp.');
+                }
               }}
               style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '0.5rem', padding: '0.6rem 1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, boxShadow: '0 2px 4px rgba(0,0,0,0.1)', transition: 'background-color 0.2s' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-dark)'}

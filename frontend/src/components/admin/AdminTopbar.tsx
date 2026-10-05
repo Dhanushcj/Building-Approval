@@ -1,69 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, ChevronDown, FileText, CreditCard, PhoneCall, BarChart3, UserCog, Settings, CheckSquare, Users, Receipt, Home, ClipboardList, Wallet, Wrench } from 'lucide-react';
+import React from 'react';
+import { Search, Bell, ChevronDown, Home, ClipboardList } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
-const menuCategories = [
-  {
-    title: 'Sales & Enquiries',
-    items: [
-      { title: 'Customer Leads', icon: <Users size={18} strokeWidth={1.5} />, path: '/admin/leads' },
-      { title: 'Enquiries', icon: <PhoneCall size={18} strokeWidth={1.5} />, path: '/admin/enquiries' },
-    ]
-  },
-  {
-    title: 'Operations',
-    items: [
-      { title: 'Applications', icon: <FileText size={18} strokeWidth={1.5} />, path: '/admin/applications' },
-      { title: 'Quotations', icon: <FileText size={18} strokeWidth={1.5} />, path: '/admin/quotations' },
-    ]
-  },
-  {
-    title: 'Finance',
-    items: [
-      { title: 'Payments', icon: <CreditCard size={18} strokeWidth={1.5} />, path: '/admin/payments' },
-      { title: 'Receipts', icon: <ClipboardList size={18} strokeWidth={1.5} />, path: '/admin/receipts' },
-      { title: 'Expenses', icon: <Receipt size={18} strokeWidth={1.5} />, path: '/admin/expenses' },
-      { title: 'Cash Book', icon: <Wallet size={18} strokeWidth={1.5} />, path: '/admin/cashbook' },
-    ]
-  },
-  {
-    title: 'Management',
-    items: [
-      { title: 'Attendance', icon: <CheckSquare size={18} strokeWidth={1.5} />, path: '/admin/attendance' },
-      { title: 'Reports', icon: <BarChart3 size={18} strokeWidth={1.5} />, path: '/admin/reports' },
-    ]
-  },
-  {
-    title: 'System',
-    items: [
-      { title: 'Staff & Users', icon: <UserCog size={18} strokeWidth={1.5} />, path: '/admin/staff' },
-      { title: 'Settings', icon: <Settings size={18} strokeWidth={1.5} />, path: '/admin/settings' },
-    ]
-  },
-  {
-    title: 'Maintenance',
-    items: [
-      { title: 'View Records', icon: <Wrench size={18} strokeWidth={1.5} />, path: '/admin/maintenance/view' },
-      { title: 'System Logs', icon: <Wrench size={18} strokeWidth={1.5} />, path: '/admin/maintenance/logs' },
-      { title: 'Revert Actions', icon: <Wrench size={18} strokeWidth={1.5} />, path: '/admin/maintenance/revert' },
-    ]
-  }
-];
-
 const AdminTopbar: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       {/* Second row: Tools (Grid Menu, Search, Profile) */}
@@ -78,69 +17,8 @@ const AdminTopbar: React.FC = () => {
         position: 'relative'
       }}>
         
-        {/* Left side: Grid Menu */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ position: 'relative' }} ref={menuRef}>
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              style={{ 
-                background: 'transparent', border: 'none', 
-                color: 'var(--primary)', cursor: 'pointer', padding: '0', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                borderRadius: '6px', transition: 'all 0.2s',
-                width: '32px', height: '32px'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px', width: '16px', height: '16px' }}>
-                <div style={{ backgroundColor: 'currentColor', borderRadius: '1.5px' }}></div>
-                <div style={{ backgroundColor: 'currentColor', borderRadius: '1.5px' }}></div>
-                <div style={{ backgroundColor: 'currentColor', borderRadius: '1.5px' }}></div>
-                <div style={{ backgroundColor: 'currentColor', borderRadius: '1.5px' }}></div>
-              </div>
-            </button>
-            
-            {isMenuOpen && (
-              <div style={{ 
-                position: 'absolute', top: '100%', left: '-1.5rem', marginTop: '0.5rem', width: '280px', 
-                backgroundColor: '#fff', borderRadius: '0 0 8px 0', boxShadow: '0 10px 25px rgba(0,0,0,0.15)', 
-                zIndex: 1000, overflow: 'hidden', color: 'var(--text-primary)',
-                border: '1px solid var(--border-color)', borderTop: 'none', borderLeft: 'none'
-              }}>
-                <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '75vh', overflowY: 'auto', paddingBottom: '0.5rem' }}>
-                  {menuCategories.map((category, catIdx) => (
-                    <div key={catIdx}>
-                      <div style={{ padding: '0.75rem 1.25rem 0.25rem', fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {category.title}
-                      </div>
-                      {category.items.map((item, idx) => (
-                        <NavLink 
-                          key={idx} 
-                          to={item.path}
-                          onClick={() => setIsMenuOpen(false)}
-                          style={({ isActive }) => ({
-                            display: 'flex', alignItems: 'center', gap: '0.75rem', 
-                            padding: '0.6rem 1.25rem', textDecoration: 'none',
-                            color: isActive ? 'var(--primary)' : 'var(--text-primary)',
-                            backgroundColor: isActive ? 'rgba(23, 37, 84, 0.05)' : 'transparent',
-                            borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent',
-                            transition: 'all 0.2s'
-                          })}
-                        >
-                          <div style={{ color: 'var(--text-secondary)' }}>
-                            {item.icon}
-                          </div>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{item.title}</span>
-                        </NavLink>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Left side empty for spacing or future use */}
+        <div></div>
 
         {/* Right side: Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
