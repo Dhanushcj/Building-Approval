@@ -19,7 +19,7 @@ const WhyChooseUsSection: React.FC = () => {
           
           {/* Column 1: Image */}
           <div style={{ height: '320px', borderRadius: '0.75rem', overflow: 'hidden', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)' }}>
-            <img src="/assets/Client.jpeg" alt="Our Client" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="/assets/why_choose_us_building_1790315574466.jpg" alt="Building Approvals" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
           {/* Column 2: Why Choose Us Features */}

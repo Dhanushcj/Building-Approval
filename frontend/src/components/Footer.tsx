@@ -25,7 +25,7 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Links Grid */}
-          <div style={{ flex: '2 1 600px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+          <div style={{ flex: '2 1 600px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
             
             {/* Services */}
             <div>
@@ -53,9 +53,27 @@ const Footer: React.FC = () => {
               <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, marginBottom: '0.875rem', fontFamily: 'var(--font-heading)', color: 'var(--bg-surface)' }}>Company</h4>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: 0, margin: 0 }} className="footer-links">
                 <li><a href="#about">About Us</a></li>
-                <li><a href="#contact">Contact</a></li>
                 <li><a href="#areas">Service Areas</a></li>
               </ul>
+            </div>
+
+            {/* Contact Us */}
+            <div id="contact">
+              <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, marginBottom: '0.875rem', fontFamily: 'var(--font-heading)', color: 'var(--bg-surface)' }}>Contact Us</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.8125rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                  <span>📍</span>
+                  <span>Near KVB Bank, Manjunatha Hardwares, 1st Floor, Shoolagiri - 635 117</span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <span>✉️</span>
+                  <a href="mailto:cb.construction2019@gmail.com" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>cb.construction2019@gmail.com</a>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <span>📞</span>
+                  <a href="tel:+918940206541" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>+91 8940206541</a>
+                </div>
+              </div>
             </div>
 
           </div>

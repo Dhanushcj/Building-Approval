@@ -16,7 +16,7 @@ const AboutUsSection: React.FC = () => {
             />
             {/* Experience Badge overlay */}
             <div style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', backgroundColor: 'var(--primary)', color: 'white', padding: '1.5rem', borderRadius: '0.75rem', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-              <span style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1 }}>10+</span>
+              <span style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1 }}>7+</span>
               <span style={{ fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Years Experience</span>
             </div>
           </div>
@@ -33,10 +33,16 @@ const AboutUsSection: React.FC = () => {
             Your Trusted Partner for <span style={{ color: 'var(--accent)' }}>Building Approvals</span>
           </h2>
           <p style={{ fontSize: '1.125rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            At <strong>C.B. Building Approvals</strong>, we simplify the complex world of government paperwork and municipal regulations. We act as your dedicated liaison, ensuring your building projects proceed without legal or administrative roadblocks.
+            <strong>Founded and led by Mr. Boopathi C</strong>, CB Building Approvals is a trusted building approval service dedicated to helping customers complete their approval process smoothly and efficiently.
           </p>
           <p style={{ fontSize: '1.125rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Whether it's securing a building plan, finalizing layout approvals, or procuring Patta and FMB documents, our team of experts handles every detail with precision and speed, allowing you to focus purely on your construction.
+            With <strong>over 7 years of experience</strong>, Mr. Boopathi C brings strong knowledge and expertise to every application. His focus is on providing reliable guidance, accurate documentation, and efficient support throughout the building approval process.
+          </p>
+          <p style={{ fontSize: '1.125rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+            At CB Building Approvals, we believe that getting building approval should be simple, transparent, and stress-free. We work closely with our customers, keeping communication clear and ensuring that every step of the process is handled with care.
+          </p>
+          <p style={{ fontSize: '1.125rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+            <strong>Our goal is simple</strong> — to make the building approval process easier for every customer while delivering professional and dependable service.
           </p>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '1rem' }}>
