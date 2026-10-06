@@ -1,8 +1,60 @@
-import React from 'react';
-import { Search, Bell, ChevronDown, Home, ClipboardList } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Bell, ChevronDown, Home, ClipboardList, CheckCircle } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
+interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
 const AdminTopbar: React.FC = () => {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const loadNotifications = () => {
+      const stored = localStorage.getItem('mock_notifications');
+      if (stored) {
+        setNotifications(JSON.parse(stored));
+      } else {
+        const initial = [
+          { id: 1, title: 'New Application', message: 'Ramesh Kumar submitted a new application.', time: '10 mins ago', read: false },
+          { id: 2, title: 'Document Uploaded', message: 'Bala Krishnan uploaded requested documents.', time: '1 hour ago', read: false },
+          { id: 3, title: 'Payment Received', message: '₹25,000 received for APP-260926-001.', time: '2 hours ago', read: true }
+        ];
+        setNotifications(initial);
+        localStorage.setItem('mock_notifications', JSON.stringify(initial));
+      }
+    };
+    
+    loadNotifications();
+    window.addEventListener('storage', loadNotifications);
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      window.removeEventListener('storage', loadNotifications);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAllAsRead = () => {
+    const updated = notifications.map(n => ({ ...n, read: true }));
+    setNotifications(updated);
+    localStorage.setItem('mock_notifications', JSON.stringify(updated));
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       {/* Second row: Tools (Grid Menu, Search, Profile) */}
@@ -14,7 +66,8 @@ const AdminTopbar: React.FC = () => {
         alignItems: 'center', 
         padding: '0 1.5rem', 
         height: '48px',
-        position: 'relative'
+        position: 'relative',
+        zIndex: 100
       }}>
         
         {/* Left side empty for spacing or future use */}
@@ -48,10 +101,53 @@ const AdminTopbar: React.FC = () => {
             <NavLink to="/admin/reports" style={({isActive}) => ({ color: isActive ? 'var(--primary)' : 'inherit', display: 'flex', alignItems: 'center' })} title="Reports Tray">
               <ClipboardList size={18} strokeWidth={1.5} />
             </NavLink>
-            <div style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-              <Bell size={18} strokeWidth={1.5} />
-              <div style={{ position: 'absolute', top: '-1px', right: '-1px', width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--accent)', border: '1.5px solid #fff' }}></div>
+            
+            {/* Notification Bell */}
+            <div ref={notifRef} style={{ position: 'relative' }}>
+              <div 
+                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', position: 'relative' }}
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
+                <Bell size={18} strokeWidth={1.5} color={showNotifications ? 'var(--primary)' : 'inherit'} />
+                {unreadCount > 0 && (
+                  <div style={{ position: 'absolute', top: '-4px', right: '-4px', width: '14px', height: '14px', borderRadius: '50%', backgroundColor: 'var(--accent)', border: '1.5px solid #fff', color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {unreadCount}
+                  </div>
+                )}
+              </div>
+              
+              {/* Notification Dropdown */}
+              {showNotifications && (
+                <div style={{ position: 'absolute', top: '100%', right: '-10px', marginTop: '15px', width: '320px', backgroundColor: '#fff', borderRadius: '0.5rem', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', border: '1px solid var(--border-color)', overflow: 'hidden', zIndex: 1000 }}>
+                  <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc' }}>
+                    <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>Notifications</h3>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllAsRead} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <CheckCircle size={12} /> Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                    {notifications.length > 0 ? (
+                      notifications.map(notif => (
+                        <div key={notif.id} style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: notif.read ? '#fff' : '#f0f9ff', transition: 'background-color 0.2s' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+                            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: notif.read ? 'var(--text-primary)' : 'var(--primary-dark)' }}>{notif.title}</div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{notif.time}</div>
+                          </div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{notif.message}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                        No notifications yet.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+            
           </div>
 
           {/* Profile */}

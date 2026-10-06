@@ -110,6 +110,20 @@ const CustomerUpload: React.FC = () => {
     setActiveUploadId(null);
   };
 
+  const addNotification = (title: string, message: string) => {
+    const stored = localStorage.getItem('mock_notifications');
+    const notifs = stored ? JSON.parse(stored) : [];
+    const newNotif = {
+      id: Date.now(),
+      title,
+      message,
+      time: 'Just now',
+      read: false
+    };
+    notifs.unshift(newNotif);
+    localStorage.setItem('mock_notifications', JSON.stringify(notifs));
+  };
+
   const handleReuploadSubmit = () => {
     const newDocs = documents.map(doc => {
       if (doc.status === 'Needs Reupload' && doc.fileName) {
@@ -119,6 +133,7 @@ const CustomerUpload: React.FC = () => {
     });
     setDocuments(newDocs);
     localStorage.setItem(`customerDocs_${id}`, JSON.stringify(newDocs));
+    addNotification('Document Uploaded', `Customer reuploaded requested documents for application ${id}.`);
     window.dispatchEvent(new Event('storage'));
   };
 
@@ -142,6 +157,7 @@ const CustomerUpload: React.FC = () => {
     // Save to localStorage so admin side can pick it up
     localStorage.setItem(`customerSubmitted_${id}`, 'true');
     localStorage.setItem(`customerDocs_${id}`, JSON.stringify(documents));
+    addNotification('New Application', `Customer submitted documents for application ${id}.`);
     window.dispatchEvent(new Event('storage'));
   };
 
@@ -350,22 +366,5 @@ const CustomerUpload: React.FC = () => {
     </div>
   );
 };
-
-// Dummy building icon for customer view
-const Building = ({ size, color }: { size: number, color: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-    <path d="M9 22v-4h6v4"></path>
-    <path d="M8 6h.01"></path>
-    <path d="M16 6h.01"></path>
-    <path d="M12 6h.01"></path>
-    <path d="M12 10h.01"></path>
-    <path d="M12 14h.01"></path>
-    <path d="M16 10h.01"></path>
-    <path d="M16 14h.01"></path>
-    <path d="M8 10h.01"></path>
-    <path d="M8 14h.01"></path>
-  </svg>
-);
 
 export default CustomerUpload;
