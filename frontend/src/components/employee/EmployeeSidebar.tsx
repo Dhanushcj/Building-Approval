@@ -94,7 +94,7 @@ const EmployeeSidebar: React.FC<EmployeeSidebarProps> = ({ isOpen, setIsOpen }) 
           </div>
         </div>
         <button 
-          onClick={() => window.location.href = '/login'}
+          onClick={() => { localStorage.removeItem('loggedInUser'); localStorage.removeItem('token'); window.location.href = '/login'; }}
           style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.5rem', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
           title="Logout"
           onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--error-red)'; e.currentTarget.style.backgroundColor = 'rgba(185, 74, 72, 0.1)' }}

@@ -56,6 +56,8 @@ const ApplicationDetail: React.FC = () => {
   const [saveReason, setSaveReason] = useState('Documents pending');
   const [docUploadType, setDocUploadType] = useState('CUSTOMER PHOTOGRAPH');
   const [modalTab, setModalTab] = useState<'upload' | 'view'>('upload');
+  const [isReuploadModalOpen, setIsReuploadModalOpen] = useState(false);
+  const [selectedForReupload, setSelectedForReupload] = useState<string[]>([]);
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<{
     'CUSTOMER PHOTOGRAPH'?: string;
@@ -945,13 +947,22 @@ const ApplicationDetail: React.FC = () => {
           <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FileText size={20} color="var(--primary)" /> Uploaded Documents
           </h3>
-          <button 
-            onClick={handleBulkDownload}
-            className="btn-primary" 
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
-          >
-            <Download size={18} /> Bulk Download
-          </button>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button 
+              onClick={() => setIsReuploadModalOpen(true)}
+              className="btn-primary" 
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: '#f59e0b', borderColor: '#f59e0b' }}
+            >
+              <Upload size={18} /> Request Reupload Document
+            </button>
+            <button 
+              onClick={handleBulkDownload}
+              className="btn-primary" 
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
+            >
+              <Download size={18} /> Bulk Download
+            </button>
+          </div>
         </div>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
@@ -1288,6 +1299,30 @@ const ApplicationDetail: React.FC = () => {
                 e.preventDefault(); 
                 const link = `${window.location.origin}/upload/${id || 'NEW'}`;
                 navigator.clipboard.writeText(link);
+                
+                // Update Link Tracking status
+                if (id) {
+                  const localCasesStr = localStorage.getItem('mock_saved_cases');
+                  if (localCasesStr) {
+                    const localCases = JSON.parse(localCasesStr);
+                    const cIndex = localCases.findIndex((c: any) => (c.application_number || c.id) === id);
+                    if (cIndex !== -1) {
+                      if (!localCases[cIndex].linkTracking) {
+                        localCases[cIndex].linkTracking = {};
+                      }
+                      if (formData.email) {
+                        localCases[cIndex].linkTracking.sendStatus = 'success';
+                      } else {
+                        localCases[cIndex].linkTracking.sendStatus = 'failed';
+                      }
+                      localCases[cIndex].linkTracking.sent = true;
+                      localCases[cIndex].linkTracking.sentDate = new Date().toISOString();
+                      localStorage.setItem('mock_saved_cases', JSON.stringify(localCases));
+                      window.dispatchEvent(new Event('storage'));
+                    }
+                  }
+                }
+                
                 toast.success('Upload link copied! Share this with the customer.');
                 if (formData.mobile) {
                   // Format mobile number to remove any non-digit characters and ensure it starts with country code if needed (assuming India 91 if length is 10)
@@ -1308,6 +1343,7 @@ const ApplicationDetail: React.FC = () => {
               <Send size={18} /> Share Upload Link
             </button>
           </div>
+
           {['COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) && (
              <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '2rem', backgroundColor: applicationStatus === 'Rejected' ? '#fef2f2' : '#f0fdf4', border: applicationStatus === 'Rejected' ? '1px solid #fecaca' : '1px solid #bbf7d0' }}>
                 {applicationStatus === 'Rejected' ? <X size={48} color="#ef4444" style={{ margin: '0 auto 1rem' }} /> : <CheckCircle size={48} color="var(--success-green)" style={{ margin: '0 auto 1rem' }} />}
@@ -1486,6 +1522,94 @@ const ApplicationDetail: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Request Reupload Modal */}
+      {isReuploadModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card" style={{ width: '100%', maxWidth: '500px', margin: '2rem', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--primary-dark)', margin: 0 }}>Request Reupload</h3>
+              <button onClick={() => setIsReuploadModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.5rem' }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Select the documents that the customer needs to reupload:</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {['CUSTOMER PHOTOGRAPH', 'CUSTOMER SIGNATURE', 'AADHAR CARD', 'PAN CARD', 'SALE DEED', 'PATTA', 'FMB', 'BUILDING PLAN'].map(docType => (
+                  <label key={docType} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedForReupload.includes(docType)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedForReupload([...selectedForReupload, docType]);
+                        } else {
+                          setSelectedForReupload(selectedForReupload.filter(d => d !== docType));
+                        }
+                      }}
+                      style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--primary)' }}
+                    />
+                    <span style={{ fontWeight: 500, color: 'var(--primary-dark)' }}>{docType}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+              <button 
+                onClick={() => setIsReuploadModalOpen(false)}
+                style={{ padding: '0.75rem 1.5rem', backgroundColor: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  if (selectedForReupload.length === 0) {
+                    toast.error('Please select at least one document to request reupload.');
+                    return;
+                  }
+                  
+                  // Save requested reuploads to localstorage
+                  if (id) {
+                    const localCasesStr = localStorage.getItem('mock_saved_cases');
+                    if (localCasesStr) {
+                      const localCases = JSON.parse(localCasesStr);
+                      const cIndex = localCases.findIndex((c: any) => (c.application_number || c.id) === id);
+                      if (cIndex !== -1) {
+                        localCases[cIndex].requestedReuploads = selectedForReupload;
+                        localStorage.setItem('mock_saved_cases', JSON.stringify(localCases));
+                        window.dispatchEvent(new Event('storage'));
+                      }
+                    }
+                  }
+                  
+                  const link = `${window.location.origin}/upload/${id || 'NEW'}`;
+                  navigator.clipboard.writeText(link);
+                  toast.success('Reupload request sent! Link copied to clipboard.');
+                  
+                  if (formData.mobile) {
+                    let phoneNumber = formData.mobile.replace(/\D/g, '');
+                    if (phoneNumber.length === 10) phoneNumber = '91' + phoneNumber;
+                    const message = encodeURIComponent(`Hello ${formData.customerName || ''},\n\nPlease use the following link to reupload the requested documents:\n${link}`);
+                    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+                  } else {
+                    toast.error('Please enter a mobile number to share via WhatsApp.');
+                  }
+                  
+                  setIsReuploadModalOpen(false);
+                }}
+                style={{ padding: '0.75rem 1.5rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', borderRadius: '0.5rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                <Send size={18} /> Send Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

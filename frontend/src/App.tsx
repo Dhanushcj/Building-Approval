@@ -21,6 +21,7 @@ import MyApplications from './pages/employee/MyApplications';
 import ApplyNow from './pages/customer/ApplyNow';
 import CustomerLeads from './pages/admin/CustomerLeads';
 import AttendanceList from './pages/admin/AttendanceList';
+import LinkTracking from './pages/admin/LinkTracking';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import FollowUpsList from './pages/admin/FollowUpsList';
 import Settings from './pages/admin/Settings';
@@ -139,6 +140,7 @@ function App() {
             {/* Staff Module */}
             <Route path="staff" element={<StaffList />} />
             <Route path="attendance" element={<AttendanceList />} />
+            <Route path="link-tracking" element={<LinkTracking />} />
             
             {/* Fallbacks for other routes */}
             <Route path="properties/*" element={<div style={{padding:'2rem'}}><h2>Properties Module</h2><p>Coming soon...</p></div>} />

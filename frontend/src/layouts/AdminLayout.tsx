@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 import AdminTopbar from '../components/admin/AdminTopbar';
 import AdminSidebar from '../components/admin/AdminSidebar';
 
 const AdminLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const loggedInUser = localStorage.getItem('loggedInUser');
+
+  if (!loggedInUser) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="layout-wrapper" style={{ display: 'flex', minHeight: '100vh' }}>

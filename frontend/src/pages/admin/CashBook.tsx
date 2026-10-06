@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Calendar, Search, ArrowUpRight, ArrowDownRight, DollarSign, Wallet } from 'lucide-react';
+import { Search, ArrowUpRight, ArrowDownRight, DollarSign, Wallet, Download } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const CashBook: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [fromDate, setFromDate] = useState(new Date().toISOString().split('T')[0]);
+  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Mock data for the cash book ledger
@@ -15,16 +17,52 @@ const CashBook: React.FC = () => {
     { id: 'EXP-102', date: '2026-10-01', particulars: 'Travel Allowance - Field Visit', type: 'Expense', amount: 800 },
   ];
 
-  const totalIn = transactions.filter(t => t.type === 'Receipt').reduce((acc, curr) => acc + curr.amount, 0);
-  const totalOut = transactions.filter(t => t.type === 'Expense').reduce((acc, curr) => acc + curr.amount, 0);
+  const filteredTransactions = transactions.filter(t => {
+    const matchesSearch = t.particulars.toLowerCase().includes(searchTerm.toLowerCase()) || t.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const isAfterFrom = t.date >= fromDate;
+    const isBeforeTo = t.date <= toDate;
+    return matchesSearch && isAfterFrom && isBeforeTo;
+  });
+
+  const totalIn = filteredTransactions.filter(t => t.type === 'Receipt').reduce((acc, curr) => acc + curr.amount, 0);
+  const totalOut = filteredTransactions.filter(t => t.type === 'Expense').reduce((acc, curr) => acc + curr.amount, 0);
   const closingBalance = openingBalance + totalIn - totalOut;
 
-  const filteredTransactions = transactions.filter(t => 
-    t.particulars.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   let runningBalance = openingBalance;
+
+  const handleExportExcel = () => {
+    const headers = ['DATE', 'REF NO.', 'PARTICULARS', 'IN (RECEIPT)', 'OUT (EXPENSE)', 'BALANCE'];
+    
+    let currentBal = openingBalance;
+    const rows = filteredTransactions.map(t => {
+      if (t.type === 'Receipt') currentBal += t.amount;
+      else currentBal -= t.amount;
+      
+      const receipt = t.type === 'Receipt' ? t.amount : '';
+      const expense = t.type === 'Expense' ? t.amount : '';
+      return `"${t.date}","${t.id}","${t.particulars}","${receipt}","${expense}","${currentBal}"`;
+    });
+
+    const csvContent = [
+      headers.join(','),
+      `"${fromDate}","-","Opening Balance","-","-","${openingBalance}"`,
+      ...rows,
+      `"","","CLOSING BALANCE","${totalIn}","${totalOut}","${closingBalance}"`
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `CashBook_${fromDate}_to_${toDate}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Excel (CSV) exported successfully');
+    }
+  };
 
   return (
     <div>
@@ -33,17 +71,29 @@ const CashBook: React.FC = () => {
           Cash Book & Balance
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ position: 'relative' }}>
-            <Calendar size={18} color="#94a3b8" style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>From:</span>
             <input 
               type="date" 
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ padding: '0.625rem 1rem 0.625rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', outline: 'none' }}
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', outline: 'none' }}
             />
           </div>
-          <button className="btn-primary" onClick={() => window.print()} style={{ padding: '0.625rem 1.5rem' }}>
-            Export PDF
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>To:</span>
+            <input 
+              type="date" 
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', outline: 'none' }}
+            />
+          </div>
+          <button className="btn-primary" onClick={handleExportExcel} style={{ padding: '0.625rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#10b981', borderColor: '#10b981' }}>
+            <Download size={16} /> Export Excel
+          </button>
+          <button className="btn-primary" onClick={() => window.print()} style={{ padding: '0.625rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Download size={16} /> Export PDF
           </button>
         </div>
       </div>
@@ -120,7 +170,7 @@ const CashBook: React.FC = () => {
             <tbody>
               {/* Opening Balance Row */}
               <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(59, 130, 246, 0.02)' }}>
-                <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{selectedDate}</td>
+                <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{fromDate}</td>
                 <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>-</td>
                 <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)' }}>Opening Balance</td>
                 <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#10b981', textAlign: 'right' }}>-</td>

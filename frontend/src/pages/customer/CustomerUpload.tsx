@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 const CustomerUpload: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [requestedDocIds, setRequestedDocIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Track uploaded documents
@@ -23,9 +24,38 @@ const CustomerUpload: React.FC = () => {
   useEffect(() => {
     const loadDocs = () => {
       const savedDocs = localStorage.getItem(`customerDocs_${id}`);
-      if (savedDocs) {
-        setDocuments(JSON.parse(savedDocs));
+      let currentDocs = savedDocs ? JSON.parse(savedDocs) : documents;
+      
+      const localCasesStr = localStorage.getItem('mock_saved_cases');
+      let reqIds: string[] = [];
+      if (localCasesStr) {
+        const localCases = JSON.parse(localCasesStr);
+        const caseData = localCases.find((c: any) => (c.application_number || c.id) === id);
+        if (caseData && caseData.requestedReuploads && caseData.requestedReuploads.length > 0) {
+          const docMapping: any = {
+            'SALE DEED': 'sale_deed',
+            'PATTA': 'patta',
+            'FMB': 'fmb',
+            'PAN CARD': 'pan',
+            'AADHAR CARD': 'aadhar',
+            'CUSTOMER PHOTOGRAPH': 'photo',
+            'CUSTOMER SIGNATURE': 'signature',
+            'BUILDING PLAN': 'building_plan'
+          };
+          reqIds = caseData.requestedReuploads.map((r: string) => docMapping[r]).filter(Boolean);
+          setRequestedDocIds(reqIds);
+          
+          currentDocs = currentDocs.map((d: any) => {
+            if (reqIds.includes(d.id)) {
+              return { ...d, status: 'Needs Reupload', fileName: null, fileData: null };
+            }
+            return d;
+          });
+        }
       }
+      
+      setDocuments(currentDocs);
+      
       const submitted = localStorage.getItem(`customerSubmitted_${id}`);
       if (submitted) {
         setIsSubmitted(true);
@@ -130,11 +160,9 @@ const CustomerUpload: React.FC = () => {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{ width: '40px', height: '40px', backgroundColor: 'var(--primary)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Building size={24} color="white" />
-            </div>
+            <img src="/assets/logo.jpeg" alt="C.B. Building Approvals Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
             <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', margin: 0, letterSpacing: '-0.025em' }}>
-              BuildApprove
+              C.B. Building Approvals
             </h1>
           </div>
           <h2 style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Secure Document Portal</h2>
@@ -173,7 +201,7 @@ const CustomerUpload: React.FC = () => {
 
         {/* Upload List */}
         <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', marginBottom: '2rem' }}>
-          {documents.filter(doc => !['site_inspection_report', 'govt_approval'].includes(doc.id)).map((doc, index, array) => (
+          {documents.filter(doc => !['site_inspection_report', 'govt_approval'].includes(doc.id) && (requestedDocIds.length === 0 || requestedDocIds.includes(doc.id))).map((doc, index, array) => (
             <div key={doc.id} style={{ padding: '1.5rem', borderBottom: index < array.length - 1 ? '1px solid var(--border-color)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '0.5rem', backgroundColor: doc.status === 'Needs Reupload' ? 'rgba(214, 167, 86, 0.1)' : (doc.fileName || doc.file) ? 'rgba(34, 160, 107, 0.1)' : 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: doc.status === 'Needs Reupload' ? 'var(--warning-gold)' : (doc.fileName || doc.file) ? 'var(--success-green)' : 'var(--text-secondary)' }}>

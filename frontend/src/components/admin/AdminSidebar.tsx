@@ -26,6 +26,7 @@ const menuGroups = [
     items: [
       { title: 'Applications', icon: <FileText size={20} strokeWidth={1.5} />, path: '/admin/applications' },
       { title: 'Attendance', icon: <CheckSquare size={20} strokeWidth={1.5} />, path: '/admin/attendance' },
+      { title: 'Link Tracking', icon: <FileText size={20} strokeWidth={1.5} />, path: '/admin/link-tracking' },
     ]
   },
   {
@@ -194,7 +195,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
           </div>
         </div>
         <button
-          onClick={() => window.location.href = '/login'}
+          onClick={() => { localStorage.removeItem('loggedInUser'); localStorage.removeItem('token'); window.location.href = '/login'; }}
           style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', padding: '0.5rem', borderRadius: 'var(--border-radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
           title="Logout"
           onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--error-red)'; e.currentTarget.style.backgroundColor = 'rgba(185, 74, 72, 0.1)' }}

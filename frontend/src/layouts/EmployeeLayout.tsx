@@ -1,10 +1,15 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 import EmployeeSidebar from '../components/employee/EmployeeSidebar';
 import EmployeeTopbar from '../components/employee/EmployeeTopbar';
 
 const EmployeeLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const loggedInUser = localStorage.getItem('loggedInUser');
+
+  if (!loggedInUser) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="layout-wrapper">
