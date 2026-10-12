@@ -139,21 +139,55 @@ const EnquiriesList: React.FC = () => {
           status: 'INTAKE',
           fullData: {
             customerName: lead.name,
+            fatherName: '',
+            dob: '',
             mobile: lead.phone,
             email: lead.email || '',
+            altMobile: '',
+            aadhar: '',
+            pan: '',
             residentialAddress: {
+              houseNo: '',
+              streetName: '',
               area: lead.location || '',
-              city: lead.location || '',
+              city: lead.location || 'Hosur',
               taluk: 'Hosur',
-              country: 'INDIA'
+              pincode: '',
+              state: 'Tamil Nadu',
+              country: 'INDIA',
+              landmark: '',
+              accomodationType: 'Own',
+              yearsResiding: ''
+            },
+            permanentAddress: {
+              sameAsResidential: true,
+              houseNo: '',
+              streetName: '',
+              area: lead.location || '',
+              city: lead.location || 'Hosur',
+              taluk: 'Hosur',
+              pincode: '',
+              state: 'Tamil Nadu',
+              country: 'INDIA',
+              landmark: ''
             },
             propertyDetails: {
-              city: lead.location || '',
+              surveyNo: lead.propertyDetails?.substring(0, 50) || 'TBD',
+              pattaNo: '',
+              dno: '',
+              streetName: '',
               village: lead.location || '',
+              panchayat: '',
+              city: lead.location || '',
               taluk: 'Hosur',
-              surveyNo: lead.propertyDetails?.substring(0, 50) || 'TBD'
+              pincode: '',
+              state: 'Tamil Nadu',
+              landmark: ''
             },
-            serviceType: 'building'
+            referenceDetails: { source: '', name: '', mobile: '' },
+            serviceType: 'building',
+            feesAmount: '',
+            feeNotes: ''
           },
           uploadedFiles: {
             ...(lead.aadharFile ? { 'AADHAR CARD': lead.aadharFile } : {}),

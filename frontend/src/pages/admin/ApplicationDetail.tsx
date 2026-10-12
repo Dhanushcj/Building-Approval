@@ -28,6 +28,68 @@ const ApplicationDetail: React.FC = () => {
   const loggedInUser = localStorage.getItem('loggedInUser') || 'Admin';
   const isEmployee = loggedInUser !== 'Admin';
 
+  const defaultFormData = {
+    // Page 1: Services & Personal Details
+    serviceType: '',
+    customerName: '',
+    fatherName: '',
+    dob: '',
+    mobile: '',
+    email: '',
+    altMobile: '',
+    aadhar: '',
+    pan: '',
+    residentialAddress: { houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' },
+    permanentAddress: { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' },
+    staff: isEmployee ? loggedInUser : '',
+    
+    // Page 2: Property Details
+    propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
+    referenceDetails: { source: '', name: '', mobile: '' },
+    
+    // Page 3: Fees Details
+    feesAmount: '',
+    feeNotes: '',
+  };
+
+  const sanitizeFormData = (data: any) => {
+    if (!data) return defaultFormData;
+    
+    let resAddr = data.residentialAddress;
+    if (typeof resAddr === 'string') {
+      resAddr = { houseNo: resAddr, streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' };
+    }
+    
+    let permAddr = data.permanentAddress;
+    if (!permAddr) {
+      permAddr = { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' };
+    } else if (typeof permAddr === 'string') {
+      permAddr = { sameAsResidential: true, houseNo: permAddr, streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' };
+    }
+
+    return {
+      ...defaultFormData,
+      ...data,
+      residentialAddress: {
+        ...defaultFormData.residentialAddress,
+        ...(resAddr || {})
+      },
+      permanentAddress: {
+        ...defaultFormData.permanentAddress,
+        ...permAddr,
+        sameAsResidential: permAddr.sameAsResidential !== undefined ? Boolean(permAddr.sameAsResidential) : true
+      },
+      propertyDetails: {
+        ...defaultFormData.propertyDetails,
+        ...(data.propertyDetails || {})
+      },
+      referenceDetails: {
+        ...defaultFormData.referenceDetails,
+        ...(data.referenceDetails || {})
+      }
+    };
+  };
+
   const [applicationStatus, setApplicationStatus] = useState<string>(() => {
     if (id) {
       const existingStr = localStorage.getItem('mock_saved_cases');
@@ -133,9 +195,9 @@ const ApplicationDetail: React.FC = () => {
               setUploadedFiles(prev => ({ ...prev, ...c.uploadedFiles }));
             }
             if (c.fullData) {
-              setFormData((prev: any) => ({ ...prev, ...c.fullData }));
+              setFormData((prev: any) => sanitizeFormData({ ...prev, ...c.fullData }));
             } else if (c.property) {
-              setFormData((prev: any) => ({
+              setFormData((prev: any) => sanitizeFormData({
                 ...prev,
                 customerName: c.property.owner_name || prev.customerName,
                 mobile: c.property.owner_phone || prev.mobile,
@@ -233,74 +295,38 @@ const ApplicationDetail: React.FC = () => {
     if (id) {
       const existingStr = localStorage.getItem('mock_saved_cases');
       if (existingStr) {
-        const existing = JSON.parse(existingStr);
-        const app = existing.find((a: any) => a.id === id);
-        if (app && app.fullData) {
-          return app.fullData;
+        try {
+          const existing = JSON.parse(existingStr);
+          const app = existing.find((a: any) => a.id === id);
+          if (app && app.fullData) {
+            return sanitizeFormData(app.fullData);
+          }
+        } catch (e) {
+          console.error(e);
         }
       }
       
       // Fallback to mock API data
       const apiApp = recentApplications.find((a: any) => a.id === id);
       if (apiApp) {
-        return {
+        return sanitizeFormData({
           serviceType: apiApp.approval_type === 'BUILDING_PLAN_APPROVAL' ? 'building' : 'plan',
           customerName: apiApp.customer || '',
-          fatherName: '',
-          dob: '',
-          mobile: '',
-          email: '',
-          altMobile: '',
-          aadhar: '',
-          pan: '',
           residentialAddress: { houseNo: '', streetName: '', area: apiApp.location || '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' },
-          permanentAddress: { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' },
           staff: apiApp.staff || '',
-          propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
-          referenceDetails: { source: '', name: '', mobile: '' },
-          feesAmount: '',
-          feeNotes: '',
-        };
+        });
       }
     }
     const saved = localStorage.getItem('newApp_formData');
     if (saved && !id) {
-      const parsed = JSON.parse(saved);
-      if (typeof parsed.residentialAddress === 'string') {
-        parsed.residentialAddress = { houseNo: parsed.residentialAddress, streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' };
-        parsed.permanentAddress = { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' };
+      try {
+        const parsed = JSON.parse(saved);
+        return sanitizeFormData(parsed);
+      } catch (e) {
+        console.error(e);
       }
-      if (!parsed.propertyDetails) {
-        parsed.propertyDetails = { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' };
-      }
-      if (!parsed.referenceDetails) {
-        parsed.referenceDetails = { source: '', name: '', mobile: '' };
-      }
-      return parsed;
     }
-    return {
-      // Page 1: Services & Personal Details
-      serviceType: '',
-      customerName: '',
-      fatherName: '',
-      dob: '',
-      mobile: '',
-      email: '',
-      altMobile: '',
-      aadhar: '',
-      pan: '',
-      residentialAddress: { houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '', accomodationType: 'Own', yearsResiding: '' },
-      permanentAddress: { sameAsResidential: true, houseNo: '', streetName: '', area: '', city: '', taluk: '', pincode: '', state: '', country: 'INDIA', landmark: '' },
-      staff: isEmployee ? loggedInUser : '',
-      
-      // Page 2: Property Details
-      propertyDetails: { surveyNo: '', pattaNo: '', dno: '', streetName: '', village: '', panchayat: '', city: '', taluk: '', pincode: '', state: '', landmark: '' },
-      referenceDetails: { source: '', name: '', mobile: '' },
-      
-      // Page 3: Fees Details
-      feesAmount: '',
-      feeNotes: '',
-    };
+    return defaultFormData;
   });
 
   React.useEffect(() => {
@@ -512,12 +538,13 @@ const ApplicationDetail: React.FC = () => {
       if (!formData.aadhar) errors.push('aadhar');
       if (!formData.pan) errors.push('pan');
       
-      if (!formData.residentialAddress.houseNo) errors.push('res_houseNo');
-      if (!formData.residentialAddress.streetName) errors.push('res_streetName');
-      if (!formData.residentialAddress.city) errors.push('res_city');
-      if (!formData.residentialAddress.state) errors.push('res_state');
+      if (!formData.residentialAddress?.houseNo) errors.push('res_houseNo');
+      if (!formData.residentialAddress?.streetName) errors.push('res_streetName');
+      if (!formData.residentialAddress?.city) errors.push('res_city');
+      if (!formData.residentialAddress?.state) errors.push('res_state');
       
-      const perm = formData.permanentAddress.sameAsResidential ? formData.residentialAddress : formData.permanentAddress;
+      const isSameAsRes = formData.permanentAddress?.sameAsResidential ?? true;
+      const perm = isSameAsRes ? (formData.residentialAddress || {}) : (formData.permanentAddress || {});
       if (!perm.houseNo) errors.push('perm_houseNo');
       if (!perm.streetName) errors.push('perm_streetName');
       if (!perm.city) errors.push('perm_city');
@@ -763,50 +790,69 @@ const ApplicationDetail: React.FC = () => {
           </div>
 
           {/* Permanent Address */}
-          <div style={{ flex: 1, minWidth: '350px', backgroundColor: 'transparent', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
-              <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)' }}>Permanent Address *</h4>
-              <label style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-secondary)', fontWeight: 500 }}>
-                <input type="checkbox" checked={formData.permanentAddress.sameAsResidential} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, sameAsResidential: e.target.checked}})} style={{ accentColor: 'var(--primary)' }} />
-                Same
-              </label>
-            </div>
+          {(() => {
+            const isSameAsRes = formData.permanentAddress?.sameAsResidential ?? true;
+            const resAddr = formData.residentialAddress || defaultFormData.residentialAddress;
+            const permAddr = formData.permanentAddress || defaultFormData.permanentAddress;
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem', opacity: formData.permanentAddress.sameAsResidential ? 0.5 : 1, pointerEvents: formData.permanentAddress.sameAsResidential ? 'none' : 'auto' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Dno</label>
-                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.houseNo : formData.permanentAddress.houseNo} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, houseNo: e.target.value}})} style={getInputStyle('perm_houseNo', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.houseNo : formData.permanentAddress.houseNo)} />
+            return (
+              <div style={{ flex: 1, minWidth: '350px', backgroundColor: 'transparent', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)' }}>Permanent Address *</h4>
+                  <label style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                    <input 
+                      type="checkbox" 
+                      checked={isSameAsRes} 
+                      onChange={e => setFormData({
+                        ...formData, 
+                        permanentAddress: { 
+                          ...permAddr, 
+                          sameAsResidential: e.target.checked 
+                        }
+                      })} 
+                      style={{ accentColor: 'var(--primary)' }} 
+                    />
+                    Same
+                  </label>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem', opacity: isSameAsRes ? 0.5 : 1, pointerEvents: isSameAsRes ? 'none' : 'auto' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Dno</label>
+                    <input type="text" value={isSameAsRes ? (resAddr.houseNo || '') : (permAddr.houseNo || '')} onChange={e => setFormData({...formData, permanentAddress: {...permAddr, houseNo: e.target.value}})} style={getInputStyle('perm_houseNo', isSameAsRes ? resAddr.houseNo : permAddr.houseNo)} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Street Name</label>
+                    <input type="text" value={isSameAsRes ? (resAddr.streetName || '') : (permAddr.streetName || '')} onChange={e => setFormData({...formData, permanentAddress: {...permAddr, streetName: e.target.value}})} style={getInputStyle('perm_streetName', isSameAsRes ? resAddr.streetName : permAddr.streetName)} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Area</label>
+                    <input type="text" value={isSameAsRes ? (resAddr.area || '') : (permAddr.area || '')} onChange={e => setFormData({...formData, permanentAddress: {...permAddr, area: e.target.value}})} style={getInputStyle('perm_area', isSameAsRes ? resAddr.area : permAddr.area)} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>City</label>
+                    <input type="text" value={isSameAsRes ? (resAddr.city || '') : (permAddr.city || '')} onChange={e => setFormData({...formData, permanentAddress: {...permAddr, city: e.target.value}})} style={getInputStyle('perm_city', isSameAsRes ? resAddr.city : permAddr.city)} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Taluk/District</label>
+                    <input type="text" value={isSameAsRes ? (resAddr.taluk || '') : (permAddr.taluk || '')} onChange={e => setFormData({...formData, permanentAddress: {...permAddr, taluk: e.target.value}})} style={getInputStyle('perm_taluk', isSameAsRes ? resAddr.taluk : permAddr.taluk)} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>PinCode</label>
+                    <input type="text" value={isSameAsRes ? (resAddr.pincode || '') : (permAddr.pincode || '')} onChange={e => setFormData({...formData, permanentAddress: {...permAddr, pincode: e.target.value}})} style={getInputStyle('perm_pincode', isSameAsRes ? resAddr.pincode : permAddr.pincode)} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>State</label>
+                    <input type="text" value={isSameAsRes ? (resAddr.state || '') : (permAddr.state || '')} onChange={e => setFormData({...formData, permanentAddress: {...permAddr, state: e.target.value}})} style={getInputStyle('perm_state', isSameAsRes ? resAddr.state : permAddr.state)} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Landmark</label>
+                    <input type="text" value={isSameAsRes ? (resAddr.landmark || '') : (permAddr.landmark || '')} onChange={e => setFormData({...formData, permanentAddress: {...permAddr, landmark: e.target.value}})} style={getInputStyle('perm_landmark', isSameAsRes ? resAddr.landmark : permAddr.landmark)} />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Street Name</label>
-                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.streetName : formData.permanentAddress.streetName} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, streetName: e.target.value}})} style={getInputStyle('perm_streetName', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.streetName : formData.permanentAddress.streetName)} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Area</label>
-                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.area : formData.permanentAddress.area} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, area: e.target.value}})} style={getInputStyle('perm_area', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.area : formData.permanentAddress.area)} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>City</label>
-                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.city : formData.permanentAddress.city} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, city: e.target.value}})} style={getInputStyle('perm_city', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.city : formData.permanentAddress.city)} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Taluk/District</label>
-                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.taluk : formData.permanentAddress.taluk} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, taluk: e.target.value}})} style={getInputStyle('perm_taluk', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.taluk : formData.permanentAddress.taluk)} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>PinCode</label>
-                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.pincode : formData.permanentAddress.pincode} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, pincode: e.target.value}})} style={getInputStyle('perm_pincode', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.pincode : formData.permanentAddress.pincode)} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>State</label>
-                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.state : formData.permanentAddress.state} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, state: e.target.value}})} style={getInputStyle('perm_state', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.state : formData.permanentAddress.state)} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Landmark</label>
-                <input type="text" value={formData.permanentAddress.sameAsResidential ? formData.residentialAddress.landmark : formData.permanentAddress.landmark} onChange={e => setFormData({...formData, permanentAddress: {...formData.permanentAddress, landmark: e.target.value}})} style={getInputStyle('perm_landmark', formData.permanentAddress.sameAsResidential ? formData.residentialAddress.landmark : formData.permanentAddress.landmark)} />
-              </div>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       </div>
     </div>
