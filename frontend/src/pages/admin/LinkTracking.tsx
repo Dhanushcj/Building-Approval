@@ -7,13 +7,25 @@ const LinkTracking: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    // Load from local storage for demo purposes
-    const loadData = () => {
+    const loadData = async () => {
+      let apiCases: any[] = [];
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      try {
+        const res = await fetch(`${apiUrl}/cases`);
+        if (res.ok) apiCases = await res.json();
+      } catch (e) {
+        console.error("Link tracking API fetch failed", e);
+      }
+
       const localCasesStr = localStorage.getItem('mock_saved_cases');
       let localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
       
-      const mappedApps = localCases.map((c: any) => {
-        // Initialize link tracking data if not present
+      const allCases = [...apiCases, ...localCases];
+      const uniqueCases = allCases.filter((app: any, index: number, self: any[]) =>
+        index === self.findIndex((a: any) => (a.application_number || a.id) === (app.application_number || app.id))
+      );
+      
+      const mappedApps = uniqueCases.map((c: any) => {
         if (!c.linkTracking) {
           c.linkTracking = {
             sent: false,
@@ -22,27 +34,28 @@ const LinkTracking: React.FC = () => {
             uploadDate: null
           };
         }
-          const appId = c.application_number || c.id;
-          const savedDocs = localStorage.getItem(`customerDocs_${appId}`) || localStorage.getItem(`customerDocs_${c.id}`);
-          let hasDocs = false;
-          if (savedDocs) {
-            try {
-              const parsed = JSON.parse(savedDocs);
-              hasDocs = parsed && parsed.length > 0;
-            } catch (e) {}
-          }
-          
-          if (hasDocs && c.linkTracking) {
-             c.linkTracking.customerUploaded = true;
-          }
+        const appId = c.application_number || c.id;
+        const savedDocs = localStorage.getItem(`customerDocs_${appId}`) || localStorage.getItem(`customerDocs_${c.id}`);
+        let hasDocs = false;
+        if (savedDocs) {
+          try {
+            const parsed = JSON.parse(savedDocs);
+            hasDocs = parsed && parsed.length > 0;
+          } catch (e) {}
+        }
+        
+        if (hasDocs && c.linkTracking) {
+           c.linkTracking.customerUploaded = true;
+        }
 
-          return {
-            id: appId,
-            originalCase: c,
-            customer: c.property?.owner_name || 'Unknown',
-            mobile: c.property?.owner_phone || '',
-            ...c.linkTracking
-          };
+        return {
+          id: appId,
+          mongoId: c.id,
+          originalCase: c,
+          customer: c.property?.owner_name || c.fullData?.customerName || 'Unknown',
+          mobile: c.property?.owner_phone || c.fullData?.mobile || '',
+          ...c.linkTracking
+        };
       });
       setApplications(mappedApps);
     };
@@ -52,37 +65,55 @@ const LinkTracking: React.FC = () => {
     return () => window.removeEventListener('storage', loadData);
   }, []);
 
-  const handleSendLink = (appId: string) => {
+  const handleSendLink = async (appId: string) => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+    const app = applications.find(a => a.id === appId);
+    const hasEmail = app?.originalCase?.fullData?.email || app?.originalCase?.property?.email;
+    const sentStatus = hasEmail ? 'success' : 'failed';
+    const sentDate = new Date().toISOString();
+
+    const linkTrackingPayload = {
+      sent: true,
+      sentStatus,
+      sendStatus: sentStatus,
+      sentDate
+    };
+
+    try {
+      await fetch(`${apiUrl}/cases/${appId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ linkTracking: linkTrackingPayload })
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (hasEmail) {
+      toast.success(`Upload link sent successfully to customer for ${appId}`);
+    } else {
+      toast.error(`Failed to send link: No email address found for ${appId}`);
+    }
+
+    // Also sync local storage
     const localCasesStr = localStorage.getItem('mock_saved_cases');
     if (localCasesStr) {
       const localCases = JSON.parse(localCasesStr);
       const cIndex = localCases.findIndex((c: any) => (c.application_number || c.id) === appId);
       if (cIndex !== -1) {
-        if (!localCases[cIndex].linkTracking) {
-          localCases[cIndex].linkTracking = {};
-        }
-        const hasEmail = localCases[cIndex].fullData?.email || localCases[cIndex].property?.email;
-        if (hasEmail) {
-          localCases[cIndex].linkTracking.sendStatus = 'success';
-          localCases[cIndex].linkTracking.sent = true;
-          toast.success(`Upload link sent successfully to customer for ${appId}`);
-        } else {
-          localCases[cIndex].linkTracking.sendStatus = 'failed';
-          localCases[cIndex].linkTracking.sent = true;
-          toast.error(`Failed to send link: No email address found for ${appId}`);
-        }
-        localCases[cIndex].linkTracking.sentDate = new Date().toISOString();
+        localCases[cIndex].linkTracking = {
+          ...localCases[cIndex].linkTracking,
+          ...linkTrackingPayload
+        };
         localStorage.setItem('mock_saved_cases', JSON.stringify(localCases));
-        window.dispatchEvent(new Event('storage'));
-        
-        // Update local state to reflect change immediately
-        setApplications(prev => prev.map(app => 
-          app.id === appId 
-            ? { ...app, sent: true, sentStatus: localCases[cIndex].linkTracking.sendStatus, sentDate: localCases[cIndex].linkTracking.sentDate }
-            : app
-        ));
       }
     }
+
+    setApplications(prev => prev.map(a => 
+      a.id === appId 
+        ? { ...a, sent: true, sentStatus, sentDate }
+        : a
+    ));
   };
 
   const filteredApplications = applications.filter(app => 

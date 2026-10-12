@@ -70,44 +70,69 @@ const CustomerUpload: React.FC = () => {
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
 
   const triggerUpload = (docId: string) => {
+    if (isUploading) return;
     const doc = documents.find(d => d.id === docId);
     if (isSubmitted && doc?.status !== 'Needs Reupload') return;
     setActiveUploadId(docId);
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0 && activeUploadId) {
       const file = e.target.files[0];
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
-        const fileData = event.target?.result as string;
-        setDocuments(docs => {
-          const newDocs = docs.map(doc => 
-            doc.id === activeUploadId ? { 
-              ...doc, 
-              fileName: file.name,
-              fileData: fileData,
-              status: isSubmitted ? doc.status : 'Pending',
-              uploadedBy: 'Customer',
-              date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-            } : doc
-          );
-          try {
-            localStorage.setItem(`customerDocs_${id}`, JSON.stringify(newDocs));
-            window.dispatchEvent(new Event('storage'));
-          } catch (error) {
-            toast.success('File is too large to store in local storage. Please try a smaller file.');
-            console.error('Storage error:', error);
-          }
-          return newDocs;
+      const loadingToast = toast.loading(`Uploading ${file.name} to Cloudinary...`);
+      setIsUploading(true);
+
+      try {
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        formDataUpload.append('upload_preset', 'ml_default');
+
+        const response = await fetch('https://api.cloudinary.com/v1_1/dfou7lxtg/auto/upload', {
+          method: 'POST',
+          body: formDataUpload,
         });
-      };
-      
-      reader.readAsDataURL(file);
+
+        const data = await response.json();
+        if (data.secure_url) {
+          const cloudinaryUrl = data.secure_url;
+          setDocuments(docs => {
+            const newDocs = docs.map(doc => 
+              doc.id === activeUploadId ? { 
+                ...doc, 
+                fileName: file.name,
+                fileData: cloudinaryUrl,
+                fileUrl: cloudinaryUrl,
+                status: isSubmitted ? doc.status : 'Pending',
+                uploadedBy: 'Customer',
+                date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+              } : doc
+            );
+            try {
+              localStorage.setItem(`customerDocs_${id}`, JSON.stringify(newDocs));
+              window.dispatchEvent(new Event('storage'));
+            } catch (error) {
+              console.error('Storage error:', error);
+            }
+            return newDocs;
+          });
+          toast.success(`${file.name} uploaded successfully!`, { id: loadingToast });
+        } else {
+          throw new Error(data.error?.message || 'Upload failed');
+        }
+      } catch (error: any) {
+        console.error('Cloudinary upload error:', error);
+        toast.error(`Upload failed: ${error.message}`, { id: loadingToast, duration: 5000 });
+      } finally {
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        setActiveUploadId(null);
+      }
+    } else {
+      setActiveUploadId(null);
     }
-    setActiveUploadId(null);
   };
 
   const addNotification = (title: string, message: string) => {
@@ -124,7 +149,7 @@ const CustomerUpload: React.FC = () => {
     localStorage.setItem('mock_notifications', JSON.stringify(notifs));
   };
 
-  const handleReuploadSubmit = () => {
+  const handleReuploadSubmit = async () => {
     const newDocs = documents.map(doc => {
       if (doc.status === 'Needs Reupload' && doc.fileName) {
         return { ...doc, status: 'Pending' };
@@ -135,6 +160,35 @@ const CustomerUpload: React.FC = () => {
     localStorage.setItem(`customerDocs_${id}`, JSON.stringify(newDocs));
     addNotification('Document Uploaded', `Customer reuploaded requested documents for application ${id}.`);
     window.dispatchEvent(new Event('storage'));
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+    if (id) {
+      try {
+        const docMapping: any = {
+          'sale_deed': 'SALE DEED',
+          'patta': 'PATTA',
+          'fmb': 'FMB',
+          'pan': 'PAN CARD',
+          'aadhar': 'AADHAR CARD',
+          'photo': 'CUSTOMER PHOTOGRAPH',
+          'signature': 'CUSTOMER SIGNATURE',
+          'building_plan': 'BUILDING PLAN'
+        };
+        const mappedFiles: any = {};
+        newDocs.forEach((d: any) => {
+          if (d.fileData && docMapping[d.id]) {
+            mappedFiles[docMapping[d.id]] = d.fileData;
+          }
+        });
+        await fetch(`${apiUrl}/cases/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uploadedFiles: mappedFiles })
+        });
+      } catch (err) {
+        console.error("Failed to sync customer reupload to MongoDB API:", err);
+      }
+    }
   };
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -150,15 +204,46 @@ const CustomerUpload: React.FC = () => {
     setShowConfirmModal(true);
   };
 
-  const confirmSubmission = () => {
+  const confirmSubmission = async () => {
     setShowConfirmModal(false);
     setIsSubmitted(true);
     
-    // Save to localStorage so admin side can pick it up
     localStorage.setItem(`customerSubmitted_${id}`, 'true');
     localStorage.setItem(`customerDocs_${id}`, JSON.stringify(documents));
     addNotification('New Application', `Customer submitted documents for application ${id}.`);
     window.dispatchEvent(new Event('storage'));
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+    if (id) {
+      try {
+        const docMapping: any = {
+          'sale_deed': 'SALE DEED',
+          'patta': 'PATTA',
+          'fmb': 'FMB',
+          'pan': 'PAN CARD',
+          'aadhar': 'AADHAR CARD',
+          'photo': 'CUSTOMER PHOTOGRAPH',
+          'signature': 'CUSTOMER SIGNATURE',
+          'building_plan': 'BUILDING PLAN'
+        };
+        const mappedFiles: any = {};
+        documents.forEach((d: any) => {
+          if (d.fileData && docMapping[d.id]) {
+            mappedFiles[docMapping[d.id]] = d.fileData;
+          }
+        });
+        await fetch(`${apiUrl}/cases/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uploadedFiles: mappedFiles,
+            linkTracking: { customerUploaded: true, uploadDate: new Date().toISOString() }
+          })
+        });
+      } catch (err) {
+        console.error("Failed to sync customer submission to MongoDB API:", err);
+      }
+    }
   };
 
   const [viewingDoc, setViewingDoc] = useState<{name: string, fileData?: string} | null>(null);
@@ -271,6 +356,7 @@ const CustomerUpload: React.FC = () => {
           ref={fileInputRef} 
           style={{ display: 'none' }} 
           onChange={handleFileChange}
+          disabled={isUploading}
         />
 
         {/* Submit Button */}
@@ -348,15 +434,19 @@ const CustomerUpload: React.FC = () => {
             </div>
             <div style={{ flex: 1, backgroundColor: '#f1f5f9', overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
               {viewingDoc.fileData ? (
-                viewingDoc.fileData.startsWith('data:image/') ? (
+                viewingDoc.fileData.startsWith('data:image/') || viewingDoc.fileData.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) || (viewingDoc.fileData.includes('cloudinary.com') && !viewingDoc.fileData.endsWith('.pdf')) ? (
                   <img src={viewingDoc.fileData} alt={viewingDoc.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                ) : viewingDoc.fileData.startsWith('data:application/pdf') ? (
+                ) : viewingDoc.fileData.startsWith('data:application/pdf') || viewingDoc.fileData.endsWith('.pdf') ? (
                   <iframe src={viewingDoc.fileData} title={viewingDoc.name} style={{ width: '100%', height: '100%', border: 'none' }} />
                 ) : (
-                  <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Preview not available for this file type.</div>
+                  <div style={{ padding: '2rem', textAlign: 'center' }}>
+                    <a href={viewingDoc.fileData} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: '0.75rem 1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+                      <FileText size={18} /> Open Document
+                    </a>
+                  </div>
                 )
               ) : (
-                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No file data available. Note: This file might have been uploaded before the image preview feature was added. Please reupload it to view.</div>
+                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No file data available.</div>
               )}
             </div>
           </div>

@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Phone, Mail, FileText, CheckCircle, FilePlus, XCircle, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Search, Phone, Mail, FileText, CheckCircle, FilePlus, XCircle, X, ExternalLink, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const EnquiriesList: React.FC = () => {
+  const navigate = useNavigate();
   const [leads, setLeads] = useState<any[]>([]);
   const [rejectingLeadId, setRejectingLeadId] = useState<string | null>(null);
   const [rejectionRemarks, setRejectionRemarks] = useState('');
   const [viewingLead, setViewingLead] = useState<any | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'APPLICATION_CREATED' | 'REJECTED'>('ALL');
+  const [isCreatingId, setIsCreatingId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadLeads = async () => {
@@ -36,7 +41,6 @@ const EnquiriesList: React.FC = () => {
             }));
           setLeads(formattedLeads);
         } else {
-          // Fallback to empty if API fails
           setLeads([]);
         }
       } catch (error) {
@@ -47,7 +51,7 @@ const EnquiriesList: React.FC = () => {
     
     loadLeads();
     
-    // Periodically refresh (since localStorage event won't fire across devices)
+    // Periodically refresh
     const interval = setInterval(loadLeads, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -62,8 +66,10 @@ const EnquiriesList: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Contacted' })
       });
+      toast.success('Marked as contacted');
     } catch (e) {
       console.error(e);
+      toast.error('Failed to update status');
     }
   };
 
@@ -82,78 +88,249 @@ const EnquiriesList: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Rejected' })
       });
+      toast.success('Enquiry rejected');
     } catch (e) {
       console.error(e);
+      toast.error('Failed to reject enquiry');
     }
   };
 
   const handleCreateApplication = async (lead: any) => {
-    // 1. Mark lead as Application Created
-    const updatedLeads = leads.map(l => l.id === lead.id ? { ...l, status: 'Application Created' } : l);
-    setLeads(updatedLeads);
+    setIsCreatingId(lead.id);
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
-      
-      // Mark lead status
+      // 1. Update Lead status to 'Application Created'
       await fetch(`${apiUrl}/leads/${lead.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Application Created' })
       });
 
-      // 2. Create property
+      // 2. Create Property in database
       const propRes = await fetch(`${apiUrl}/properties`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           owner_name: lead.name,
           owner_phone: lead.phone,
-          owner_email: lead.email,
-          village: lead.location || 'Unknown',
-          taluk: 'Unknown',
-          survey_number: lead.propertyDetails?.substring(0, 50) || 'Unknown',
-          jurisdiction: 'HOSUR_CORPORATION'
+          owner_email: lead.email || '',
+          address: lead.location || 'Hosur',
+          village: lead.location || 'Hosur',
+          taluk: 'Hosur',
+          survey_number: lead.propertyDetails?.substring(0, 50) || 'TBD',
+          jurisdiction: 'DTCP'
         })
       });
 
-      if (!propRes.ok) throw new Error('Failed to create property');
+      if (!propRes.ok) {
+        const errData = await propRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create property');
+      }
       const property = await propRes.json();
 
-      // 3. Create case
+      // 3. Create Case / Application in database
       const caseRes = await fetch(`${apiUrl}/cases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           property_id: property.id,
-          approval_type: 'BUILDING_PLAN',
-          status: 'INTAKE'
+          approval_type: 'BUILDING_PLAN_APPROVAL',
+          status: 'INTAKE',
+          fullData: {
+            customerName: lead.name,
+            mobile: lead.phone,
+            email: lead.email || '',
+            residentialAddress: {
+              area: lead.location || '',
+              city: lead.location || '',
+              taluk: 'Hosur',
+              country: 'INDIA'
+            },
+            propertyDetails: {
+              city: lead.location || '',
+              village: lead.location || '',
+              taluk: 'Hosur',
+              surveyNo: lead.propertyDetails?.substring(0, 50) || 'TBD'
+            },
+            serviceType: 'building'
+          },
+          uploadedFiles: {
+            ...(lead.aadharFile ? { 'AADHAR CARD': lead.aadharFile } : {}),
+            ...(lead.buildingPhoto ? { 'BUILDING PLAN': lead.buildingPhoto } : {})
+          }
         })
       });
 
-      if (!caseRes.ok) throw new Error('Failed to create case');
+      if (!caseRes.ok) {
+        const errData = await caseRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create application case');
+      }
       const newCase = await caseRes.json();
+      const appNumber = newCase.application_number || newCase.id;
 
-      toast.success(`Application ${newCase.application_number || newCase.id} created successfully!`);
-    } catch (e) {
-      console.error(e);
-      toast.error('Failed to create application');
+      // 4. Sync with localStorage mock_saved_cases for instantaneous display in Applications list
+      try {
+        const localCasesStr = localStorage.getItem('mock_saved_cases');
+        const localCases = localCasesStr ? JSON.parse(localCasesStr) : [];
+        const appCase = {
+          id: appNumber,
+          application_number: appNumber,
+          customer: lead.name,
+          mobile: lead.phone,
+          location: lead.location || '',
+          property: property,
+          fullData: newCase.fullData,
+          uploadedFiles: newCase.uploadedFiles,
+          approval_type: 'BUILDING_PLAN_APPROVAL',
+          status: 'INTAKE',
+          created_at: newCase.created_at || new Date().toISOString()
+        };
+        localStorage.setItem('mock_saved_cases', JSON.stringify([appCase, ...localCases]));
+      } catch (err) {
+        console.error('LocalStorage sync error', err);
+      }
+
+      // Update local state
+      setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status: 'Application Created', appNumber } : l));
+      toast.success(`Application ${appNumber} created! Moving to Applications...`, { duration: 4000 });
+
+      // Automatically navigate to Applications module so user sees it moved
+      setTimeout(() => {
+        navigate('/admin/applications');
+      }, 1200);
+
+    } catch (e: any) {
+      console.error('Error creating application:', e);
+      toast.error(e.message || 'Failed to create application');
+    } finally {
+      setIsCreatingId(null);
     }
   };
 
+  const filteredLeads = leads.filter(lead => {
+    // Search filter
+    const term = searchTerm.toLowerCase().trim();
+    const matchesSearch = !term || 
+      (lead.displayId || '').toLowerCase().includes(term) ||
+      (lead.name || '').toLowerCase().includes(term) ||
+      (lead.phone || '').toLowerCase().includes(term) ||
+      (lead.location || '').toLowerCase().includes(term);
+
+    if (!matchesSearch) return false;
+
+    // Tab status filter
+    if (statusFilter === 'ACTIVE') {
+      return lead.status === 'New' || lead.status === 'Contacted';
+    }
+    if (statusFilter === 'APPLICATION_CREATED') {
+      return lead.status === 'Application Created';
+    }
+    if (statusFilter === 'REJECTED') {
+      return lead.status === 'Rejected';
+    }
+    return true; // 'ALL'
+  });
+
+  const countActive = leads.filter(l => l.status === 'New' || l.status === 'Contacted').length;
+  const countCreated = leads.filter(l => l.status === 'Application Created').length;
+  const countRejected = leads.filter(l => l.status === 'Rejected').length;
+
   return (
     <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', margin: 0 }}>
+            Website Enquiries
+          </h1>
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+            Review customer enquiries submitted through the web portal and convert them into official applications.
+          </p>
+        </div>
 
+        {/* Tab Filters */}
+        <div style={{ display: 'flex', gap: '0.5rem', backgroundColor: 'var(--bg-secondary)', padding: '0.25rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+          <button
+            onClick={() => setStatusFilter('ALL')}
+            style={{
+              padding: '0.4rem 0.875rem',
+              borderRadius: '0.375rem',
+              border: 'none',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              backgroundColor: statusFilter === 'ALL' ? 'var(--primary)' : 'transparent',
+              color: statusFilter === 'ALL' ? 'white' : 'var(--text-secondary)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            All ({leads.length})
+          </button>
+          <button
+            onClick={() => setStatusFilter('ACTIVE')}
+            style={{
+              padding: '0.4rem 0.875rem',
+              borderRadius: '0.375rem',
+              border: 'none',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              backgroundColor: statusFilter === 'ACTIVE' ? 'var(--primary)' : 'transparent',
+              color: statusFilter === 'ACTIVE' ? 'white' : 'var(--text-secondary)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Active ({countActive})
+          </button>
+          <button
+            onClick={() => setStatusFilter('APPLICATION_CREATED')}
+            style={{
+              padding: '0.4rem 0.875rem',
+              borderRadius: '0.375rem',
+              border: 'none',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              backgroundColor: statusFilter === 'APPLICATION_CREATED' ? 'var(--primary)' : 'transparent',
+              color: statusFilter === 'APPLICATION_CREATED' ? 'white' : 'var(--text-secondary)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Moved to Application ({countCreated})
+          </button>
+          <button
+            onClick={() => setStatusFilter('REJECTED')}
+            style={{
+              padding: '0.4rem 0.875rem',
+              borderRadius: '0.375rem',
+              border: 'none',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              backgroundColor: statusFilter === 'REJECTED' ? 'var(--primary)' : 'transparent',
+              color: statusFilter === 'REJECTED' ? 'white' : 'var(--text-secondary)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Rejected ({countRejected})
+          </button>
+        </div>
+      </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ position: 'relative', width: '300px' }}>
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ position: 'relative', width: '320px' }}>
             <Search size={18} color="#94a3b8" style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)' }} />
             <input 
               type="text" 
-              placeholder="Search leads..." 
-              style={{ width: '100%', padding: '0.625rem 1rem 0.625rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem' }}
+              placeholder="Search enquiries by name, phone, id..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '0.625rem 1rem 0.625rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'var(--bg-surface)' }}
             />
+          </div>
+          <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+            Showing {filteredLeads.length} of {leads.length} enquiries
           </div>
         </div>
 
@@ -171,8 +348,8 @@ const EnquiriesList: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {leads.map((lead, index) => (
-                <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
+              {filteredLeads.map((lead, index) => (
+                <tr key={lead.id || index} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{lead.displayId}</td>
                   <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--primary-dark)', fontWeight: 500 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -200,9 +377,12 @@ const EnquiriesList: React.FC = () => {
                       backgroundColor: lead.status === 'New' ? '#fee2e2' : lead.status === 'Rejected' ? '#f3f4f6' : lead.status === 'Application Created' ? '#e0e7ff' : 'rgba(34, 160, 107, 0.1)', 
                       color: lead.status === 'New' ? 'var(--error-red)' : lead.status === 'Rejected' ? '#6b7280' : lead.status === 'Application Created' ? '#4f46e5' : 'var(--success-green)', 
                       fontSize: '0.75rem', 
-                      fontWeight: 600 
+                      fontWeight: 600,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
                     }}>
-                      {lead.status}
+                      {lead.status === 'Application Created' ? 'Moved to Application' : lead.status}
                     </span>
                     {lead.rejectionRemarks && (
                       <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--error-red)' }}>
@@ -212,43 +392,77 @@ const EnquiriesList: React.FC = () => {
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     {lead.status === 'New' && (
-                      <button 
-                        onClick={() => markAsContacted(lead.id)}
-                        style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                      >
-                        <CheckCircle size={14} /> Mark Contacted
-                      </button>
-                    )}
-                    {lead.status === 'Contacted' && (
-                      <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button 
+                          onClick={() => markAsContacted(lead.id)}
+                          style={{ padding: '0.45rem 0.85rem', borderRadius: '0.375rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                        >
+                          <CheckCircle size={14} /> Mark Contacted
+                        </button>
                         <button 
                           onClick={() => setViewingLead(lead)}
-                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                          style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                         >
-                          <FileText size={14} /> View Details
+                          <FileText size={14} /> Details
+                        </button>
+                      </div>
+                    )}
+                    {lead.status === 'Contacted' && (
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <button 
+                          onClick={() => setViewingLead(lead)}
+                          style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        >
+                          <FileText size={14} /> Details
                         </button>
                         <button 
                           onClick={() => handleCreateApplication(lead)}
-                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--success-green)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                          disabled={isCreatingId === lead.id}
+                          style={{ padding: '0.45rem 0.85rem', borderRadius: '0.375rem', backgroundColor: 'var(--success-green)', color: 'white', border: 'none', cursor: isCreatingId === lead.id ? 'not-allowed' : 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', opacity: isCreatingId === lead.id ? 0.7 : 1 }}
                         >
-                          <FilePlus size={14} /> Create App
+                          {isCreatingId === lead.id ? <Loader2 size={14} className="spin" /> : <FilePlus size={14} />} 
+                          {isCreatingId === lead.id ? 'Creating...' : 'Create App'}
                         </button>
                         <button 
                           onClick={() => setRejectingLeadId(lead.id)}
-                          style={{ padding: '0.4rem 0.75rem', borderRadius: '0.25rem', backgroundColor: 'var(--error-red)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                          style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'transparent', color: 'var(--error-red)', border: '1px solid var(--error-red)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                         >
                           <XCircle size={14} /> Reject
                         </button>
                       </div>
                     )}
+                    {lead.status === 'Application Created' && (
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <button 
+                          onClick={() => navigate('/admin/applications')}
+                          style={{ padding: '0.45rem 0.85rem', borderRadius: '0.375rem', backgroundColor: '#4f46e5', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                        >
+                          <ExternalLink size={14} /> View in Applications
+                        </button>
+                        <button 
+                          onClick={() => setViewingLead(lead)}
+                          style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        >
+                          <FileText size={14} /> Details
+                        </button>
+                      </div>
+                    )}
+                    {lead.status === 'Rejected' && (
+                      <button 
+                        onClick={() => setViewingLead(lead)}
+                        style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                      >
+                        <FileText size={14} /> View Details
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
-              {leads.length === 0 && (
+              {filteredLeads.length === 0 && (
                 <tr>
                   <td colSpan={7} style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     <FileText size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-                    <p>No enquiries found.</p>
+                    <p>No enquiries found for the selected criteria.</p>
                   </td>
                 </tr>
               )}
@@ -345,8 +559,32 @@ const EnquiriesList: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setViewingLead(null)} style={{ padding: '0.6rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--primary-dark)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Close</button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center' }}>
+              <button onClick={() => setViewingLead(null)} style={{ padding: '0.6rem 1.25rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', fontWeight: 600, cursor: 'pointer' }}>Close</button>
+              {viewingLead.status === 'Contacted' && (
+                <button 
+                  onClick={() => {
+                    const leadToCreate = viewingLead;
+                    setViewingLead(null);
+                    handleCreateApplication(leadToCreate);
+                  }}
+                  disabled={isCreatingId === viewingLead.id}
+                  style={{ padding: '0.6rem 1.25rem', borderRadius: '0.5rem', backgroundColor: 'var(--success-green)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <FilePlus size={16} /> Create Application
+                </button>
+              )}
+              {viewingLead.status === 'Application Created' && (
+                <button 
+                  onClick={() => {
+                    setViewingLead(null);
+                    navigate('/admin/applications');
+                  }}
+                  style={{ padding: '0.6rem 1.25rem', borderRadius: '0.5rem', backgroundColor: '#4f46e5', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <ExternalLink size={16} /> View in Applications
+                </button>
+              )}
             </div>
           </div>
         </div>

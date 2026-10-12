@@ -85,7 +85,7 @@ model Property {
   village       String
   taluk         String
   survey_number String
-  jurisdiction  Jurisdiction
+  jurisdiction  Jurisdiction?
   plot_area     String?
   built_up_area String?
   floors        String?
@@ -98,17 +98,17 @@ model Property {
 
 model Case {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-  property_id String @db.ObjectId
+  property_id String? @db.ObjectId
   parent_case_id String? @db.ObjectId
-  approval_type      ApprovalType
-  status             CaseStatus   @default(INTAKE)
+  approval_type      String?      @default("BUILDING_PLAN_APPROVAL")
+  status             String?      @default("INTAKE")
   application_number String?
   approval_number    String?
   assigned_staff_id String? @db.ObjectId
   created_at         DateTime     @default(now())
   updated_at         DateTime     @updatedAt
 
-  property           Property     @relation(fields: [property_id], references: [id])
+  property           Property?     @relation(fields: [property_id], references: [id])
   parent_case        Case?        @relation("ParentChildCase", fields: [parent_case_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   child_cases        Case[]       @relation("ParentChildCase")
   assigned_staff     User?        @relation("AssignedStaff", fields: [assigned_staff_id], references: [id])
@@ -116,19 +116,24 @@ model Case {
   status_history     StatusHistory[]
   documents          Document[]
   fees               Fee[]
+
+  fullData           Json?
+  uploadedFiles      Json?
+  linkTracking       Json?
+  reason             String?
 }
 
 model StatusHistory {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   case_id String @db.ObjectId
-  from_status CaseStatus
-  to_status   CaseStatus
-  changed_by String @db.ObjectId
+  from_status String
+  to_status   String
+  changed_by String? @db.ObjectId
   note       String?
   changed_at DateTime   @default(now())
 
   case       Case       @relation(fields: [case_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user       User       @relation("ChangedBy", fields: [changed_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       User?      @relation("ChangedBy", fields: [changed_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Document {

@@ -3,15 +3,19 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { getApplicationStatus } from '../../utils/statusHelper';
 
 const STATUS_COLORS: Record<string, string> = {
-  'New':                'var(--text-muted)',
-  'Documents Pending':  'var(--warning)',
-  'Action Required':    '#E07A5F',
+  'New':                '#0369a1',
+  'INTAKE':             '#0369a1',
+  'Documents Pending':  'var(--warning-gold)',
+  'DOCUMENT_COLLECTION': 'var(--warning-gold)',
+  'Action Required':    'var(--warning-gold)',
   'Verification':       'var(--primary-dark)',
   'Under Review':       'var(--primary)',
-  'Submitted':          'var(--text-secondary)',
+  'Submitted':          '#7e22ce',
+  'SUBMITTED':          '#7e22ce',
   'Gov Verification':   '#3D5A80',
   'Site Inspection':    'var(--accent)',
   'Approved':           'var(--success-green)',
+  'COMPLETED':          'var(--success-green)',
   'Rejected':           'var(--error-red)',
 };
 

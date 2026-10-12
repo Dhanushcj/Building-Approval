@@ -23,6 +23,40 @@ const ApplicationPDF: React.FC = () => {
           return;
         }
       }
+
+      const fetchFromApi = async () => {
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+          const res = await fetch(`${apiUrl}/cases/${id}`);
+          if (res.ok) {
+            const c = await res.json();
+            if (c.fullData) {
+              setAppData(c.fullData);
+              return;
+            }
+            if (c.property) {
+              setAppData({
+                customerName: c.property.owner_name,
+                serviceType: c.approval_type,
+                mobile: c.property.owner_phone,
+                email: c.property.owner_email || '',
+                propertyDetails: {
+                  surveyNo: c.property.survey_number || '',
+                  dno: c.property.address || '',
+                  village: c.property.village || '',
+                  taluk: c.property.taluk || '',
+                },
+                uploadedFiles: c.uploadedFiles || {}
+              });
+              return;
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+      fetchFromApi();
+
       const apiApp = recentApplications.find((a: any) => a.id === id);
       if (apiApp) {
         setAppData({

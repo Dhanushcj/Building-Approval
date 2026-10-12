@@ -19,7 +19,7 @@ const RecentApplicationsTable: React.FC = () => {
             mongoId: c.id,
             customer: c.property?.owner_name || 'Unknown',
             type: c.property?.building_type || 'Residential',
-            location: c.property?.jurisdiction || c.property?.village || '',
+            location: c.fullData?.propertyDetails?.city || c.property?.city || c.property?.jurisdiction || c.property?.village || '',
             status: getApplicationStatus(c.application_number || c.id, c.status),
             date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
           }));
@@ -37,20 +37,23 @@ const RecentApplicationsTable: React.FC = () => {
   }, []);
 
   const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'Gov Verification':
-      case 'Under Review':
-        return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(23, 37, 84, 0.05)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600 }}>Under Review</span>;
-      case 'Documents Pending':
-      case 'Action Required':
-        return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(214, 167, 86, 0.1)', color: 'var(--warning)', fontSize: '0.75rem', fontWeight: 600 }}>Awaiting Documents</span>;
-      case 'Site Inspection':
-        return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(201, 106, 74, 0.1)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 600 }}>Site Inspection</span>;
-      case 'Approved':
-        return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(47, 125, 90, 0.1)', color: 'var(--success-green)', fontSize: '0.75rem', fontWeight: 600 }}>Approved</span>;
-      default:
-        return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600 }}>{status}</span>;
+    const s = status ? status.toUpperCase() : '';
+    if (s === 'GOV VERIFICATION' || s === 'UNDER REVIEW') {
+      return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(23, 37, 84, 0.05)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600 }}>Under Review</span>;
+    } else if (s === 'DOCUMENTS PENDING' || s === 'ACTION REQUIRED' || s === 'ACTION_NEEDED' || s === 'DOCUMENT_COLLECTION') {
+      return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(214, 167, 86, 0.1)', color: 'var(--warning)', fontSize: '0.75rem', fontWeight: 600 }}>Awaiting Documents</span>;
+    } else if (s === 'SITE INSPECTION') {
+      return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(201, 106, 74, 0.1)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 600 }}>Site Inspection</span>;
+    } else if (s === 'APPROVED' || s === 'COMPLETED') {
+      return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'rgba(47, 125, 90, 0.1)', color: 'var(--success-green)', fontSize: '0.75rem', fontWeight: 600 }}>{status}</span>;
+    } else if (s === 'INTAKE' || s === 'NEW') {
+      return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: '#e0f2fe', color: '#0369a1', fontSize: '0.75rem', fontWeight: 600 }}>{status}</span>;
+    } else if (s === 'SUBMITTED') {
+      return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: '#f3e8ff', color: '#7e22ce', fontSize: '0.75rem', fontWeight: 600 }}>{status}</span>;
+    } else if (s === 'REJECTED') {
+      return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: '#fee2e2', color: '#b91c1c', fontSize: '0.75rem', fontWeight: 600 }}>{status}</span>;
     }
+    return <span style={{ padding: '0.35rem 0.85rem', borderRadius: '1rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600 }}>{status}</span>;
   };
 
 

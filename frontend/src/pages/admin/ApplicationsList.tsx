@@ -18,67 +18,44 @@ const ApplicationsList: React.FC = () => {
   const isMaintenanceRevert = location.pathname.includes('/maintenance/revert');
   const isMainList = !isMaintenanceLogs && !isMaintenanceView && !isMaintenanceRevert;
 
-  React.useEffect(() => {
-    const fetchCases = async () => {
-      try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
-        const res = await fetch(`${apiUrl}/cases`);
-        if (res.ok) {
-          const casesData = await res.json();
-          const localCasesStr = localStorage.getItem('mock_saved_cases');
-          const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
-          const allCases = [...localCases, ...casesData];
-          
-          let mappedApps = allCases.map((c: any) => ({
-            id: c.application_number || c.id,
-            mongoId: c.id,
-            customer: c.property?.owner_name || 'Unknown',
-            mobile: c.property?.owner_phone || '',
-            location: c.property?.jurisdiction || c.property?.village || '',
-            type: 'Building',
-            appType: c.approval_type,
-            status: c.status,
-            staff: c.assigned_staff?.name || 'Unassigned',
-            date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-            days: (() => {
-                 if (!c.created_at) return 0;
-                 const start = new Date(c.created_at).getTime();
-                 const isCompleted = ['Rejected', 'Approved'].includes(c.status);
-                 const end = isCompleted && c.updated_at ? new Date(c.updated_at).getTime() : new Date().getTime();
-                 return Math.ceil(Math.max(0, end - start) / (1000 * 60 * 60 * 24));
-            })()
-          }));
-          
-          // Remove duplicates based on ID (prefer local mock cases if they share an ID)
-          mappedApps = mappedApps.filter((app: any, index: number, self: any[]) => 
-            index === self.findIndex((a: any) => a.id === app.id)
-          );
-          
-          setApplications(mappedApps);
-        } else {
-          const localCasesStr = localStorage.getItem('mock_saved_cases');
-          const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
-          if (localCases.length > 0) {
-            const mappedApps = localCases.map((c: any) => ({
-              id: c.application_number || c.id,
-              mongoId: c.id,
-              customer: c.property?.owner_name || 'Unknown',
-              mobile: c.property?.owner_phone || '',
-              location: c.property?.jurisdiction || c.property?.village || '',
-              type: 'Building',
-              appType: c.approval_type,
-              status: c.status,
-              staff: c.assigned_staff?.name || 'Unassigned',
-              date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-              days: 0
-            }));
-            setApplications(mappedApps);
-          } else {
-            setApplications([]);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch cases:", err);
+  const fetchCases = React.useCallback(async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      const res = await fetch(`${apiUrl}/cases`);
+      if (res.ok) {
+        const casesData = await res.json();
+        const localCasesStr = localStorage.getItem('mock_saved_cases');
+        const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
+        // Prioritize database cases over local storage
+        const allCases = [...casesData, ...localCases];
+        
+        let mappedApps = allCases.map((c: any) => ({
+          id: c.application_number || c.id,
+          mongoId: c.id,
+          customer: c.property?.owner_name || 'Unknown',
+          mobile: c.property?.owner_phone || '',
+          location: c.fullData?.propertyDetails?.city || c.property?.city || c.property?.jurisdiction || c.property?.village || '',
+          type: 'Building',
+          appType: c.approval_type,
+          status: c.status,
+          staff: c.assigned_staff?.name || 'Unassigned',
+          date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          days: (() => {
+               if (!c.created_at) return 0;
+               const start = new Date(c.created_at).getTime();
+               const isCompleted = ['Rejected', 'Approved'].includes(c.status);
+               const end = isCompleted && c.updated_at ? new Date(c.updated_at).getTime() : new Date().getTime();
+               return Math.ceil(Math.max(0, end - start) / (1000 * 60 * 60 * 24));
+          })()
+        }));
+        
+        // Remove duplicates based on ID (prefer local mock cases if they share an ID)
+        mappedApps = mappedApps.filter((app: any, index: number, self: any[]) => 
+          index === self.findIndex((a: any) => a.id === app.id)
+        );
+        
+        setApplications(mappedApps);
+      } else {
         const localCasesStr = localStorage.getItem('mock_saved_cases');
         const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
         if (localCases.length > 0) {
@@ -87,7 +64,7 @@ const ApplicationsList: React.FC = () => {
             mongoId: c.id,
             customer: c.property?.owner_name || 'Unknown',
             mobile: c.property?.owner_phone || '',
-            location: c.property?.jurisdiction || c.property?.village || '',
+            location: c.fullData?.propertyDetails?.city || c.property?.city || c.property?.jurisdiction || c.property?.village || '',
             type: 'Building',
             appType: c.approval_type,
             status: c.status,
@@ -100,13 +77,37 @@ const ApplicationsList: React.FC = () => {
           setApplications([]);
         }
       }
-    };
-    
+    } catch (err) {
+      console.error("Failed to fetch cases:", err);
+      const localCasesStr = localStorage.getItem('mock_saved_cases');
+      const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
+      if (localCases.length > 0) {
+        const mappedApps = localCases.map((c: any) => ({
+          id: c.application_number || c.id,
+          mongoId: c.id,
+          customer: c.property?.owner_name || 'Unknown',
+          mobile: c.property?.owner_phone || '',
+          location: c.fullData?.propertyDetails?.city || c.property?.city || c.property?.jurisdiction || c.property?.village || '',
+          type: 'Building',
+          appType: c.approval_type,
+          status: c.status,
+          staff: c.assigned_staff?.name || 'Unassigned',
+          date: new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          days: 0
+        }));
+        setApplications(mappedApps);
+      } else {
+        setApplications([]);
+      }
+    }
+  }, []);
+
+  React.useEffect(() => {
     fetchCases();
     // Refresh periodically if desired or just once on mount
     const interval = setInterval(fetchCases, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchCases]);
 
   const filteredApplications = applications.filter(app => {
     const matchesSearch = searchTerm === '' || 
@@ -251,6 +252,12 @@ const ApplicationsList: React.FC = () => {
                           onClick={async () => {
                             if (window.confirm('Are you sure you want to revert this application to Documents Pending?')) {
                               try {
+                                const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+                                await fetch(`${apiUrl}/cases/${app.id}`, {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ status: 'Documents Pending' })
+                                });
                                 const localCasesStr = localStorage.getItem('mock_saved_cases');
                                 if (localCasesStr) {
                                   const localCases = JSON.parse(localCasesStr);
@@ -258,10 +265,11 @@ const ApplicationsList: React.FC = () => {
                                   if (cIndex !== -1) {
                                     localCases[cIndex].status = 'Documents Pending';
                                     localStorage.setItem('mock_saved_cases', JSON.stringify(localCases));
-                                    window.dispatchEvent(new Event('storage'));
-                                    alert('Application reverted to Documents Pending.');
                                   }
                                 }
+                                window.dispatchEvent(new Event('storage'));
+                                alert('Application reverted to Documents Pending.');
+                                fetchCases();
                               } catch(e) {}
                             }
                           }}

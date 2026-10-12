@@ -1,6 +1,5 @@
-import { CaseStatus } from '@prisma/client';
 import prisma from '../prisma';
-import { NotificationService } from './CaseStateService';
+import { CaseStatus, NotificationService } from './CaseStateService';
 
 function generateEmailTemplate({
   eyebrow,
@@ -175,7 +174,7 @@ export class BrevoNotificationService implements NotificationService {
       ],
       referenceCard: [
         { label: 'Application ID', value: caseId.substring(0,8) },
-        { label: 'Property Address', value: caseData.property.address },
+        { label: 'Property Address', value: caseData.property?.address || 'N/A' },
         { label: 'Previous Status', value: oldStatus.replace(/_/g, ' ') },
         { label: 'Current Status', value: newStatus.replace(/_/g, ' ') }
       ],
@@ -205,7 +204,7 @@ export class BrevoNotificationService implements NotificationService {
       ],
       referenceCard: [
         { label: 'Application ID', value: caseId.substring(0,8) },
-        { label: 'Property Address', value: caseData.property.address },
+        { label: 'Property Address', value: caseData.property?.address || 'N/A' },
         ...(date ? [{ label: 'Scheduled Date', value: date }] : [])
       ],
       cta: {
@@ -234,7 +233,7 @@ export class BrevoNotificationService implements NotificationService {
       ],
       referenceCard: [
         { label: 'Application ID', value: caseId.substring(0,8) },
-        { label: 'Property Address', value: caseData.property.address },
+        { label: 'Property Address', value: caseData.property?.address || 'N/A' },
         { label: 'Official Approval No.', value: approvalNumber }
       ],
       cta: {

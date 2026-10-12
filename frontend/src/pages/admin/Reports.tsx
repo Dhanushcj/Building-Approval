@@ -45,7 +45,8 @@ const Reports: React.FC = () => {
         const localCasesStr = localStorage.getItem('mock_saved_cases');
         const localCases = localCasesStr ? JSON.parse(localCasesStr).filter((c: any) => c.type !== 'Lead') : [];
 
-        const allCases = [...localCases, ...apiCases];
+        // Prioritize API cases from MongoDB
+        const allCases = [...apiCases, ...localCases];
 
         // Remove duplicates based on ID
         const uniqueCases = allCases.filter((app: any, index: number, self: any[]) =>
@@ -75,7 +76,7 @@ const Reports: React.FC = () => {
             name: c.property?.owner_name || fullData.customerName || '-',
             mobile: c.property?.owner_phone || fullData.mobile || '-',
             village: c.property?.village || propDetails.village || '-',
-            panchayat: c.property?.jurisdiction || propDetails.panchayat || '-',
+            panchayat: c.fullData?.propertyDetails?.city || c.property?.city || c.property?.jurisdiction || propDetails.panchayat || '-',
             reference: reference || '-',
             fileType: c.approval_type || fullData.serviceType || '-',
             fileStatus: c.status || '-',

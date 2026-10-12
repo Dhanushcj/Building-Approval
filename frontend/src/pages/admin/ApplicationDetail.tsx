@@ -120,7 +120,44 @@ const ApplicationDetail: React.FC = () => {
         }
       };
       
+      const loadCaseFromApi = async () => {
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+          const res = await fetch(`${apiUrl}/cases/${id}`);
+          if (res.ok) {
+            const c = await res.json();
+            if (c.status) {
+              setApplicationStatus(c.status === 'Submitted' ? 'PENDING_DOCUMENTS' : c.status);
+            }
+            if (c.uploadedFiles) {
+              setUploadedFiles(prev => ({ ...prev, ...c.uploadedFiles }));
+            }
+            if (c.fullData) {
+              setFormData((prev: any) => ({ ...prev, ...c.fullData }));
+            } else if (c.property) {
+              setFormData((prev: any) => ({
+                ...prev,
+                customerName: c.property.owner_name || prev.customerName,
+                mobile: c.property.owner_phone || prev.mobile,
+                email: c.property.owner_email || prev.email,
+                staff: c.assigned_staff?.name || prev.staff,
+                propertyDetails: {
+                  ...prev.propertyDetails,
+                  dno: c.property.address || '',
+                  village: c.property.village || '',
+                  taluk: c.property.taluk || '',
+                  surveyNo: c.property.survey_number || ''
+                }
+              }));
+            }
+          }
+        } catch (e) {
+          console.error('Error fetching case from MongoDB API:', e);
+        }
+      };
+
       loadCustomerDocs();
+      loadCaseFromApi();
       window.addEventListener('storage', loadCustomerDocs);
       return () => window.removeEventListener('storage', loadCustomerDocs);
     }
@@ -152,6 +189,17 @@ const ApplicationDetail: React.FC = () => {
           setUploadedFiles(newUploadedFiles);
           
           if (id) {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+            try {
+              fetch(`${apiUrl}/cases/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uploadedFiles: newUploadedFiles })
+              }).catch(err => console.error("Failed to sync uploaded file to MongoDB:", err));
+            } catch (err) {
+              console.error(err);
+            }
+
             const existingStr = localStorage.getItem('mock_saved_cases');
             if (existingStr) {
               const existing = JSON.parse(existingStr);
@@ -404,22 +452,29 @@ const ApplicationDetail: React.FC = () => {
       const payload = {
         application_number: finalAppNumber,
         property: {
-          create: {
+          [id ? 'update' : 'create']: {
             owner_name: formData.customerName || 'Draft Owner',
             owner_phone: formData.mobile || '0000000000',
-            address: `${formData.propertyDetails?.dno || ''} ${formData.propertyDetails?.streetName || ''}`,
-            village: formData.propertyDetails?.village || formData.residentialAddress.area || 'Unknown',
-            taluk: formData.propertyDetails?.taluk || formData.residentialAddress.taluk || 'Unknown',
+            owner_email: formData.email || '',
+            address: `${formData.propertyDetails?.dno || ''} ${formData.propertyDetails?.streetName || ''}`.trim() || formData.residentialAddress?.area || '',
+            village: formData.propertyDetails?.village || formData.residentialAddress?.area || 'Unknown',
+            taluk: formData.propertyDetails?.taluk || formData.residentialAddress?.taluk || 'Unknown',
             survey_number: formData.propertyDetails?.surveyNo || 'TBD',
             jurisdiction: formData.propertyDetails?.panchayat || 'DTCP'
           }
         },
         approval_type: typeMap[formData.serviceType] || 'BUILDING_PLAN_APPROVAL',
-        status: isPartial ? 'INTAKE' : 'SUBMITTED',
+        status: isPartial ? 'Draft' : newStatus,
+        assigned_staff: formData.staff ? { name: formData.staff.split(' — ')[0] } : undefined,
+        fullData: formData,
+        uploadedFiles: uploadedFiles,
+        reason: reason || ''
       };
       
-      await fetch(`${apiUrl}/cases`, {
-        method: 'POST',
+      const endpoint = id ? `${apiUrl}/cases/${id}` : `${apiUrl}/cases`;
+      const method = id ? 'PUT' : 'POST';
+      await fetch(endpoint, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -1025,6 +1080,16 @@ const ApplicationDetail: React.FC = () => {
       <button 
         onClick={async () => {
            setApplicationStatus('DOCUMENTS_VERIFIED');
+           const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+           if (id) {
+             try {
+               await fetch(`${apiUrl}/cases/${id}`, {
+                 method: 'PUT',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ status: 'DOCUMENTS_VERIFIED' })
+               });
+             } catch (e) { console.error(e); }
+           }
            const existingStr = localStorage.getItem('mock_saved_cases');
            if (existingStr && id) {
              let existing = JSON.parse(existingStr);
@@ -1083,6 +1148,16 @@ const ApplicationDetail: React.FC = () => {
              }
              
              setApplicationStatus('SUBMITTED_FOR_APPROVAL');
+             const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+             if (id) {
+               try {
+                 await fetch(`${apiUrl}/cases/${id}`, {
+                   method: 'PUT',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify({ status: 'SUBMITTED_FOR_APPROVAL', uploadedFiles })
+                 });
+               } catch (e) { console.error(e); }
+             }
              const existingStr = localStorage.getItem('mock_saved_cases');
              if (existingStr && id) {
                let existing = JSON.parse(existingStr);
@@ -1124,6 +1199,16 @@ const ApplicationDetail: React.FC = () => {
           onClick={async () => {
              if (!uploadedFiles['FINAL_APPROVAL']) { toast.error("Please upload the final approval file"); return; }
              setApplicationStatus('COMPLETED');
+             const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+             if (id) {
+               try {
+                 await fetch(`${apiUrl}/cases/${id}`, {
+                   method: 'PUT',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify({ status: 'COMPLETED', uploadedFiles })
+                 });
+               } catch (e) { console.error(e); }
+             }
              const existingStr = localStorage.getItem('mock_saved_cases');
              if (existingStr && id) {
                let existing = JSON.parse(existingStr);

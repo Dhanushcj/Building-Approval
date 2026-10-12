@@ -255,21 +255,24 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
           create: {
             owner_name: formData.customerName || 'Draft Owner',
             owner_phone: formData.mobile || '0000000000',
-            address: `${formData.propertyDetails?.dno || ''} ${formData.propertyDetails?.streetName || ''}`,
-            village: formData.propertyDetails?.village || formData.residentialAddress.area || 'Unknown',
-            taluk: formData.propertyDetails?.taluk || formData.residentialAddress.taluk || 'Unknown',
+            owner_email: formData.email || '',
+            address: `${formData.propertyDetails?.dno || ''} ${formData.propertyDetails?.streetName || ''}`.trim() || formData.residentialAddress?.area || '',
+            village: formData.propertyDetails?.village || formData.residentialAddress?.area || 'Unknown',
+            taluk: formData.propertyDetails?.taluk || formData.residentialAddress?.taluk || 'Unknown',
             survey_number: formData.propertyDetails?.surveyNo || 'TBD',
             jurisdiction: formData.propertyDetails?.panchayat || 'DTCP'
           }
         },
         approval_type: typeMap[formData.serviceType] || 'BUILDING_PLAN_APPROVAL',
-        status: isPartial ? 'INTAKE' : 'SUBMITTED',
-        assigned_staff: formData.staff ? { name: formData.staff.split(' — ')[0] } : undefined
+        status: isPartial ? 'Draft' : 'Submitted',
+        assigned_staff: formData.staff ? { name: formData.staff.split(' — ')[0] } : undefined,
+        fullData: formData,
+        uploadedFiles: uploadedFiles,
+        reason: reason || ''
       };
       
       // If converting a lead, also delete the lead or update its status
       if (formData.leadId) {
-        // Find lead in mock_saved_cases and remove or update it
         const savedLeadsStr = localStorage.getItem('mock_saved_cases');
         if (savedLeadsStr) {
           let savedCases = JSON.parse(savedLeadsStr);
@@ -288,11 +291,18 @@ const NewApplication: React.FC<NewApplicationProps> = ({ isCustomer = false }) =
         }
       }
       
-      await fetch(`${apiUrl}/cases`, {
+      const res = await fetch(`${apiUrl}/cases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
+      if (res.ok) {
+        const createdMongoCase = await res.json();
+        // Also keep local storage in sync with actual MongoDB id
+        const updatedLocalCases = [createdMongoCase, ...existing.filter((e: any) => e.id !== finalAppNumber && e.application_number !== finalAppNumber)];
+        localStorage.setItem('mock_saved_cases', JSON.stringify(updatedLocalCases));
+      }
       
       return true;
     } catch (e) {

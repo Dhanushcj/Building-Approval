@@ -12,25 +12,30 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ type, value }) => {
   let color = '#64748b';
 
   if (type === 'status') {
-    switch (value) {
-      case 'New':
-        bgColor = '#f1f5f9'; color = '#64748b'; break;
-      case 'Documents Pending':
-      case 'Action Required':
+    const s = value ? value.toUpperCase() : '';
+    switch (s) {
+      case 'NEW':
+      case 'INTAKE':
+        bgColor = '#e0f2fe'; color = '#0369a1'; break;
+      case 'DOCUMENTS PENDING':
+      case 'ACTION REQUIRED':
+      case 'DOCUMENT_COLLECTION':
+      case 'ACTION_NEEDED':
         bgColor = '#fef3c7'; color = 'var(--warning-gold)'; break;
-      case 'Verification':
-      case 'Gov Verification':
-      case 'Under Review':
+      case 'VERIFICATION':
+      case 'GOV VERIFICATION':
+      case 'UNDER REVIEW':
         bgColor = '#eff6ff'; color = 'var(--primary)'; break;
-      case 'Site Inspection':
-      case 'Submitted':
-        bgColor = '#e0f2fe'; color = 'var(--info-green)'; break;
-      case 'Approval Pending':
+      case 'SITE INSPECTION':
+        bgColor = '#ffedd5'; color = 'var(--accent)'; break;
+      case 'SUBMITTED':
+        bgColor = '#f3e8ff'; color = '#7e22ce'; break;
+      case 'APPROVAL PENDING':
         bgColor = '#fef08a'; color = 'var(--warning-gold)'; break;
-      case 'Approved':
-      case 'Completed':
+      case 'APPROVED':
+      case 'COMPLETED':
         bgColor = 'rgba(34, 160, 107, 0.1)'; color = 'var(--success-green)'; break;
-      case 'Rejected':
+      case 'REJECTED':
         bgColor = '#fee2e2'; color = 'var(--error-red)'; break;
       default:
         break;
