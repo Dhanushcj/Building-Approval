@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Search, Phone, Mail, FileText, CheckCircle, FilePlus, XCircle, X, ExternalLink, Loader2 } from 'lucide-react';
+import { Users, Search, Phone, Mail, FileText, CheckCircle, FilePlus, XCircle, X, ExternalLink, Loader2, UserPlus, UserCheck, Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const EnquiriesList: React.FC = () => {
@@ -12,6 +12,12 @@ const EnquiriesList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'APPLICATION_CREATED' | 'REJECTED'>('ALL');
   const [isCreatingId, setIsCreatingId] = useState<string | null>(null);
+
+  // Assignment states
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [assigningLead, setAssigningLead] = useState<any | null>(null);
+  const [selectedStaff, setSelectedStaff] = useState('');
+  const [isAssigning, setIsAssigning] = useState(false);
 
   useEffect(() => {
     const loadLeads = async () => {
@@ -55,6 +61,88 @@ const EnquiriesList: React.FC = () => {
     const interval = setInterval(loadLeads, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch available staff members
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+        const res = await fetch(`${apiUrl}/users`);
+        if (res.ok) {
+          const data = await res.json();
+          const activeStaff = data.filter((u: any) => u.status === 'Active' && (u.role === 'STAFF' || !u.role));
+          if (activeStaff.length > 0) {
+            setStaffList(activeStaff);
+            return;
+          }
+          if (data.length > 0) {
+            setStaffList(data);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch staff list:', err);
+      }
+      
+      const stored = localStorage.getItem('staffMembers');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed.length > 0) {
+            setStaffList(parsed);
+            return;
+          }
+        } catch (_) {}
+      }
+      
+      setStaffList([
+        { id: '1', name: 'Naveen Kumar' },
+        { id: '2', name: 'Suresh Raina' },
+        { id: '3', name: 'Priya Sharma' },
+        { id: '4', name: 'Dhanush' }
+      ]);
+    };
+
+    fetchStaff();
+  }, []);
+
+  const openAssignModal = (lead: any) => {
+    setAssigningLead(lead);
+    setSelectedStaff(lead.assignedTo || (staffList[0]?.name || ''));
+  };
+
+  const handleAssignSubmit = async () => {
+    if (!assigningLead) return;
+    setIsAssigning(true);
+    const leadId = assigningLead.id;
+    const staffName = selectedStaff;
+
+    // Optimistic update
+    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, assignedTo: staffName } : l));
+    if (viewingLead && viewingLead.id === leadId) {
+      setViewingLead((prev: any) => ({ ...prev, assignedTo: staffName }));
+    }
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      const currentLead = leads.find(l => l.id === leadId);
+      await fetch(`${apiUrl}/leads/${leadId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status: currentLead?.status || 'New',
+          assignedTo: staffName 
+        })
+      });
+      toast.success(staffName ? `Assigned to ${staffName}` : 'Assignment removed');
+      setAssigningLead(null);
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to update assignment');
+    } finally {
+      setIsAssigning(false);
+    }
+  };
 
   const markAsContacted = async (id: string) => {
     const updatedLeads = leads.map(lead => lead.id === id ? { ...lead, status: 'Contacted' } : lead);
@@ -249,7 +337,8 @@ const EnquiriesList: React.FC = () => {
       (lead.displayId || '').toLowerCase().includes(term) ||
       (lead.name || '').toLowerCase().includes(term) ||
       (lead.phone || '').toLowerCase().includes(term) ||
-      (lead.location || '').toLowerCase().includes(term);
+      (lead.location || '').toLowerCase().includes(term) ||
+      (lead.assignedTo || '').toLowerCase().includes(term);
 
     if (!matchesSearch) return false;
 
@@ -357,7 +446,7 @@ const EnquiriesList: React.FC = () => {
             <Search size={18} color="#94a3b8" style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)' }} />
             <input 
               type="text" 
-              placeholder="Search enquiries by name, phone, id..." 
+              placeholder="Search enquiries by name, phone, id, staff..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ width: '100%', padding: '0.625rem 1rem 0.625rem 2.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'var(--bg-surface)' }}
@@ -378,6 +467,7 @@ const EnquiriesList: React.FC = () => {
                 <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Project Details</th>
                 <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Date</th>
                 <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Status</th>
+                <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Assigned Staff</th>
                 <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Action</th>
               </tr>
             </thead>
@@ -424,14 +514,71 @@ const EnquiriesList: React.FC = () => {
                       </div>
                     )}
                   </td>
+                  
+                  {/* Assigned Staff Column */}
+                  <td style={{ padding: '1rem 1.5rem' }}>
+                    {lead.assignedTo ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span style={{ 
+                          padding: '0.25rem 0.65rem', 
+                          borderRadius: '1rem', 
+                          backgroundColor: 'rgba(30, 58, 138, 0.08)', 
+                          color: 'var(--primary)', 
+                          fontSize: '0.75rem', 
+                          fontWeight: 600,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem'
+                        }}>
+                          <UserCheck size={13} /> {lead.assignedTo}
+                        </span>
+                        <button
+                          onClick={() => openAssignModal(lead)}
+                          title="Reassign staff"
+                          style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+                        >
+                          <Edit size={13} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => openAssignModal(lead)}
+                        style={{
+                          padding: '0.3rem 0.65rem',
+                          borderRadius: '0.375rem',
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px dashed var(--border-color)',
+                          color: 'var(--text-secondary)',
+                          cursor: 'pointer',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                      >
+                        <UserPlus size={13} /> Assign
+                      </button>
+                    )}
+                  </td>
+
                   <td style={{ padding: '1rem 1.5rem' }}>
                     {lead.status === 'New' && (
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <button 
                           onClick={() => markAsContacted(lead.id)}
                           style={{ padding: '0.45rem 0.85rem', borderRadius: '0.375rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                         >
                           <CheckCircle size={14} /> Mark Contacted
+                        </button>
+                        <button 
+                          onClick={() => openAssignModal(lead)}
+                          style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                          title={lead.assignedTo ? `Reassign (Current: ${lead.assignedTo})` : 'Assign staff'}
+                        >
+                          <UserPlus size={14} /> {lead.assignedTo ? 'Reassign' : 'Assign'}
                         </button>
                         <button 
                           onClick={() => setViewingLead(lead)}
@@ -443,6 +590,13 @@ const EnquiriesList: React.FC = () => {
                     )}
                     {lead.status === 'Contacted' && (
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <button 
+                          onClick={() => openAssignModal(lead)}
+                          style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                          title={lead.assignedTo ? `Reassign (Current: ${lead.assignedTo})` : 'Assign staff'}
+                        >
+                          <UserPlus size={14} /> {lead.assignedTo ? 'Reassign' : 'Assign'}
+                        </button>
                         <button 
                           onClick={() => setViewingLead(lead)}
                           style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
@@ -466,12 +620,18 @@ const EnquiriesList: React.FC = () => {
                       </div>
                     )}
                     {lead.status === 'Application Created' && (
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         <button 
                           onClick={() => navigate('/admin/applications')}
                           style={{ padding: '0.45rem 0.85rem', borderRadius: '0.375rem', backgroundColor: '#4f46e5', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                         >
                           <ExternalLink size={14} /> View in Applications
+                        </button>
+                        <button 
+                          onClick={() => openAssignModal(lead)}
+                          style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        >
+                          <UserPlus size={14} /> {lead.assignedTo ? 'Reassign' : 'Assign'}
                         </button>
                         <button 
                           onClick={() => setViewingLead(lead)}
@@ -482,19 +642,27 @@ const EnquiriesList: React.FC = () => {
                       </div>
                     )}
                     {lead.status === 'Rejected' && (
-                      <button 
-                        onClick={() => setViewingLead(lead)}
-                        style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                      >
-                        <FileText size={14} /> View Details
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <button 
+                          onClick={() => openAssignModal(lead)}
+                          style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        >
+                          <UserPlus size={14} /> Assign
+                        </button>
+                        <button 
+                          onClick={() => setViewingLead(lead)}
+                          style={{ padding: '0.45rem 0.75rem', borderRadius: '0.375rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        >
+                          <FileText size={14} /> View Details
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
               ))}
               {filteredLeads.length === 0 && (
                 <tr>
-                  <td colSpan={7} style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <td colSpan={8} style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     <FileText size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
                     <p>No enquiries found for the selected criteria.</p>
                   </td>
@@ -538,6 +706,82 @@ const EnquiriesList: React.FC = () => {
         </div>
       )}
 
+      {/* Assign Staff Modal */}
+      {assigningLead && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '420px', padding: '1.75rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', position: 'relative' }}>
+            <button onClick={() => setAssigningLead(null)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+              <X size={20} />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(30, 58, 138, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                <UserPlus size={20} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', margin: 0 }}>Assign Enquiry</h3>
+                <p style={{ margin: '0.15rem 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  {assigningLead.displayId} • {assigningLead.name}
+                </p>
+              </div>
+            </div>
+            
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>
+                Select Staff Member *
+              </label>
+              <select
+                value={selectedStaff}
+                onChange={(e) => setSelectedStaff(e.target.value)}
+                style={{ width: '100%', padding: '0.625rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.875rem', backgroundColor: 'var(--bg-surface)', outline: 'none', color: 'var(--text-primary)' }}
+              >
+                <option value="">-- Choose a staff member --</option>
+                {staffList.map((staff) => (
+                  <option key={staff.id || staff.name} value={staff.name}>
+                    {staff.name} {staff.mobile ? `(${staff.mobile})` : ''}
+                  </option>
+                ))}
+              </select>
+              {assigningLead.assignedTo && (
+                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  Currently assigned to: <strong style={{ color: 'var(--primary-dark)' }}>{assigningLead.assignedTo}</strong>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button 
+                onClick={() => setAssigningLead(null)} 
+                style={{ padding: '0.6rem 1rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--primary-dark)', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleAssignSubmit}
+                disabled={!selectedStaff || isAssigning}
+                style={{ 
+                  padding: '0.6rem 1.25rem', 
+                  borderRadius: '0.5rem', 
+                  backgroundColor: 'var(--primary)', 
+                  color: 'white', 
+                  border: 'none', 
+                  fontWeight: 600, 
+                  cursor: (!selectedStaff || isAssigning) ? 'not-allowed' : 'pointer', 
+                  fontSize: '0.875rem',
+                  opacity: (!selectedStaff || isAssigning) ? 0.7 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                {isAssigning && <Loader2 size={14} className="spin" />}
+                {isAssigning ? 'Assigning...' : 'Confirm Assignment'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Viewing Details Modal */}
       {viewingLead && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
           <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '0.75rem', width: '100%', maxWidth: '600px', padding: '1.5rem', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
@@ -562,6 +806,24 @@ const EnquiriesList: React.FC = () => {
               <div>
                 <strong style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Location</strong>
                 <div style={{ fontSize: '0.875rem', fontWeight: 500 }}>{viewingLead.location}</div>
+              </div>
+              <div>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Status</strong>
+                <div style={{ fontSize: '0.875rem', fontWeight: 500 }}>{viewingLead.status}</div>
+              </div>
+              <div>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Assigned Staff</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 600, color: viewingLead.assignedTo ? 'var(--primary)' : 'var(--text-secondary)' }}>
+                    {viewingLead.assignedTo || 'Unassigned'}
+                  </span>
+                  <button
+                    onClick={() => openAssignModal(viewingLead)}
+                    style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                  >
+                    <UserPlus size={12} /> {viewingLead.assignedTo ? 'Change' : 'Assign'}
+                  </button>
+                </div>
               </div>
               <div style={{ gridColumn: 'span 2' }}>
                 <strong style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Property Details</strong>
@@ -593,7 +855,13 @@ const EnquiriesList: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button 
+                onClick={() => openAssignModal(viewingLead)}
+                style={{ padding: '0.6rem 1.25rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <UserPlus size={16} /> {viewingLead.assignedTo ? 'Change Assignee' : 'Assign Staff'}
+              </button>
               <button onClick={() => setViewingLead(null)} style={{ padding: '0.6rem 1.25rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-dark)', border: '1px solid var(--border-color)', fontWeight: 600, cursor: 'pointer' }}>Close</button>
               {viewingLead.status === 'Contacted' && (
                 <button 

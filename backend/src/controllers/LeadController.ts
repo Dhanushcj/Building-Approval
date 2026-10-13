@@ -68,9 +68,13 @@ export const updateLeadStatus = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const { status, assignedTo } = req.body;
     
+    const updateData: any = {};
+    if (status !== undefined) updateData.status = status;
+    if (assignedTo !== undefined) updateData.assignedTo = assignedTo;
+
     const lead = await prisma.lead.update({
       where: { id },
-      data: { status, assignedTo }
+      data: updateData
     });
     
     res.status(200).json(lead);
