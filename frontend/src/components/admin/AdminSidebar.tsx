@@ -1,9 +1,10 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FileText,
   CreditCard, PhoneCall, BarChart3,
-  UserCog, Settings, LogOut, CheckSquare, Users, Receipt, ClipboardList
+  UserCog, Settings, LogOut, CheckSquare, Users, Receipt, ClipboardList,
+  X
 } from 'lucide-react';
 
 
@@ -56,8 +57,6 @@ const menuGroups = [
   }
 ];
 
-import { useLocation } from 'react-router-dom';
-
 interface AdminSidebarProps {
   isOpen?: boolean;
   setIsOpen?: (open: boolean) => void;
@@ -75,7 +74,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
   return (
     <aside className={`admin-sidebar sidebar-container ${isOpen ? 'sidebar-open' : ''}`} style={{ backgroundColor: 'var(--sidebar-bg)' }}>
       {/* Logo Area */}
-      <div style={{ padding: '2rem 15px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
+      <div style={{ padding: '1.25rem 15px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ backgroundColor: '#fff', borderRadius: '4px', padding: '2px', display: 'flex' }}>
             <img src="/assets/logo.jpeg" alt="C.B. Building Approvals Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
@@ -86,6 +85,29 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
             </div>
           </div>
         </div>
+        {setIsOpen && (
+          <button
+            className="mobile-close-btn"
+            onClick={() => setIsOpen(false)}
+            aria-label="Close navigation menu"
+            title="Close menu"
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: 'none',
+              borderRadius: '6px',
+              color: 'var(--bg-surface)',
+              cursor: 'pointer',
+              padding: '6px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'}
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       {/* Menu */}

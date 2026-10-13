@@ -15,11 +15,18 @@ const AdminLayout: React.FC = () => {
     <div className="layout-wrapper" style={{ display: 'flex', minHeight: '100vh' }}>
       <AdminSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <div className="layout-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <AdminTopbar />
+        <AdminTopbar toggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
         <main className="main-content-padding" style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile Backdrop Overlay */}
+      <div 
+        className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`} 
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
+      />
     </div>
   );
 };

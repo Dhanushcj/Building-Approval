@@ -29,26 +29,28 @@ const EmployeeTopbar: React.FC<EmployeeTopbarProps> = ({ toggleSidebar }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         {toggleSidebar && (
           <button 
-            className="show-mobile"
-            style={{ display: 'none', background: 'none', border: 'none', color: 'var(--text-primary)', padding: '0.25rem', cursor: 'pointer' }} 
+            className="mobile-menu-btn"
+            style={{ background: 'none', border: 'none', color: 'var(--text-primary)', padding: '0.4rem', cursor: 'pointer', borderRadius: '6px' }} 
             onClick={toggleSidebar}
+            aria-label="Toggle navigation menu"
+            title="Open menu"
           >
-            <Menu size={24} />
+            <Menu size={22} />
           </button>
         )}
-      <div>
-        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.1rem' }}>{currentPage}</h1>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-          Workspace / {currentPage}
+        <div>
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.1rem' }}>{currentPage}</h1>
+          <div className="hidden-mobile-xs" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            Workspace / {currentPage}
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Right side: Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+      <div className="topbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
         
         {/* Search */}
-        <div className="hidden-mobile" style={{ position: 'relative', width: '300px' }}>
+        <div className="hidden-mobile" style={{ position: 'relative', width: '250px' }}>
           <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
             <Search size={16} />
           </div>
@@ -91,13 +93,13 @@ const EmployeeTopbar: React.FC<EmployeeTopbarProps> = ({ toggleSidebar }) => {
         </div>
 
         {/* Profile Dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingLeft: '1rem', borderLeft: '1px solid var(--border-color)', cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingLeft: '0.75rem', borderLeft: '1px solid var(--border-color)', cursor: 'pointer' }}>
           <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, color: 'white', fontSize: '0.875rem' }}>
             {getInitials(employeeName)}
           </div>
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--primary-dark)' }}>{employeeName}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Staff Member</div>
+            <div className="hidden-mobile-xs" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Staff Member</div>
           </div>
           <ChevronDown size={16} color="var(--text-secondary)" />
         </div>

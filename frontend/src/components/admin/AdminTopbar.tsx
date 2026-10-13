@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Bell, ChevronDown, Home, ClipboardList, CheckCircle } from 'lucide-react';
+import { Search, Bell, ChevronDown, Home, ClipboardList, CheckCircle, Menu } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 interface Notification {
@@ -10,7 +10,11 @@ interface Notification {
   read: boolean;
 }
 
-const AdminTopbar: React.FC = () => {
+interface AdminTopbarProps {
+  toggleSidebar?: () => void;
+}
+
+const AdminTopbar: React.FC<AdminTopbarProps> = ({ toggleSidebar }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -57,24 +61,47 @@ const AdminTopbar: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      {/* Second row: Tools (Grid Menu, Search, Profile) */}
+      {/* Header Bar */}
       <header className="topbar-container" style={{ 
         backgroundColor: '#fff', 
         borderBottom: '1px solid var(--border-color)', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        padding: '0 1.5rem', 
         height: '48px',
         position: 'relative',
         zIndex: 100
       }}>
         
-        {/* Left side empty for spacing or future use */}
-        <div></div>
+        {/* Left side: Hamburger button for mobile */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {toggleSidebar && (
+            <button 
+              className="mobile-menu-btn"
+              onClick={toggleSidebar}
+              aria-label="Toggle navigation menu"
+              title="Open menu"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-primary)',
+                padding: '0.4rem',
+                cursor: 'pointer',
+                borderRadius: '6px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              <Menu size={22} />
+            </button>
+          )}
+        </div>
 
         {/* Right side: Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <div className="topbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           {/* Search */}
           <div className="hidden-mobile" style={{ position: 'relative', width: '250px' }}>
             <div style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
@@ -94,7 +121,7 @@ const AdminTopbar: React.FC = () => {
           </div>
 
           {/* Quick Actions & Notifications */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', color: 'var(--text-secondary)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)' }}>
             <NavLink to="/admin" style={({isActive}) => ({ color: isActive ? 'var(--primary)' : 'inherit', display: 'flex', alignItems: 'center' })} title="Home">
               <Home size={18} strokeWidth={1.5} />
             </NavLink>
@@ -151,13 +178,13 @@ const AdminTopbar: React.FC = () => {
           </div>
 
           {/* Profile */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', paddingLeft: '1rem', borderLeft: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', paddingLeft: '0.75rem', borderLeft: '1px solid var(--border-color)' }}>
             <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-heading)' }}>
               AD
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', lineHeight: 1 }}>Admin User</div>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Administrator</div>
+              <div className="hidden-mobile-xs" style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Administrator</div>
             </div>
             <ChevronDown size={14} color="var(--text-secondary)" />
           </div>

@@ -3,7 +3,8 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, 
   PhoneCall, 
-  User, LogOut, Building, CalendarClock
+  User, LogOut, Building, CalendarClock,
+  X
 } from 'lucide-react';
 
 const menuItems = [
@@ -34,14 +35,37 @@ const EmployeeSidebar: React.FC<EmployeeSidebarProps> = ({ isOpen, setIsOpen }) 
   return (
     <aside className={`employee-sidebar sidebar-container ${isOpen ? 'sidebar-open' : ''}`}>
       {/* Logo Area */}
-      <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
+      <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Building color="var(--primary)" size={28} />
-          <div>
+          <div className="sidebar-logo-text">
             <div style={{ fontWeight: 700, fontSize: '1.125rem', letterSpacing: '0.05em' }}>BUILD APPROVAL ERP</div>
             <div style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase' }}>Employee Portal</div>
           </div>
         </div>
+        {setIsOpen && (
+          <button
+            className="mobile-close-btn"
+            onClick={() => setIsOpen(false)}
+            aria-label="Close navigation menu"
+            title="Close menu"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: 'none',
+              borderRadius: '6px',
+              color: 'var(--bg-surface)',
+              cursor: 'pointer',
+              padding: '6px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'}
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       {/* Menu */}
@@ -69,10 +93,10 @@ const EmployeeSidebar: React.FC<EmployeeSidebarProps> = ({ isOpen, setIsOpen }) 
               >
                 {({ isActive }) => (
                   <>
-                    <span style={{ color: isActive ? 'var(--primary)' : '#94a3b8' }}>
+                    <span style={{ color: isActive ? 'var(--primary)' : '#94a3b8', minWidth: '24px', display: 'flex', justifyContent: 'center' }}>
                       {item.icon}
                     </span>
-                    {item.title}
+                    <span className="sidebar-text">{item.title}</span>
                   </>
                 )}
               </NavLink>
@@ -86,7 +110,7 @@ const EmployeeSidebar: React.FC<EmployeeSidebarProps> = ({ isOpen, setIsOpen }) 
         <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
           {getInitials(employeeName)}
         </div>
-        <div style={{ flex: 1 }}>
+        <div className="sidebar-profile-info" style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{employeeName}</div>
           <div style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--success-green)' }}></div>

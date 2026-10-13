@@ -376,19 +376,49 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
   margin-bottom: 1.5rem;
 }
 
+/* Mobile Toggle and Close Buttons (hidden on desktop) */
+.mobile-menu-btn,
+.mobile-close-btn {
+  display: none;
+}
+
 /* Mobile Overrides */
 @media (max-width: 1024px) {
   .layout-content {
-    margin-left: 0;
+    margin-left: 0 !important;
   }
   
   .sidebar-container {
     transform: translateX(-100%);
+    width: 280px;
+    max-width: 85vw;
+    z-index: 1050;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .sidebar-container.sidebar-open {
     transform: translateX(0);
-    box-shadow: var(--shadow-lg);
+    width: 280px;
+    max-width: 85vw;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .sidebar-container.sidebar-open .sidebar-text,
+  .sidebar-container.sidebar-open .sidebar-logo-text,
+  .sidebar-container.sidebar-open .sidebar-profile-info {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .sidebar-container.sidebar-open .sidebar-main-menu-text {
+    opacity: 1 !important;
+    visibility: visible !important;
+    height: auto !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .sidebar-container.sidebar-open .sidebar-group {
+    margin-bottom: 1.5rem !important;
   }
   
   /* Sidebar Overlay Backdrop */
@@ -398,17 +428,23 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(23, 37, 84, 0.5);
-    z-index: 999;
+    background-color: rgba(15, 23, 42, 0.6);
+    z-index: 1040;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
   }
   
   .sidebar-overlay.open {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  .mobile-menu-btn,
+  .mobile-close-btn,
+  .show-mobile {
+    display: flex !important;
   }
 }
 
@@ -428,8 +464,16 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
 
 @media (max-width: 768px) {
   .topbar-container {
-    padding: 0 1rem;
+    padding: 0 0.875rem !important;
     gap: 0.5rem;
+  }
+
+  .topbar-actions {
+    gap: 0.75rem !important;
+  }
+
+  .hidden-mobile-xs {
+    display: none !important;
   }
   
   .hidden-mobile {
