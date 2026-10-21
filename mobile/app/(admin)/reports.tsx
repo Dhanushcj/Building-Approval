@@ -9,11 +9,14 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MobileHeader } from '../../components/MobileHeader';
 import { colors, spacing, borderRadius } from '../../constants/theme';
 import { applicationService } from '../../services/applicationService';
 import { Case } from '../../types';
 
 export default function ReportsScreen() {
+  const insets = useSafeAreaInsets();
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,29 +44,43 @@ export default function ReportsScreen() {
   ).length;
   const rejectedCases = cases.filter((c) => c.status === 'REJECTED').length;
 
-  const totalFeeCollected = cases.reduce((acc, c) => acc + (c.fees?.paid || 0), 0);
-  const totalFeePending = cases.reduce(
-    (acc, c) => acc + ((c.fees?.total || 0) - (c.fees?.paid || 0)),
-    0
-  );
+  // Robust fee extraction supporting both MongoDB schema c.fees and legacy/form c.fullData
+  const getCaseFee = (c: Case) => {
+    const total = Number(c.fees?.total ?? c.fullData?.fees?.total ?? (c.fullData?.feesAmount ? parseFloat(c.fullData.feesAmount) : 0)) || 0;
+    const paid = Number(c.fees?.paid ?? c.fullData?.fees?.paid ?? (c.fullData?.paidAmount ? parseFloat(c.fullData.paidAmount) : 0)) || 0;
+    const pending = c.fees?.pending !== undefined ? Number(c.fees.pending) : Math.max(0, total - paid);
+    return { total, paid, pending };
+  };
+
+  const totalFeeCollected = cases.reduce((acc, c) => acc + getCaseFee(c).paid, 0);
+  const totalFeePending = cases.reduce((acc, c) => acc + getCaseFee(c).pending, 0);
+
+  // Filter only applications with pending/partial fees (hide completely paid)
+  const pendingPaymentCases = cases.filter((c) => {
+    const { pending, total } = getCaseFee(c);
+    return total > 0 && pending > 0;
+  });
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => {
-            setRefreshing(true);
-            loadData();
-          }}
-          colors={[colors.primary]}
-        />
-      }
-    >
-      <Text style={styles.title}>Analytics & Reports</Text>
-      <Text style={styles.subtitle}>Overview of building applications & revenue</Text>
+    <View style={styles.container}>
+      <MobileHeader title="Analytics & Reports" />
+
+      <ScrollView
+        style={styles.scrollArea}
+        contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 24, 40) }]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              loadData();
+            }}
+            colors={[colors.primary]}
+          />
+        }
+      >
+        <Text style={styles.title}>Overview & Performance</Text>
+        <Text style={styles.subtitle}>Real-time application metrics and fee tracking</Text>
 
       {loading ? (
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
@@ -89,6 +106,64 @@ export default function ReportsScreen() {
                 </Text>
               </View>
             </View>
+          </View>
+
+          {/* Pending & Partial Payments Card List */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="time-outline" size={20} color={colors.gold} />
+              <Text style={styles.sectionTitle}>Pending / Partial Fees ({pendingPaymentCases.length})</Text>
+            </View>
+            <Text style={styles.pendingSectionSub}>
+              Only showing applications with outstanding balances. Fully settled applications are hidden.
+            </Text>
+
+            {pendingPaymentCases.length === 0 ? (
+              <View style={styles.emptyPendingBox}>
+                <Ionicons name="checkmark-done-circle" size={32} color={colors.success} />
+                <Text style={styles.emptyPendingText}>All applications have been fully paid!</Text>
+              </View>
+            ) : (
+              pendingPaymentCases.map((c) => {
+                const { total, paid, pending } = getCaseFee(c);
+                const appId = c.application_number || c.id;
+                const custName = c.property?.owner_name || c.fullData?.customerName || 'Customer';
+                const phone = c.property?.owner_phone || c.fullData?.mobile || '';
+                const isPartial = paid > 0 && pending > 0;
+
+                return (
+                  <View key={c.id} style={styles.pendingItem}>
+                    <View style={styles.pendingTop}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.pendingAppId}>{appId}</Text>
+                        <Text style={styles.pendingName}>{custName}</Text>
+                        {phone ? <Text style={styles.pendingPhone}>{phone}</Text> : null}
+                      </View>
+                      <View style={[styles.statusBadge, isPartial ? styles.badgePartial : styles.badgePending]}>
+                        <Text style={[styles.statusBadgeText, isPartial ? styles.textPartial : styles.textPending]}>
+                          {isPartial ? 'Partial' : 'Pending'}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.pendingFeeRow}>
+                      <View style={styles.feeCol}>
+                        <Text style={styles.feeColLabel}>Total</Text>
+                        <Text style={styles.feeColVal}>₹{total.toLocaleString('en-IN')}</Text>
+                      </View>
+                      <View style={styles.feeCol}>
+                        <Text style={styles.feeColLabel}>Paid</Text>
+                        <Text style={[styles.feeColVal, { color: colors.success }]}>₹{paid.toLocaleString('en-IN')}</Text>
+                      </View>
+                      <View style={styles.feeCol}>
+                        <Text style={styles.feeColLabel}>Pending</Text>
+                        <Text style={[styles.feeColVal, { color: colors.danger }]}>₹{pending.toLocaleString('en-IN')}</Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })
+            )}
           </View>
 
           {/* Status Breakdown */}
@@ -160,7 +235,8 @@ export default function ReportsScreen() {
           </View>
         </>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -169,12 +245,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  scrollArea: {
+    flex: 1,
+  },
   content: {
     padding: spacing.md,
     paddingBottom: 40,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
     color: colors.text,
   },
@@ -281,5 +360,92 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     borderRadius: 4,
+  },
+  pendingSectionSub: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginBottom: spacing.sm,
+    lineHeight: 16,
+  },
+  emptyPendingBox: {
+    alignItems: 'center',
+    paddingVertical: 18,
+    gap: 6,
+  },
+  emptyPendingText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.success,
+  },
+  pendingItem: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 8,
+  },
+  pendingTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  pendingAppId: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  pendingName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 2,
+  },
+  pendingPhone: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 1,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  badgePending: {
+    backgroundColor: '#FEF3C7',
+  },
+  badgePartial: {
+    backgroundColor: '#DBEAFE',
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  textPending: {
+    color: '#B45309',
+  },
+  textPartial: {
+    color: '#1D4ED8',
+  },
+  pendingFeeRow: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    paddingTop: 8,
+  },
+  feeCol: {
+    flex: 1,
+  },
+  feeColLabel: {
+    fontSize: 10,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
+  feeColVal: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 1,
   },
 });

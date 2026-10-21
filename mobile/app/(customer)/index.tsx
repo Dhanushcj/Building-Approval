@@ -10,12 +10,14 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius } from '../../constants/theme';
 import { applicationService } from '../../services/applicationService';
 import { Case } from '../../types';
 import { StatusBadge } from '../../components/StatusBadge';
 
 export default function CustomerTrackScreen() {
+  const insets = useSafeAreaInsets();
   const [appNumber, setAppNumber] = useState('');
   const [searching, setSearching] = useState(false);
   const [foundCase, setFoundCase] = useState<Case | null>(null);
@@ -69,7 +71,10 @@ export default function CustomerTrackScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 20, 40) }]}
+    >
       {/* Search Header Card */}
       <View style={styles.searchCard}>
         <Text style={styles.searchTitle}>Track Your Building Approval</Text>

@@ -16,6 +16,7 @@ import {
   Platform,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { MobileHeader } from '../../components/MobileHeader';
@@ -58,6 +59,7 @@ const STAGES: { key: WorkflowStage; label: string; stepNum: number }[] = [
 ];
 
 export default function ApplicationDetailScreen() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [loading, setLoading] = useState(true);
@@ -840,7 +842,7 @@ export default function ApplicationDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 30, 48) }]}>
         {/* ======================================================== */}
         {/* VIEW 1: ACTIVE WORKFLOW STAGE AUTO-TRANSITION SCREENS   */}
         {/* ======================================================== */}
@@ -2086,7 +2088,7 @@ export default function ApplicationDetailScreen() {
             )}
           </View>
 
-          <View style={styles.viewerFooter}>
+          <View style={[styles.viewerFooter, { paddingBottom: Math.max(insets.bottom + 12, 20) }]}>
             <TouchableOpacity
               style={styles.viewerActionBtn}
               onPress={() => Linking.openURL(viewingDocUrl)}

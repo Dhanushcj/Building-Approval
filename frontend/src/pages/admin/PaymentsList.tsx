@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Receipt } from 'lucide-react';
 import FilterPanel from '../../components/admin/FilterPanel';
-import { recentApplications } from '../../data/mockData';
 
 const PaymentsList: React.FC = () => {
   const [payments, setPayments] = React.useState<any[]>([]);
@@ -17,35 +16,35 @@ const PaymentsList: React.FC = () => {
         let casesData = [];
         if (res.ok) {
           casesData = await res.json();
-        } else {
-          casesData = recentApplications; // fallback
         }
-        
+
         const mappedPayments = casesData.map((c: any) => {
-          const statuses = ['Pending', 'Paid', 'Partial'];
-          const idStr = (c.application_number || c.id).toString();
-          let seed = 0;
-          for (let i = 0; i < idStr.length; i++) seed += idStr.charCodeAt(i);
-          
-          const savedAmount = localStorage.getItem(`paymentAmount_${idStr}`);
-          const total = savedAmount ? Number(savedAmount) : ((seed % 10) + 2) * 5000;
-          
-          const savedPaid = localStorage.getItem(`paidAmount_${idStr}`);
-          const savedStatus = localStorage.getItem(`paymentStatus_${idStr}`);
-          
-          const status = savedStatus ? savedStatus : statuses[seed % statuses.length];
-          const paid = savedPaid ? Number(savedPaid) : (status === 'Paid' ? total : (status === 'Pending' ? 0 : Math.floor(total / 2)));
-          
+          const total = Number(c.fees?.total ?? c.fullData?.fees?.total ?? (c.fullData?.feesAmount ? parseFloat(c.fullData.feesAmount) : 0)) || 0;
+          const paid = Number(c.fees?.paid ?? c.fullData?.fees?.paid ?? (c.fullData?.paidAmount ? parseFloat(c.fullData.paidAmount) : 0)) || 0;
+          const pending = c.fees?.pending !== undefined && c.fees?.pending !== null 
+            ? Number(c.fees.pending) 
+            : Math.max(0, total - paid);
+
+          let status: 'Pending' | 'Partial' | 'Paid' = 'Pending';
+          if (pending === 0 && total > 0) {
+            status = 'Paid';
+          } else if (paid > 0 && pending > 0) {
+            status = 'Partial';
+          } else {
+            status = 'Pending';
+          }
+
           return {
             id: c.application_number || c.id,
-            customer: c.property?.owner_name || c.customer || 'Unknown',
-            type: c.approval_type || c.type || 'Building',
+            mongoId: c.id,
+            customer: c.property?.owner_name || c.fullData?.customerName || c.clientName || 'Customer',
+            type: c.approval_type || c.type || 'Building Plan Approval',
             totalAmount: total,
             paidAmount: paid,
-            pendingAmount: total - paid,
+            pendingAmount: pending,
             status: status,
             date: c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A',
-            mobile: c.property?.owner_phone || c.mobile || ''
+            mobile: c.property?.owner_phone || c.fullData?.mobile || c.mobile || ''
           };
         });
         setPayments(mappedPayments);
@@ -76,10 +75,15 @@ const PaymentsList: React.FC = () => {
       p.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.mobile && p.mobile.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesStatus = !filterValues.status || filterValues.status === '' ||
-      p.status.toLowerCase() === filterValues.status.toLowerCase();
+    // User requirement: completely paid details not needed to show by default; only pending / partial datas needed
+    const isPaidStatus = p.status.toLowerCase() === 'paid' || p.pendingAmount <= 0;
+    if (!filterValues.status || filterValues.status === '' || filterValues.status.toLowerCase() === 'all') {
+      if (isPaidStatus) return false; // Hide completely paid items
+    } else if (filterValues.status.toLowerCase() !== p.status.toLowerCase()) {
+      return false;
+    }
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const getStatusColor = (status: string) => {

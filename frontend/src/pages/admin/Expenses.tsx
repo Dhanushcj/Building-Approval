@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { Search, Calendar, Plus, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const DenseField = ({ label, type = 'text', value, onChange, icon, options, readOnly, disabled, extraIcon, onIconClick }: any) => {
+const DenseField = ({ label, type = 'text', value, onChange, icon, options, readOnly, disabled, extraIcon, onIconClick, placeholder, required }: any) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem', color: 'var(--text-primary)', marginBottom: '8px' }}>
-      <div style={{ width: '160px', flexShrink: 0, fontWeight: 500, color: 'var(--text-secondary)' }}>{label}</div>
+      <div style={{ width: '160px', flexShrink: 0, fontWeight: 500, color: 'var(--text-secondary)' }}>
+        {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
+      </div>
       <div style={{ display: 'flex', flex: 1, alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: readOnly || disabled ? 'var(--bg-secondary)' : 'white', height: '32px', position: 'relative' }}>
         {options ? (
           <select value={value} onChange={onChange} style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '0.875rem', padding: '0 8px', height: '100%', color: 'inherit' }} disabled={disabled}>
             {options.map((o: string) => <option key={o} value={o}>{o}</option>)}
           </select>
         ) : (
-          <input type={type} value={value} onChange={onChange} readOnly={readOnly} disabled={disabled} style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '0.875rem', padding: '0 8px', height: '100%', color: 'inherit' }} />
+          <input type={type} value={value} onChange={onChange} readOnly={readOnly} disabled={disabled} placeholder={placeholder} style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '0.875rem', padding: '0 8px', height: '100%', color: 'inherit' }} />
         )}
         {icon && (
           <div onClick={onIconClick} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 8px', cursor: onIconClick ? 'pointer' : 'default', borderLeft: '1px solid var(--border-color)', height: '100%', color: 'var(--primary)' }}>
@@ -32,14 +34,14 @@ const DenseField = ({ label, type = 'text', value, onChange, icon, options, read
 const Expenses: React.FC = () => {
   const [view, setView] = useState<'view' | 'add' | 'disabled'>('disabled');
   const [isExpenseSearchModalOpen, setIsExpenseSearchModalOpen] = useState(false);
-  
+
   const initialFormState = {
     category: '<Select>',
-    referenceNo: '', 
-    description: '', 
+    referenceNo: '',
+    description: '',
     status: 'Pending',
     executive: 'Admin User',
-    expenseMode: 'Select', 
+    expenseMode: 'Select',
     expenseDate: new Date().toISOString().split('T')[0],
     expenseAmt: '',
     typeOfInst: 'Select', instrNo: '', instrAmount: '', instrDate: '',
@@ -47,14 +49,17 @@ const Expenses: React.FC = () => {
     thirdPartyRemittance: 'Select', instrBnkAccHoldName: '', instrBnkAccNo: '', glCode: ''
   };
 
-  const [expenses, setExpenses] = useState<any[]>([
-    { id: 'EXP-001', date: '24 Sept 2026', category: 'Office Supplies', description: 'Printer Ink & Paper', amount: 4500, status: 'Approved', mode: 'Cash' },
-    { id: 'EXP-002', date: '22 Sept 2026', category: 'Travel', description: 'Site Visit Fuel', amount: 1200, status: 'Pending', mode: 'Bank' },
-    { id: 'EXP-003', date: '20 Sept 2026', category: 'Marketing', description: 'Local Ads', amount: 8000, status: 'Approved', mode: 'UPI' },
-  ]);
-  
+  const [expenses, setExpenses] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('system_expenses');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [formData, setFormData] = useState(initialFormState);
-  
+
   const [expenseCategories, setExpenseCategories] = useState<string[]>(['Office Supplies', 'Travel', 'Marketing', 'Maintenance', 'Other']);
 
   React.useEffect(() => {
@@ -314,27 +319,42 @@ const Expenses: React.FC = () => {
 
   const handleConfirm = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.category || formData.category === '<Select>' || !formData.expenseAmt || !formData.description) {
-      toast.error('Please fill required fields (Category, Description, Amount).');
+    if (!formData.category || formData.category === '<Select>') {
+      toast.error('Please select an Expense Category.');
       return;
     }
-    
+    if (!formData.expenseAmt || Number(formData.expenseAmt) <= 0) {
+      toast.error('Please enter a valid Expense Amount.');
+      return;
+    }
+
+    // Auto-fill description if left blank by user
+    const finalDescription = formData.description?.trim()
+      ? formData.description.trim()
+      : `${formData.category} expense`;
+
     const newExpense = {
       id: `EXP-00${expenses.length + 1}`,
       date: formData.expenseDate,
       category: formData.category,
-      description: formData.description,
+      description: finalDescription,
       amount: Number(formData.expenseAmt),
-      mode: formData.expenseMode,
+      mode: formData.expenseMode === 'Select' ? 'Cash' : formData.expenseMode,
       status: 'Pending'
     };
-    
-    setExpenses([newExpense, ...expenses]);
-    
+
+    const updatedExpenses = [newExpense, ...expenses];
+    setExpenses(updatedExpenses);
+    try {
+      localStorage.setItem('system_expenses', JSON.stringify(updatedExpenses));
+    } catch (err) {
+      console.error(err);
+    }
+
     toast.success('Expense recorded successfully!');
     setView('disabled');
     setFormData(initialFormState);
-    
+
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(generateExpenseHTML(newExpense));
@@ -380,7 +400,7 @@ const Expenses: React.FC = () => {
   // Form disable logic
   const isFormDisabled = view === 'disabled' || view === 'view';
   const isBottomHalfDisabled = isFormDisabled || formData.expenseMode === 'Cash';
-  const isRefNoSearchEnabled = view === 'view'; 
+  const isRefNoSearchEnabled = view === 'view';
 
   return (
     <div>
@@ -389,16 +409,16 @@ const Expenses: React.FC = () => {
           {view === 'view' ? 'View/Reprint Expense' : 'Record an Expense'}
         </h1>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button 
-            className={`btn-primary ${view === 'add' ? 'active' : ''}`} 
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: view === 'add' ? 'var(--primary-dark)' : 'var(--primary)' }} 
+          <button
+            className={`btn-primary ${view === 'add' ? 'active' : ''}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: view === 'add' ? 'var(--primary-dark)' : 'var(--primary)' }}
             onClick={() => { setView('add'); setFormData(initialFormState); }}
           >
             <Plus size={16} /> Add
           </button>
-          <button 
-            className={`btn-primary ${view === 'view' ? 'active' : ''}`} 
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: view === 'view' ? 'var(--primary-dark)' : 'var(--primary)' }} 
+          <button
+            className={`btn-primary ${view === 'view' ? 'active' : ''}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: view === 'view' ? 'var(--primary-dark)' : 'var(--primary)' }}
             onClick={() => { setView('view'); setFormData(initialFormState); }}
           >
             <Eye size={16} /> View
@@ -409,17 +429,17 @@ const Expenses: React.FC = () => {
       <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem 1rem' }}>
-            
-            <DenseField label="Category" value={formData.category} onChange={(e:any) => setFormData({...formData, category: e.target.value})} options={['<Select>', ...expenseCategories]} disabled={isFormDisabled} />
-            <DenseField label="Description" value={formData.description} onChange={(e:any) => setFormData({...formData, description: e.target.value})} disabled={isFormDisabled} />
-            <DenseField label="Reference No." value={formData.referenceNo} readOnly={true} disabled={!isRefNoSearchEnabled} icon={isRefNoSearchEnabled ? <Search size={14}/> : null} onIconClick={() => isRefNoSearchEnabled && setIsExpenseSearchModalOpen(true)} />
+
+            <DenseField label="Category" value={formData.category} onChange={(e: any) => setFormData({ ...formData, category: e.target.value })} options={['<Select>', ...expenseCategories]} disabled={isFormDisabled} required={true} />
+            <DenseField label="Description" value={formData.description} onChange={(e: any) => setFormData({ ...formData, description: e.target.value })} disabled={isFormDisabled} placeholder="E.g. Stationery, site visit..." />
+            <DenseField label="Reference No." value={formData.referenceNo} readOnly={true} disabled={!isRefNoSearchEnabled} icon={isRefNoSearchEnabled ? <Search size={14} /> : null} onIconClick={() => isRefNoSearchEnabled && setIsExpenseSearchModalOpen(true)} />
             <DenseField label="Executive" value={formData.executive} readOnly={true} disabled={true} />
 
             <DenseField label="Status" value={formData.status} readOnly={true} disabled={true} />
-            <DenseField label="Expense Mode" value={formData.expenseMode} onChange={(e:any) => setFormData({...formData, expenseMode: e.target.value})} options={['Select', 'Cash', 'Bank', 'UPI']} disabled={isFormDisabled} />
-            <DenseField label="Expense Date" value={formData.expenseDate} readOnly={true} disabled={true} icon={<Calendar size={14}/>} />
-            <DenseField label="Expense Amt." value={formData.expenseAmt} onChange={(e:any) => setFormData({...formData, expenseAmt: e.target.value})} disabled={isFormDisabled} type="number" />
-            
+            <DenseField label="Expense Mode" value={formData.expenseMode} onChange={(e: any) => setFormData({ ...formData, expenseMode: e.target.value })} options={['Select', 'Cash', 'Bank', 'UPI']} disabled={isFormDisabled} />
+            <DenseField label="Expense Date" value={formData.expenseDate} readOnly={true} disabled={true} icon={<Calendar size={14} />} />
+            <DenseField label="Expense Amt." value={formData.expenseAmt} onChange={(e: any) => setFormData({ ...formData, expenseAmt: e.target.value })} disabled={isFormDisabled} type="number" required={true} placeholder="Enter amount..." />
+
           </div>
         </div>
 
@@ -427,20 +447,20 @@ const Expenses: React.FC = () => {
 
         <div style={{ marginBottom: '1.5rem', opacity: isBottomHalfDisabled ? 0.5 : 1 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem 1rem' }}>
-            
-            <DenseField label="Type of Inst." value={formData.typeOfInst} onChange={(e:any) => setFormData({...formData, typeOfInst: e.target.value})} options={['Select', 'Type A', 'Type B']} disabled={isBottomHalfDisabled} />
-            <DenseField label="Instr.No" value={formData.instrNo} onChange={(e:any) => setFormData({...formData, instrNo: e.target.value})} disabled={isBottomHalfDisabled} />
-            <DenseField label="Instr. Amount" value={formData.instrAmount} onChange={(e:any) => setFormData({...formData, instrAmount: e.target.value})} disabled={isBottomHalfDisabled} />
-            <DenseField label="Instr. Date" value={formData.instrDate} onChange={(e:any) => setFormData({...formData, instrDate: e.target.value})} icon={<Calendar size={14}/>} disabled={isBottomHalfDisabled} />
 
-            <DenseField label="Instr. Bank Name" value={formData.instrBankName} onChange={(e:any) => setFormData({...formData, instrBankName: e.target.value})} icon={<Search size={14}/>} disabled={isBottomHalfDisabled} />
-            <DenseField label="Instr. Bank Branch" value={formData.instrBankBranch} onChange={(e:any) => setFormData({...formData, instrBankBranch: e.target.value})} disabled={isBottomHalfDisabled} />
-            <DenseField label="Payable At" value={formData.payableAt} onChange={(e:any) => setFormData({...formData, payableAt: e.target.value})} disabled={isBottomHalfDisabled} />
-            
-            <DenseField label="Third Party Remittance" value={formData.thirdPartyRemittance} onChange={(e:any) => setFormData({...formData, thirdPartyRemittance: e.target.value})} options={['Select', 'Yes', 'No']} disabled={isBottomHalfDisabled} />
-            <DenseField label="Instr.Bnk.Acc Hold Name" value={formData.instrBnkAccHoldName} onChange={(e:any) => setFormData({...formData, instrBnkAccHoldName: e.target.value})} disabled={isBottomHalfDisabled} />
-            <DenseField label="Instr.Bnk.Acc.No" value={formData.instrBnkAccNo} onChange={(e:any) => setFormData({...formData, instrBnkAccNo: e.target.value})} disabled={isBottomHalfDisabled} />
-            <DenseField label="Gl.code" value={formData.glCode} onChange={(e:any) => setFormData({...formData, glCode: e.target.value})} icon={<Search size={14}/>} disabled={isBottomHalfDisabled} />
+            <DenseField label="Type of Inst." value={formData.typeOfInst} onChange={(e: any) => setFormData({ ...formData, typeOfInst: e.target.value })} options={['Select', 'Type A', 'Type B']} disabled={isBottomHalfDisabled} />
+            <DenseField label="Instr.No" value={formData.instrNo} onChange={(e: any) => setFormData({ ...formData, instrNo: e.target.value })} disabled={isBottomHalfDisabled} />
+            <DenseField label="Instr. Amount" value={formData.instrAmount} onChange={(e: any) => setFormData({ ...formData, instrAmount: e.target.value })} disabled={isBottomHalfDisabled} />
+            <DenseField label="Instr. Date" value={formData.instrDate} onChange={(e: any) => setFormData({ ...formData, instrDate: e.target.value })} icon={<Calendar size={14} />} disabled={isBottomHalfDisabled} />
+
+            <DenseField label="Instr. Bank Name" value={formData.instrBankName} onChange={(e: any) => setFormData({ ...formData, instrBankName: e.target.value })} icon={<Search size={14} />} disabled={isBottomHalfDisabled} />
+            <DenseField label="Instr. Bank Branch" value={formData.instrBankBranch} onChange={(e: any) => setFormData({ ...formData, instrBankBranch: e.target.value })} disabled={isBottomHalfDisabled} />
+            <DenseField label="Payable At" value={formData.payableAt} onChange={(e: any) => setFormData({ ...formData, payableAt: e.target.value })} disabled={isBottomHalfDisabled} />
+
+            <DenseField label="Third Party Remittance" value={formData.thirdPartyRemittance} onChange={(e: any) => setFormData({ ...formData, thirdPartyRemittance: e.target.value })} options={['Select', 'Yes', 'No']} disabled={isBottomHalfDisabled} />
+            <DenseField label="Instr.Bnk.Acc Hold Name" value={formData.instrBnkAccHoldName} onChange={(e: any) => setFormData({ ...formData, instrBnkAccHoldName: e.target.value })} disabled={isBottomHalfDisabled} />
+            <DenseField label="Instr.Bnk.Acc.No" value={formData.instrBnkAccNo} onChange={(e: any) => setFormData({ ...formData, instrBnkAccNo: e.target.value })} disabled={isBottomHalfDisabled} />
+            <DenseField label="Gl.code" value={formData.glCode} onChange={(e: any) => setFormData({ ...formData, glCode: e.target.value })} icon={<Search size={14} />} disabled={isBottomHalfDisabled} />
             <div></div>
           </div>
         </div>
@@ -490,7 +510,7 @@ const Expenses: React.FC = () => {
                       <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>{exp.date}</td>
                       <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)' }}>₹{exp.amount.toLocaleString()}</td>
                       <td style={{ padding: '0.75rem 1rem' }}>
-                        <button 
+                        <button
                           onClick={() => {
                             setFormData({
                               ...initialFormState,

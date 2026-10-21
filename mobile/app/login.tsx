@@ -14,6 +14,7 @@ import {
   Alert,
 } from 'react-native';
 import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { Colors } from '../constants/theme';
 import { apiRequest } from '../services/api';
@@ -102,7 +103,7 @@ export default function LoginScreen() {
       style={styles.backgroundImage}
       resizeMode="cover"
     >
-      <View style={styles.overlay}>
+      <SafeAreaView style={styles.overlay} edges={['top', 'bottom', 'left', 'right']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.keyboardContainer}
@@ -185,7 +186,7 @@ export default function LoginScreen() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </View>
+      </SafeAreaView>
     </ImageBackground>
   );
 }

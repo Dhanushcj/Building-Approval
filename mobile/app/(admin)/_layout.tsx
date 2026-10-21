@@ -1,8 +1,12 @@
 import { Tabs } from 'expo-router';
 import { Colors } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AdminLayout() {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 8);
+
   return (
     <Tabs
       screenOptions={{
@@ -12,8 +16,8 @@ export default function AdminLayout() {
         tabBarStyle: {
           backgroundColor: Colors.bgSurface,
           borderTopColor: Colors.borderColor,
-          height: 60,
-          paddingBottom: 8,
+          height: 54 + bottomInset,
+          paddingBottom: bottomInset,
           paddingTop: 6,
         },
         tabBarLabelStyle: {
@@ -87,6 +91,12 @@ export default function AdminLayout() {
       />
       <Tabs.Screen
         name="link-tracking"
+        options={{
+          href: null, // Sub-route
+        }}
+      />
+      <Tabs.Screen
+        name="payments"
         options={{
           href: null, // Sub-route
         }}

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { applicationService } from '../../services/applicationService';
@@ -17,6 +18,7 @@ import { Case } from '../../types';
 import { StatusBadge } from '../../components/StatusBadge';
 
 export default function EmployeeDashboard() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const router = useRouter();
   const [cases, setCases] = useState<Case[]>([]);
@@ -55,7 +57,7 @@ export default function EmployeeDashboard() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 20, 36) }]}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}

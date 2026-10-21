@@ -33,13 +33,10 @@ const Receipts: React.FC = () => {
   const [view, setView] = useState<'view' | 'add' | 'disabled'>('disabled');
   const [isAppSearchModalOpen, setIsAppSearchModalOpen] = useState(false);
   const [isReceiptSearchModalOpen, setIsReceiptSearchModalOpen] = useState(false);
+  const [loadingCases, setLoadingCases] = useState(false);
+  const [pendingApplications, setPendingApplications] = useState<any[]>([]);
+  const [selectedCaseRaw, setSelectedCaseRaw] = useState<any>(null);
 
-  const pendingApplications = [
-    { appNo: 'APP-260926-001', customer: 'Bala Krishnan', mobile: '9876543210', service: 'Building Approval', pendingAmount: 25000 },
-    { appNo: 'APP-260926-002', customer: 'Suresh Kumar', mobile: '8765432109', service: 'Layout Approval', pendingAmount: 15000 },
-    { appNo: 'APP-260926-003', customer: 'Ramesh Singh', mobile: '7654321098', service: 'Building Approval', pendingAmount: 40000 },
-  ];
-  
   const initialFormState = {
     type: 'Fresh', services: '<Select>', applicationNo: '',
     referenceNo: '', customerName: '', mobileNumber: '',
@@ -52,13 +49,60 @@ const Receipts: React.FC = () => {
     remittedBy: '', printCount: ''
   };
 
-  const [receipts, setReceipts] = useState<any[]>([
-    { id: 'REC-001', date: '25 Sept 2026', customer: 'Ramesh Kumar', amount: 25000, mode: 'Cash', status: 'Confirmed', services: 'Building Approval' }
-  ]);
+  const [receipts, setReceipts] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('system_receipts');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   
   const [formData, setFormData] = useState(initialFormState);
 
-  const handleConfirm = (e: React.FormEvent) => {
+  // Fetch real cases from backend API
+  const fetchPendingCases = async () => {
+    setLoadingCases(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      const res = await fetch(`${apiUrl}/cases`);
+      if (res.ok) {
+        const cases = await res.json();
+        const pendingList: any[] = [];
+        cases.forEach((c: any) => {
+          const total = Number(c.fees?.total ?? c.fullData?.fees?.total ?? (c.fullData?.feesAmount ? parseFloat(c.fullData.feesAmount) : 0)) || 0;
+          const paid = Number(c.fees?.paid ?? c.fullData?.fees?.paid ?? (c.fullData?.paidAmount ? parseFloat(c.fullData.paidAmount) : 0)) || 0;
+          const pending = c.fees?.pending !== undefined && c.fees?.pending !== null ? Number(c.fees.pending) : Math.max(0, total - paid);
+
+          // Only show cases that have a pending balance
+          if (pending > 0) {
+            pendingList.push({
+              rawCase: c,
+              mongoId: c.id,
+              appNo: c.application_number || c.id,
+              customer: c.property?.owner_name || c.fullData?.customerName || c.clientName || 'Customer',
+              mobile: c.property?.owner_phone || c.fullData?.mobile || c.mobile || '',
+              service: c.approval_type || c.type || 'Building Plan Approval',
+              totalAmount: total,
+              paidAmount: paid,
+              pendingAmount: pending
+            });
+          }
+        });
+        setPendingApplications(pendingList);
+      }
+    } catch (err) {
+      console.error("Failed to fetch pending applications:", err);
+    } finally {
+      setLoadingCases(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchPendingCases();
+  }, []);
+
+  const handleConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.receiptAmt) {
       toast.error('Please enter receipt amount');
@@ -66,11 +110,12 @@ const Receipts: React.FC = () => {
     }
     
     if (window.confirm('Cash and customer details verified?')) {
+      const receiptAmountNum = Number(formData.receiptAmt) || 0;
       const receipt = {
         id: `REC-00${receipts.length + 1}`,
         date: formData.receiptDate || new Date().toLocaleDateString('en-GB'),
         customer: formData.customerName || 'Unknown',
-        amount: Number(formData.receiptAmt),
+        amount: receiptAmountNum,
         mode: formData.receiptMode,
         status: 'Confirmed',
         applicationNo: formData.applicationNo,
@@ -78,13 +123,69 @@ const Receipts: React.FC = () => {
         executive: formData.executive
       };
 
-      setReceipts([receipt, ...receipts]);
+      const updatedReceipts = [receipt, ...receipts];
+      setReceipts(updatedReceipts);
+      try {
+        localStorage.setItem('system_receipts', JSON.stringify(updatedReceipts));
+      } catch (e) {
+        console.error(e);
+      }
+
+      // If linked to an existing case, update the fee collection in MongoDB
+      if (selectedCaseRaw && receiptAmountNum > 0) {
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+          const targetId = selectedCaseRaw.id || selectedCaseRaw._id;
+          const total = Number(selectedCaseRaw.fees?.total ?? selectedCaseRaw.fullData?.fees?.total ?? (selectedCaseRaw.fullData?.feesAmount ? parseFloat(selectedCaseRaw.fullData.feesAmount) : 0)) || 0;
+          const prevPaid = Number(selectedCaseRaw.fees?.paid ?? selectedCaseRaw.fullData?.fees?.paid ?? (selectedCaseRaw.fullData?.paidAmount ? parseFloat(selectedCaseRaw.fullData.paidAmount) : 0)) || 0;
+          const newPaid = prevPaid + receiptAmountNum;
+          const newPending = Math.max(0, total - newPaid);
+
+          const existingCharges = selectedCaseRaw.fees?.charges || selectedCaseRaw.fullData?.fees?.charges || [];
+          const updatedCharges = [...existingCharges, {
+            id: receipt.id,
+            description: `Receipt ${receipt.id} via ${formData.receiptMode}`,
+            amount: receiptAmountNum,
+            mode: formData.receiptMode,
+            date: new Date().toISOString()
+          }];
+
+          const updatedFees = {
+            total,
+            paid: newPaid,
+            pending: newPending,
+            notes: selectedCaseRaw.fees?.notes || '',
+            charges: updatedCharges
+          };
+
+          await fetch(`${apiUrl}/cases/${targetId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fees: updatedFees,
+              fullData: {
+                ...(selectedCaseRaw.fullData || {}),
+                feesAmount: total.toString(),
+                paidAmount: newPaid.toString(),
+                fees: updatedFees
+              }
+            })
+          });
+
+          // Refresh pending cases list
+          fetchPendingCases();
+        } catch (err) {
+          console.error("Failed to update case payment on server:", err);
+        }
+      }
+
       toast.success('Payment confirmed! Receipt is ready for print.');
       
       sessionStorage.setItem('print_receipt_data', JSON.stringify(receipt));
       window.open(`/print/receipt/${receipt.id}`, '_blank');
 
       setView('disabled');
+      setSelectedCaseRaw(null);
       setFormData(initialFormState);
     }
   };
@@ -244,25 +345,48 @@ const Receipts: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingApplications.map(app => (
-                    <tr key={app.appNo} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{app.appNo}</td>
-                      <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>{app.customer}</td>
-                      <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>{app.service}</td>
-                      <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)' }}>₹{app.pendingAmount.toLocaleString()}</td>
-                      <td style={{ padding: '0.75rem 1rem' }}>
-                        <button 
-                          onClick={() => {
-                            setFormData({...formData, applicationNo: app.appNo, customerName: app.customer, mobileNumber: app.mobile, services: app.service, balance: app.pendingAmount.toString()});
-                            setIsAppSearchModalOpen(false);
-                          }}
-                          style={{ padding: '0.25rem 0.75rem', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
-                        >
-                          Select
-                        </button>
+                  {loadingCases ? (
+                    <tr>
+                      <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        Loading pending applications...
                       </td>
                     </tr>
-                  ))}
+                  ) : pendingApplications.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        No pending applications found.
+                      </td>
+                    </tr>
+                  ) : (
+                    pendingApplications.map(app => (
+                      <tr key={app.appNo} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{app.appNo}</td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>{app.customer}</td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>{app.service}</td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)' }}>₹{app.pendingAmount.toLocaleString()}</td>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <button 
+                            onClick={() => {
+                              setSelectedCaseRaw(app.rawCase);
+                              setFormData({
+                                ...formData, 
+                                applicationNo: app.appNo, 
+                                customerName: app.customer, 
+                                mobileNumber: app.mobile, 
+                                services: app.service, 
+                                balance: app.pendingAmount.toString(),
+                                receiptAmt: app.pendingAmount.toString()
+                              });
+                              setIsAppSearchModalOpen(false);
+                            }}
+                            style={{ padding: '0.25rem 0.75rem', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                          >
+                            Select
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

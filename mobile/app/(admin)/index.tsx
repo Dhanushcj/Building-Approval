@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MobileHeader } from '../../components/MobileHeader';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Colors } from '../../constants/theme';
@@ -17,6 +18,7 @@ import { Case, Lead } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function AdminDashboardScreen() {
+  const insets = useSafeAreaInsets();
   const [cases, setCases] = useState<Case[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ export default function AdminDashboardScreen() {
       <MobileHeader title="Admin Dashboard" />
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 20, 36) }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />}
       >
         {/* Quick Action Buttons */}
@@ -116,10 +118,19 @@ export default function AdminDashboardScreen() {
 
           <TouchableOpacity
             style={styles.navTile}
+            onPress={() => router.push('/(admin)/payments')}
+          >
+            <Ionicons name="card-outline" size={24} color={Colors.primary} />
+            <Text style={styles.navTileTitle}>Payments</Text>
+            <Text style={styles.navTileSubtitle}>Pending / Invoices</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.navTile}
             onPress={() => router.push('/(admin)/reports')}
           >
             <Ionicons name="document-attach-outline" size={24} color={Colors.primary} />
-            <Text style={styles.navTileTitle}>Monthly Report</Text>
+            <Text style={styles.navTileTitle}>Reports</Text>
             <Text style={styles.navTileSubtitle}>Export & Summary</Text>
           </TouchableOpacity>
         </View>
@@ -256,25 +267,25 @@ const styles = StyleSheet.create({
   },
   navRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
     marginBottom: 10,
   },
   navTile: {
     flex: 1,
     backgroundColor: Colors.bgSurface,
     borderRadius: 8,
-    padding: 14,
+    padding: 10,
     borderWidth: 1,
     borderColor: Colors.borderColor,
   },
   navTileTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: Colors.primaryDark,
     marginTop: 6,
   },
   navTileSubtitle: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textSecondary,
     marginTop: 2,
   },

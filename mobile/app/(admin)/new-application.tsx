@@ -13,12 +13,14 @@ import {
   Linking,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MobileHeader } from '../../components/MobileHeader';
 import { Colors } from '../../constants/theme';
 import { applicationService } from '../../services/applicationService';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function NewApplicationScreen() {
+  const insets = useSafeAreaInsets();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
@@ -263,7 +265,10 @@ export default function NewApplicationScreen() {
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 24, 40) }]}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* STEP 1: APPLICANT & SERVICE */}
         {step === 1 && (
           <View style={styles.formCard}>

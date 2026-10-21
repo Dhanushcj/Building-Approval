@@ -16,6 +16,11 @@
         "backgroundColor": "#022F94",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
+      "navigationBar": {
+        "visible": "immersiveSticky",
+        "barStyle": "dark-content",
+        "backgroundColor": "#00000000"
+      },
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",

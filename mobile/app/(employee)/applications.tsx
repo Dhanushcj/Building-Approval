@@ -11,6 +11,7 @@ import {
   Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius } from '../../constants/theme';
 import { applicationService } from '../../services/applicationService';
@@ -18,6 +19,7 @@ import { Case } from '../../types';
 import { StatusBadge } from '../../components/StatusBadge';
 
 export default function EmployeeApplicationsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
@@ -169,7 +171,7 @@ export default function EmployeeApplicationsScreen() {
           data={filteredCases}
           keyExtractor={(item, index) => item.id || item._id || String(index)}
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: Math.max(insets.bottom + 20, 36) }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

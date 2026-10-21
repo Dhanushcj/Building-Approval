@@ -11,11 +11,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius } from '../../constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MobileHeader } from '../../components/MobileHeader';
 import { applicationService } from '../../services/applicationService';
 import { AttendanceRecord } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function AttendanceScreen() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,6 +98,8 @@ export default function AttendanceScreen() {
 
   return (
     <View style={styles.container}>
+      <MobileHeader title="Attendance" />
+
       {/* Quick Mark Card */}
       <View style={styles.actionCard}>
         <Text style={styles.cardTitle}>Today's Attendance</Text>
@@ -141,7 +146,7 @@ export default function AttendanceScreen() {
           data={records}
           keyExtractor={(item, index) => item.id || String(index)}
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: Math.max(insets.bottom + 20, 36) }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

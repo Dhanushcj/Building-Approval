@@ -7,8 +7,11 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status = 'PENDING' }) => {
+  const rawStatus = (status || 'PENDING').toUpperCase();
+  const displayStatus = rawStatus === 'INTAKE' ? 'DOCUMENTS PENDING' : (status ? status.replace(/_/g, ' ') : 'PENDING');
+
   const getStyle = () => {
-    const s = (status || '').toUpperCase();
+    const s = displayStatus.toUpperCase();
     if (s.includes('APPROV') || s.includes('COMPLETE')) {
       return { bg: '#EBF6EE', text: Colors.successGreen, border: '#CBE5D3' };
     }
@@ -26,7 +29,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status = 'PENDING' }) 
   return (
     <View style={[styles.badge, { backgroundColor: style.bg, borderColor: style.border }]}>
       <Text style={[styles.text, { color: style.text }]}>
-        {status ? status.replace(/_/g, ' ') : 'PENDING'}
+        {displayStatus}
       </Text>
     </View>
   );

@@ -1,26 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ArrowUpRight, ArrowDownRight, DollarSign, Wallet, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const CashBook: React.FC = () => {
-  const [fromDate, setFromDate] = useState(new Date().toISOString().split('T')[0]);
-  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
-  const [searchTerm, setSearchTerm] = useState('');
+interface Transaction {
+  id: string;
+  date: string;
+  rawDate: string;
+  particulars: string;
+  type: 'Receipt' | 'Expense';
+  amount: number;
+}
 
-  // Mock data for the cash book ledger
-  const openingBalance = 125000;
-  
-  const transactions = [
-    { id: 'REC-001', date: '2026-10-01', particulars: 'Ramesh Kumar - Building Approval', type: 'Receipt', amount: 25000 },
-    { id: 'EXP-101', date: '2026-10-01', particulars: 'Office Supplies - Stationary', type: 'Expense', amount: 1500 },
-    { id: 'REC-002', date: '2026-10-01', particulars: 'Bala Krishnan - Layout Approval', type: 'Receipt', amount: 10000 },
-    { id: 'EXP-102', date: '2026-10-01', particulars: 'Travel Allowance - Field Visit', type: 'Expense', amount: 800 },
-  ];
+const CashBook: React.FC = () => {
+  // Set default date range to cover the current month so transactions are immediately visible
+  const today = new Date();
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const todayStr = today.toISOString().split('T')[0];
+
+  const [fromDate, setFromDate] = useState(firstDayOfMonth);
+  const [toDate, setToDate] = useState(todayStr);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const openingBalance = 0;
+
+  const loadAllTransactions = async () => {
+    setLoading(true);
+    const combined: Transaction[] = [];
+
+    // 1. Fetch collections/receipts from backend cases
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      const res = await fetch(`${apiUrl}/cases`);
+      if (res.ok) {
+        const cases = await res.json();
+        cases.forEach((c: any) => {
+          const appNo = c.application_number || c.id;
+          const custName = c.property?.owner_name || c.fullData?.customerName || c.clientName || 'Customer';
+          const service = c.approval_type || c.type || 'Building Plan Approval';
+
+          // Extract charges if recorded
+          const charges: any[] = c.fees?.charges || c.fullData?.fees?.charges || [];
+          if (charges.length > 0) {
+            charges.forEach((ch: any) => {
+              const dt = ch.date ? new Date(ch.date) : (c.created_at ? new Date(c.created_at) : new Date());
+              const dateIso = !isNaN(dt.getTime()) ? dt.toISOString().split('T')[0] : todayStr;
+              combined.push({
+                id: ch.id || `FEE-${appNo.slice(-4)}`,
+                date: dateIso,
+                rawDate: dateIso,
+                particulars: `${custName} - ${service} (${ch.description || 'Fee Payment'})`,
+                type: 'Receipt',
+                amount: Number(ch.amount) || 0
+              });
+            });
+          } else {
+            // If case has paid amount recorded directly
+            const paid = Number(c.fees?.paid ?? c.fullData?.fees?.paid ?? (c.fullData?.paidAmount ? parseFloat(c.fullData.paidAmount) : 0)) || 0;
+            if (paid > 0) {
+              const dt = c.created_at ? new Date(c.created_at) : new Date();
+              const dateIso = !isNaN(dt.getTime()) ? dt.toISOString().split('T')[0] : todayStr;
+              combined.push({
+                id: `COL-${appNo.slice(-6)}`,
+                date: dateIso,
+                rawDate: dateIso,
+                particulars: `${custName} - ${service} (Application Fee)`,
+                type: 'Receipt',
+                amount: paid
+              });
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.error("Error loading case fees for cashbook:", e);
+    }
+
+    // 2. Fetch receipts recorded via Billing / Receipts module
+    try {
+      const savedReceipts = localStorage.getItem('system_receipts');
+      if (savedReceipts) {
+        const parsed = JSON.parse(savedReceipts);
+        parsed.forEach((r: any) => {
+          // Avoid duplicate entry if already accounted for
+          if (!combined.some(x => x.id === r.id)) {
+            const dt = r.date ? new Date(r.date) : new Date();
+            const dateIso = !isNaN(dt.getTime()) ? dt.toISOString().split('T')[0] : todayStr;
+            combined.push({
+              id: r.id,
+              date: dateIso,
+              rawDate: dateIso,
+              particulars: `${r.customer || 'Customer'} - ${r.services || 'Receipt'} (${r.mode || 'Cash'})`,
+              type: 'Receipt',
+              amount: Number(r.amount) || 0
+            });
+          }
+        });
+      }
+    } catch (e) {
+      console.error("Error loading receipts for cashbook:", e);
+    }
+
+    // 3. Fetch expenses recorded via Expenses module
+    try {
+      const savedExpenses = localStorage.getItem('system_expenses');
+      if (savedExpenses) {
+        const parsed = JSON.parse(savedExpenses);
+        parsed.forEach((exp: any) => {
+          const dt = exp.date ? new Date(exp.date) : new Date();
+          const dateIso = !isNaN(dt.getTime()) ? dt.toISOString().split('T')[0] : todayStr;
+          combined.push({
+            id: exp.id,
+            date: dateIso,
+            rawDate: dateIso,
+            particulars: `${exp.category} - ${exp.description || 'Expense'} (${exp.mode || 'Cash'})`,
+            type: 'Expense',
+            amount: Number(exp.amount) || 0
+          });
+        });
+      }
+    } catch (e) {
+      console.error("Error loading expenses for cashbook:", e);
+    }
+
+    // Sort transactions by date descending
+    combined.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    setTransactions(combined);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadAllTransactions();
+  }, []);
 
   const filteredTransactions = transactions.filter(t => {
-    const matchesSearch = t.particulars.toLowerCase().includes(searchTerm.toLowerCase()) || t.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const isAfterFrom = t.date >= fromDate;
-    const isBeforeTo = t.date <= toDate;
+    const matchesSearch = t.particulars.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      t.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const isAfterFrom = !fromDate || t.date >= fromDate;
+    const isBeforeTo = !toDate || t.date <= toDate;
     return matchesSearch && isAfterFrom && isBeforeTo;
   });
 
@@ -178,27 +296,41 @@ const CashBook: React.FC = () => {
                 <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)', textAlign: 'right' }}>₹{openingBalance.toLocaleString()}</td>
               </tr>
 
-              {filteredTransactions.map((t) => {
-                if (t.type === 'Receipt') runningBalance += t.amount;
-                else runningBalance -= t.amount;
+              {loading ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    Loading transactions...
+                  </td>
+                </tr>
+              ) : filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    No transactions found for the selected period.
+                  </td>
+                </tr>
+              ) : (
+                filteredTransactions.map((t) => {
+                  if (t.type === 'Receipt') runningBalance += t.amount;
+                  else runningBalance -= t.amount;
 
-                return (
-                  <tr key={t.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{t.date}</td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{t.id}</td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-primary)' }}>{t.particulars}</td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#10b981', textAlign: 'right' }}>
-                      {t.type === 'Receipt' ? `+ ₹${t.amount.toLocaleString()}` : '-'}
-                    </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#ef4444', textAlign: 'right' }}>
-                      {t.type === 'Expense' ? `- ₹${t.amount.toLocaleString()}` : '-'}
-                    </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)', textAlign: 'right' }}>
-                      ₹{runningBalance.toLocaleString()}
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr key={t.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{t.date}</td>
+                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>{t.id}</td>
+                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', color: 'var(--text-primary)' }}>{t.particulars}</td>
+                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#10b981', textAlign: 'right' }}>
+                        {t.type === 'Receipt' ? `+ ₹${t.amount.toLocaleString()}` : '-'}
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#ef4444', textAlign: 'right' }}>
+                        {t.type === 'Expense' ? `- ₹${t.amount.toLocaleString()}` : '-'}
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary-dark)', textAlign: 'right' }}>
+                        ₹{runningBalance.toLocaleString()}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
 
               {/* Closing Balance Row */}
               <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>

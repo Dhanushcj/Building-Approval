@@ -11,6 +11,7 @@ import {
   Linking,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MobileHeader } from '../../components/MobileHeader';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Colors } from '../../constants/theme';
@@ -19,6 +20,7 @@ import { Case } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ApplicationsListScreen() {
+  const insets = useSafeAreaInsets();
   const [cases, setCases] = useState<Case[]>([]);
   const [search, setSearch] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('ALL');
@@ -129,7 +131,7 @@ export default function ApplicationsListScreen() {
         <FlatList
           data={filtered}
           keyExtractor={item => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom + 20, 36) }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>

@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Receipt, Printer, FileText, Clock } from 'lucide-react';
-import { recentApplications } from '../../data/mockData';
 import html2pdf from 'html2pdf.js';
 
 const PaymentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [caseRecord, setCaseRecord] = useState<any>(null);
   const [payment, setPayment] = useState<any>(null);
   const [customerPhoto, setCustomerPhoto] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Form State
   const [collectionAmount, setCollectionAmount] = useState('');
@@ -25,53 +26,49 @@ const PaymentDetail: React.FC = () => {
         if (res.ok) {
           c = await res.json();
         } else {
-          c = recentApplications.find(app => app.id === id || app.application_number === id);
+          // If not found by direct ID (might be application_number), query list
+          const listRes = await fetch(`${apiUrl}/cases`);
+          if (listRes.ok) {
+            const list = await listRes.json();
+            c = list.find((item: any) => item.id === id || item.application_number === id);
+          }
         }
         
         if (c) {
-          const statuses = ['Pending', 'Paid', 'Partial'];
-          const idStr = (c.application_number || c.id || id).toString();
-          let seed = 0;
-          for (let i = 0; i < idStr.length; i++) seed += idStr.charCodeAt(i);
-          
-          const savedAmount = localStorage.getItem(`paymentAmount_${idStr}`);
-          const total = savedAmount ? Number(savedAmount) : ((seed % 10) + 2) * 5000;
-          
-          const savedPaid = localStorage.getItem(`paidAmount_${idStr}`);
-          const savedStatus = localStorage.getItem(`paymentStatus_${idStr}`);
-          
-          const status = savedStatus ? savedStatus : statuses[seed % statuses.length];
-          const paid = savedPaid ? Number(savedPaid) : (status === 'Paid' ? total : (status === 'Pending' ? 0 : Math.floor(total / 2)));
+          setCaseRecord(c);
+          const total = Number(c.fees?.total ?? c.fullData?.fees?.total ?? (c.fullData?.feesAmount ? parseFloat(c.fullData.feesAmount) : 0)) || 0;
+          const paid = Number(c.fees?.paid ?? c.fullData?.fees?.paid ?? (c.fullData?.paidAmount ? parseFloat(c.fullData.paidAmount) : 0)) || 0;
+          const pending = c.fees?.pending !== undefined && c.fees?.pending !== null 
+            ? Number(c.fees.pending) 
+            : Math.max(0, total - paid);
+
+          let status = 'Pending';
+          if (pending === 0 && total > 0) {
+            status = 'Paid';
+          } else if (paid > 0 && pending > 0) {
+            status = 'Partial';
+          } else {
+            status = 'Pending';
+          }
           
           setPayment({
             id: c.application_number || c.id || id,
-            customer: c.property?.owner_name || c.customer || 'Unknown',
-            type: c.approval_type || c.type || 'Building',
+            mongoId: c.id,
+            customer: c.property?.owner_name || c.fullData?.customerName || c.clientName || 'Customer',
+            type: c.approval_type || c.type || 'Building Plan Approval',
             totalAmount: total,
             paidAmount: paid,
-            pendingAmount: total - paid,
+            pendingAmount: pending,
             status: status,
             date: c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A',
-            phone: c.property?.owner_phone || c.mobile || 'Unknown',
-            location: c.property?.jurisdiction || c.location || 'Unknown',
-            address: c.property?.address || c.address || 'Not provided'
+            phone: c.property?.owner_phone || c.fullData?.mobile || c.mobile || 'Not provided',
+            location: c.property?.jurisdiction || c.location || 'DTCP',
+            address: c.property?.address || c.address || 'Not provided',
+            notes: c.fees?.notes || c.fullData?.feeNotes || ''
           });
           setNewStatus(status);
         } else {
-          setPayment({
-            id: id,
-            customer: 'John Doe',
-            type: 'Building Approval',
-            totalAmount: 50000,
-            paidAmount: 20000,
-            pendingAmount: 30000,
-            status: 'Partial',
-            date: 'N/A',
-            phone: '+91 9876543210',
-            location: 'Hosur',
-            address: '123 Main St, Hosur'
-          });
-          setNewStatus('Partial');
+          setPayment(null);
         }
       } catch (err) {
         console.error(err);
@@ -109,26 +106,70 @@ const PaymentDetail: React.FC = () => {
     }
   }, [collectionAmount, payment]);
 
-  const handleSavePayment = () => {
+  const handleSavePayment = async () => {
     if (!payment) return;
     
     const amountToAdd = parseFloat(collectionAmount) || 0;
     const newPaid = payment.paidAmount + amountToAdd;
-    let finalStatus = newStatus;
+    const total = payment.totalAmount;
+    const newPending = Math.max(0, total - newPaid);
 
-    if (newPaid >= payment.totalAmount) {
+    let finalStatus = newStatus;
+    if (newPending === 0 && total > 0) {
       finalStatus = 'Paid';
-    } else if (newPaid > 0 && finalStatus === 'Pending') {
+    } else if (newPaid > 0 && newPending > 0) {
       finalStatus = 'Partial';
     }
-    
-    localStorage.setItem(`paidAmount_${payment.id}`, newPaid.toString());
-    localStorage.setItem(`paymentStatus_${payment.id}`, finalStatus);
-    
-    setTimeout(() => {
+
+    setIsSaving(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://building-approval.onrender.com/api';
+      const targetId = caseRecord?.id || payment.mongoId || payment.id;
+      
+      const existingCharges = caseRecord?.fees?.charges || caseRecord?.fullData?.fees?.charges || [];
+      const updatedCharges = [...existingCharges];
+      if (amountToAdd > 0) {
+        updatedCharges.push({
+          id: `chg-${Date.now()}`,
+          description: notes.trim() || `Payment via ${paymentMode}`,
+          amount: amountToAdd,
+          mode: paymentMode,
+          date: new Date().toISOString()
+        });
+      }
+
+      const updatedFees = {
+        total: total,
+        paid: newPaid,
+        pending: newPending,
+        notes: notes.trim() || payment.notes || '',
+        charges: updatedCharges
+      };
+
+      await fetch(`${apiUrl}/cases/${targetId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fees: updatedFees,
+          fullData: {
+            ...(caseRecord?.fullData || {}),
+            feesAmount: total.toString(),
+            paidAmount: newPaid.toString(),
+            feeNotes: updatedFees.notes,
+            fees: updatedFees
+          }
+        })
+      });
+
       alert(`Payment of ₹${amountToAdd} recorded successfully. Status updated to ${finalStatus}.`);
       navigate('/admin/payments');
-    }, 500);
+    } catch (err) {
+      console.error("Failed to persist payment:", err);
+      alert(`Payment updated locally. Status is ${finalStatus}.`);
+      navigate('/admin/payments');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleGeneratePDF = (type: 'receipt' | 'invoice') => {
@@ -261,8 +302,8 @@ const PaymentDetail: React.FC = () => {
               <button className="btn-secondary" onClick={() => navigate('/admin/payments')}>
                 Cancel
               </button>
-              <button className="btn-primary" onClick={handleSavePayment}>
-                <Save size={18} /> Save Payment
+              <button className="btn-primary" onClick={handleSavePayment} disabled={isSaving}>
+                <Save size={18} /> {isSaving ? 'Saving...' : 'Save Payment'}
               </button>
             </div>
           </div>

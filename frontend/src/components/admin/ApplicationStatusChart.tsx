@@ -4,20 +4,22 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { getApplicationStatus } from '../../utils/statusHelper';
 
 const STATUS_COLORS: Record<string, string> = {
-  'New':                '#0369a1',
-  'INTAKE':             '#0369a1',
-  'Documents Pending':  'var(--warning-gold)',
-  'DOCUMENT_COLLECTION': 'var(--warning-gold)',
-  'Action Required':    'var(--warning-gold)',
-  'Verification':       'var(--primary-dark)',
-  'Under Review':       'var(--primary)',
-  'Submitted':          '#7e22ce',
-  'SUBMITTED':          '#7e22ce',
-  'Gov Verification':   '#3D5A80',
-  'Site Inspection':    'var(--accent)',
-  'Approved':           'var(--success-green)',
-  'COMPLETED':          'var(--success-green)',
-  'Rejected':           'var(--error-red)',
+  'New':                  '#0369a1',
+  'Documents Pending':    'var(--warning-gold)',
+  'DOCUMENTS_PENDING':    'var(--warning-gold)',
+  'Documents Verification': 'var(--primary)',
+  'DOCUMENTS_VERIFICATION': 'var(--primary)',
+  'DOCUMENT_COLLECTION':  'var(--warning-gold)',
+  'Action Required':      'var(--warning-gold)',
+  'Verification':         'var(--primary-dark)',
+  'Under Review':         'var(--primary)',
+  'Submitted':            '#7e22ce',
+  'SUBMITTED':            '#7e22ce',
+  'Gov Verification':     '#3D5A80',
+  'Site Inspection':      'var(--accent)',
+  'Approved':             'var(--success-green)',
+  'COMPLETED':            'var(--success-green)',
+  'Rejected':             'var(--error-red)',
 };
 
 const ApplicationStatusChart: React.FC = () => {
@@ -36,10 +38,12 @@ const ApplicationStatusChart: React.FC = () => {
 
         const buckets: Record<string, number> = {};
         apps.forEach(app => {
-          let status = getApplicationStatus(app.application_number || app.id, app.status);
+          let status = getApplicationStatus(app.application_number || app.id, app.status, app);
           
           // Map backend specific statuses to chart friendly names if getApplicationStatus doesn't
-          if (status === 'INTAKE') status = 'New';
+          if (status === 'INTAKE') status = 'Documents Pending';
+          if (status === 'DOCUMENTS_PENDING') status = 'Documents Pending';
+          if (status === 'DOCUMENTS_VERIFICATION') status = 'Documents Verification';
           if (status === 'COMPLETED') status = 'Approved';
           if (status === 'DOCUMENT_COLLECTION') status = 'Documents Pending';
 

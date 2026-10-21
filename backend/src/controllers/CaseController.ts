@@ -68,10 +68,12 @@ export class CaseController {
         approval_type = 'BUILDING_PLAN_APPROVAL';
       }
 
-      const validStatuses = ['INTAKE', 'DOCUMENT_COLLECTION', 'APPLICATION_PREP', 'SUBMITTED', 'SCRUTINY', 'ACTION_NEEDED', 'INSPECTION_SCHEDULED', 'INSPECTION_DONE', 'APPROVED', 'CLOSED'];
+      const validStatuses = ['DOCUMENTS_PENDING', 'DOCUMENTS_VERIFICATION', 'INTAKE', 'DOCUMENT_COLLECTION', 'APPLICATION_PREP', 'SUBMITTED', 'SCRUTINY', 'ACTION_NEEDED', 'INSPECTION_SCHEDULED', 'INSPECTION_DONE', 'APPROVED', 'CLOSED'];
       let caseStatus = data.status;
-      if (!caseStatus || !validStatuses.includes(caseStatus)) {
-        caseStatus = 'INTAKE';
+      if (!caseStatus || !validStatuses.includes(caseStatus) || caseStatus === 'INTAKE') {
+        caseStatus = (data.uploadedFiles && Object.keys(data.uploadedFiles).some(k => !['username', 'password', 'receiptNumber'].includes(k) && Boolean(data.uploadedFiles[k])))
+          ? 'DOCUMENTS_VERIFICATION'
+          : 'DOCUMENTS_PENDING';
       }
 
       const newCase = await prisma.case.create({ 

@@ -11,11 +11,14 @@ import {
   Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MobileHeader } from '../../components/MobileHeader';
 import { colors, spacing, borderRadius } from '../../constants/theme';
 import { applicationService } from '../../services/applicationService';
 import { Lead } from '../../types';
 
 export default function CustomersScreen() {
+  const insets = useSafeAreaInsets();
   const [customers, setCustomers] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -101,6 +104,8 @@ export default function CustomersScreen() {
 
   return (
     <View style={styles.container}>
+      <MobileHeader title="Customer Directory" />
+
       {/* Search Header */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
@@ -129,7 +134,7 @@ export default function CustomersScreen() {
           data={filtered}
           keyExtractor={(item, index) => item.id || String(index)}
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: Math.max(insets.bottom + 20, 36) }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -233,9 +238,9 @@ const styles = StyleSheet.create({
   detailsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
     marginTop: spacing.sm,
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   actionBtn: {
     flexDirection: 'row',

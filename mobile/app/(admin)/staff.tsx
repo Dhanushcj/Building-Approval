@@ -13,11 +13,14 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MobileHeader } from '../../components/MobileHeader';
 import { colors, spacing, borderRadius } from '../../constants/theme';
 import { applicationService } from '../../services/applicationService';
 import { User } from '../../types';
 
 export default function StaffScreen() {
+  const insets = useSafeAreaInsets();
   const [staffList, setStaffList] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -133,6 +136,16 @@ export default function StaffScreen() {
 
   return (
     <View style={styles.container}>
+      <MobileHeader
+        title="Staff Management"
+        rightAction={
+          <TouchableOpacity style={styles.headerAddBtn} onPress={() => setModalVisible(true)}>
+            <Ionicons name="person-add" size={16} color="#FFFFFF" />
+            <Text style={styles.headerAddBtnText}>Add</Text>
+          </TouchableOpacity>
+        }
+      />
+
       {/* Search & Actions Header */}
       <View style={styles.headerArea}>
         <View style={styles.searchBar}>
@@ -160,7 +173,7 @@ export default function StaffScreen() {
           data={filtered}
           keyExtractor={(item, index) => item.id || item._id || item.username || String(index)}
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: Math.max(insets.bottom + 20, 36) }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -275,6 +288,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  headerAddBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
+  },
+  headerAddBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12,
+  },
   headerArea: {
     flexDirection: 'row',
     padding: spacing.md,
@@ -367,8 +394,9 @@ const styles = StyleSheet.create({
   detailsRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     marginTop: spacing.md,
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   actionBtn: {
     flexDirection: 'row',
