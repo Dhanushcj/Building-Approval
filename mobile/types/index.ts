@@ -46,6 +46,7 @@ export interface Case {
   application_number?: string;
   clientName?: string;
   approval_type?: string;
+  approval_number?: string;
   status: string;
   property_id?: string;
   property?: Property;
@@ -58,6 +59,8 @@ export interface Case {
     total?: number;
     paid?: number;
     pending?: number;
+    notes?: string;
+    charges?: Array<{ id: string; description: string; amount: number; date: string }>;
   };
   fullData?: any;
   uploadedFiles?: Record<string, string>;

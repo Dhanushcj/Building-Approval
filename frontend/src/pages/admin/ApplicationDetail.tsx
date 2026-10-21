@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, User, Building, FileText, Upload, CheckCircle, X, Save, Send, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { recentApplications } from '../../data/mockData';
@@ -7,6 +7,9 @@ import { recentApplications } from '../../data/mockData';
 const ApplicationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = React.useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const isEditMode = searchParams.get('edit') === 'true';
   const [staffList, setStaffList] = useState<any[]>([]);
 
   React.useEffect(() => {
@@ -95,21 +98,33 @@ const ApplicationDetail: React.FC = () => {
       const existingStr = localStorage.getItem('mock_saved_cases');
       if (existingStr) {
         const existing = JSON.parse(existingStr);
-        const app = existing.find((a: any) => a.id === id);
+        const app = existing.find((a: any) => a.id === id || a.application_number === id);
         if (app && app.status) {
-          return app.status === 'Submitted' ? 'PENDING_DOCUMENTS' : app.status;
+          return app.status;
         }
       }
-      const apiApp = recentApplications.find((a: any) => a.id === id);
-      if (apiApp && apiApp.status) return apiApp.status === 'Submitted' ? 'PENDING_DOCUMENTS' : apiApp.status;
+      const apiApp = recentApplications.find((a: any) => a.id === id || a.application_number === id);
+      if (apiApp && apiApp.status) return apiApp.status;
     }
     return 'PENDING_DOCUMENTS';
   });
 
   const [currentStep, setCurrentStep] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const stepParam = params.get('step');
+    const tabParam = params.get('tab');
+    if (stepParam) return Math.min(4, Math.max(1, parseInt(stepParam, 10)));
+    if (tabParam === 'documents' || tabParam === 'docs') return 4;
     const saved = localStorage.getItem('newApp_currentStep');
-    return saved ? parseInt(saved, 10) : 1;
+    return saved && !id ? parseInt(saved, 10) : 1;
   });
+
+  React.useEffect(() => {
+    const stepParam = searchParams.get('step');
+    const tabParam = searchParams.get('tab');
+    if (stepParam) setCurrentStep(Math.min(4, Math.max(1, parseInt(stepParam, 10))));
+    else if (tabParam === 'documents' || tabParam === 'docs') setCurrentStep(4);
+  }, [location.search, searchParams]);
   const totalSteps = 4;
   const [isUploading, setIsUploading] = useState(false);
   const [isSaveMenuOpen, setSaveMenuOpen] = useState(false);
@@ -142,7 +157,7 @@ const ApplicationDetail: React.FC = () => {
       const existingStr = localStorage.getItem('mock_saved_cases');
       if (existingStr) {
         const existing = JSON.parse(existingStr);
-        const app = existing.find((a: any) => a.id === id);
+        const app = existing.find((a: any) => a.id === id || a.application_number === id);
         if (app && app.uploadedFiles) {
           return app.uploadedFiles;
         }
@@ -161,15 +176,16 @@ const ApplicationDetail: React.FC = () => {
             const parsed = JSON.parse(savedDocs);
             const mappedDocs: any = {};
             parsed.forEach((d: any) => {
-              if (d.fileData) {
-                if (d.id === 'sale_deed') mappedDocs['SALE DEED'] = d.fileData;
-                if (d.id === 'patta') mappedDocs['PATTA'] = d.fileData;
-                if (d.id === 'fmb') mappedDocs['FMB'] = d.fileData;
-                if (d.id === 'pan') mappedDocs['PAN CARD'] = d.fileData;
-                if (d.id === 'aadhar') mappedDocs['AADHAR CARD'] = d.fileData;
-                if (d.id === 'photo') mappedDocs['CUSTOMER PHOTOGRAPH'] = d.fileData;
-                if (d.id === 'signature') mappedDocs['CUSTOMER SIGNATURE'] = d.fileData;
-                if (d.id === 'building_plan') mappedDocs['BUILDING PLAN'] = d.fileData;
+              const fileVal = d.fileData || d.url || d.file;
+              if (fileVal) {
+                if (d.id === 'sale_deed') mappedDocs['SALE DEED'] = fileVal;
+                if (d.id === 'patta') mappedDocs['PATTA'] = fileVal;
+                if (d.id === 'fmb') mappedDocs['FMB'] = fileVal;
+                if (d.id === 'pan') mappedDocs['PAN CARD'] = fileVal;
+                if (d.id === 'aadhar') mappedDocs['AADHAR CARD'] = fileVal;
+                if (d.id === 'photo') mappedDocs['CUSTOMER PHOTOGRAPH'] = fileVal;
+                if (d.id === 'signature') mappedDocs['CUSTOMER SIGNATURE'] = fileVal;
+                if (d.id === 'building_plan') mappedDocs['BUILDING PLAN'] = fileVal;
               }
             });
             
@@ -189,7 +205,7 @@ const ApplicationDetail: React.FC = () => {
           if (res.ok) {
             const c = await res.json();
             if (c.status) {
-              setApplicationStatus(c.status === 'Submitted' ? 'PENDING_DOCUMENTS' : c.status);
+              setApplicationStatus(c.status);
             }
             if (c.uploadedFiles) {
               setUploadedFiles(prev => ({ ...prev, ...c.uploadedFiles }));
@@ -581,24 +597,59 @@ const ApplicationDetail: React.FC = () => {
   };
 
   const renderStepIndicator = () => {
+    const steps = [
+      { num: 1, label: 'Personal Details' },
+      { num: 2, label: 'Property Details' },
+      { num: 3, label: 'Fees Details' },
+      { num: 4, label: 'Uploaded Documents' },
+    ];
+
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
-        {[1, 2, 3, 4].map((step) => (
-          <React.Fragment key={step}>
-            <div style={{ 
-              width: '32px', height: '32px', borderRadius: '50%', 
-              backgroundColor: currentStep >= step ? 'var(--primary)' : 'var(--bg-secondary)',
-              color: currentStep >= step ? 'white' : 'var(--text-secondary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 600, fontSize: '0.875rem', border: currentStep >= step ? 'none' : '1px solid var(--border-color)'
-            }}>
-              {step}
-            </div>
-            {step < 4 && (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        {steps.map((step, idx) => (
+          <React.Fragment key={step.num}>
+            <div 
+              onClick={() => setCurrentStep(step.num)}
+              role="button"
+              tabIndex={0}
+              title={`Click to switch to Step ${step.num}: ${step.label}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                cursor: 'pointer',
+                padding: '0.4rem 0.85rem',
+                borderRadius: '2rem',
+                backgroundColor: currentStep === step.num ? 'rgba(30, 58, 138, 0.1)' : 'transparent',
+                border: currentStep === step.num ? '1px solid var(--primary)' : '1px solid transparent',
+                transition: 'all 0.2s ease'
+              }}
+            >
               <div style={{ 
-                width: '60px', height: '4px', 
-                backgroundColor: currentStep > step ? 'var(--primary)' : 'var(--bg-secondary)',
-                margin: '0 8px', borderRadius: '2px'
+                width: '30px', height: '30px', borderRadius: '50%', 
+                backgroundColor: currentStep >= step.num ? 'var(--primary)' : 'var(--bg-secondary)',
+                color: currentStep >= step.num ? 'white' : 'var(--text-secondary)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, fontSize: '0.875rem', 
+                border: currentStep >= step.num ? 'none' : '1px solid var(--border-color)',
+                flexShrink: 0
+              }}>
+                {step.num}
+              </div>
+              <span style={{ 
+                fontSize: '0.8125rem', 
+                fontWeight: currentStep === step.num ? 700 : 500, 
+                color: currentStep === step.num ? 'var(--primary)' : 'var(--text-secondary)',
+                whiteSpace: 'nowrap'
+              }}>
+                {step.label}
+              </span>
+            </div>
+            {idx < steps.length - 1 && (
+              <div style={{ 
+                width: '24px', height: '2px', 
+                backgroundColor: currentStep > step.num ? 'var(--primary)' : 'var(--border-color)',
+                borderRadius: '2px'
               }} />
             )}
           </React.Fragment>
@@ -1310,25 +1361,14 @@ const ApplicationDetail: React.FC = () => {
             <div style={{ marginBottom: '2rem' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Doc Type</label>
               <select value={docUploadType} onChange={e => setDocUploadType(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '0.25rem', outline: 'none', backgroundColor: '#f8fafc', color: 'var(--primary-dark)', fontWeight: 500 }}>
-                {['PENDING_DOCUMENTS', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) && currentStep === 1 && (
+                {currentStep === 1 ? (
                   <>
                     <option value="CUSTOMER PHOTOGRAPH">CUSTOMER PHOTOGRAPH</option>
                     <option value="CUSTOMER SIGNATURE">CUSTOMER SIGNATURE</option>
                     <option value="AADHAR CARD">AADHAR CARD</option>
                     <option value="PAN CARD">PAN CARD</option>
                   </>
-                )}
-                {['PENDING_DOCUMENTS', 'INTAKE', 'Draft', 'NEW', 'Submitted'].includes(applicationStatus) && currentStep === 2 && (
-                  <>
-                    <option value="LAND DOCUMENT">LAND DOCUMENT</option>
-                    <option value="SALE DEED">SALE DEED</option>
-                    <option value="PATTA">PATTA</option>
-                    <option value="FMB">FMB</option>
-                    <option value="PROPERTY SIGNATURE">SIGNATURE</option>
-                    <option value="BUILDING PLAN">BUILDING PLAN</option>
-                  </>
-                )}
-                {applicationStatus === 'DOCUMENTS_VERIFICATION' && (
+                ) : (
                   <>
                     <option value="CUSTOMER PHOTOGRAPH">CUSTOMER PHOTOGRAPH</option>
                     <option value="CUSTOMER SIGNATURE">CUSTOMER SIGNATURE</option>
@@ -1340,13 +1380,9 @@ const ApplicationDetail: React.FC = () => {
                     <option value="FMB">FMB</option>
                     <option value="PROPERTY SIGNATURE">SIGNATURE</option>
                     <option value="BUILDING PLAN">BUILDING PLAN</option>
+                    <option value="RECEIPT">RECEIPT</option>
+                    <option value="FINAL_APPROVAL">FINAL APPROVAL</option>
                   </>
-                )}
-                {applicationStatus === 'DOCUMENTS_VERIFIED' && (
-                  <option value="RECEIPT">RECEIPT</option>
-                )}
-                {applicationStatus === 'SUBMITTED_FOR_APPROVAL' && (
-                  <option value="FINAL_APPROVAL">FINAL APPROVAL</option>
                 )}
               </select>
             </div>
@@ -1422,99 +1458,159 @@ const ApplicationDetail: React.FC = () => {
     <div style={{ paddingBottom: '3rem', margin: '0 auto' }}>
 
 
-      {['PENDING_DOCUMENTS', 'Documents Pending', 'INTAKE', 'Draft', 'NEW', 'Submitted', 'COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) ? (
-        <>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-            <button 
-              onClick={(e) => { 
-                e.preventDefault(); 
-                const link = `${window.location.origin}/upload/${id || 'NEW'}`;
-                navigator.clipboard.writeText(link);
-                
-                // Update Link Tracking status
-                if (id) {
-                  const localCasesStr = localStorage.getItem('mock_saved_cases');
-                  if (localCasesStr) {
-                    const localCases = JSON.parse(localCasesStr);
-                    const cIndex = localCases.findIndex((c: any) => (c.application_number || c.id) === id);
-                    if (cIndex !== -1) {
-                      if (!localCases[cIndex].linkTracking) {
-                        localCases[cIndex].linkTracking = {};
+      {(() => {
+        const isWorkflowScreen = !isEditMode && ['DOCUMENTS_VERIFICATION', 'DOCUMENTS_VERIFIED', 'SUBMITTED_FOR_APPROVAL'].includes(applicationStatus);
+
+        if (isWorkflowScreen) {
+          return (
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <button 
+                  onClick={() => navigate(isEmployee ? '/employee/applications' : '/admin/applications')}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.875rem', padding: 0 }}
+                >
+                  <ArrowLeft size={16} /> Back to Applications
+                </button>
+                <button
+                  onClick={() => navigate(`?edit=true`)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.375rem',
+                    backgroundColor: 'var(--bg-surface)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--primary)',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    fontSize: '0.8125rem'
+                  }}
+                >
+                  <FileText size={16} /> Edit / View Full Form Details
+                </button>
+              </div>
+              {applicationStatus === 'DOCUMENTS_VERIFICATION' && renderDocumentVerificationScreen()}
+              {applicationStatus === 'DOCUMENTS_VERIFIED' && renderReceiptUploadScreen()}
+              {applicationStatus === 'SUBMITTED_FOR_APPROVAL' && renderFinalApprovalScreen()}
+            </div>
+          );
+        }
+
+        return (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <button 
+                  onClick={() => navigate(isEmployee ? '/employee/applications' : '/admin/applications')}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.875rem', padding: 0 }}
+                >
+                  <ArrowLeft size={16} /> Back to Applications
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <button 
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    const link = `${window.location.origin}/upload/${id || 'NEW'}`;
+                    navigator.clipboard.writeText(link);
+                    
+                    if (id) {
+                      const localCasesStr = localStorage.getItem('mock_saved_cases');
+                      if (localCasesStr) {
+                        const localCases = JSON.parse(localCasesStr);
+                        const cIndex = localCases.findIndex((c: any) => (c.application_number || c.id) === id);
+                        if (cIndex !== -1) {
+                          if (!localCases[cIndex].linkTracking) {
+                            localCases[cIndex].linkTracking = {};
+                          }
+                          if (formData.email) {
+                            localCases[cIndex].linkTracking.sendStatus = 'success';
+                          } else {
+                            localCases[cIndex].linkTracking.sendStatus = 'failed';
+                          }
+                          localCases[cIndex].linkTracking.sent = true;
+                          localCases[cIndex].linkTracking.sentDate = new Date().toISOString();
+                          localStorage.setItem('mock_saved_cases', JSON.stringify(localCases));
+                          window.dispatchEvent(new Event('storage'));
+                        }
                       }
-                      if (formData.email) {
-                        localCases[cIndex].linkTracking.sendStatus = 'success';
-                      } else {
-                        localCases[cIndex].linkTracking.sendStatus = 'failed';
-                      }
-                      localCases[cIndex].linkTracking.sent = true;
-                      localCases[cIndex].linkTracking.sentDate = new Date().toISOString();
-                      localStorage.setItem('mock_saved_cases', JSON.stringify(localCases));
-                      window.dispatchEvent(new Event('storage'));
                     }
-                  }
-                }
-                
-                toast.success('Upload link copied! Share this with the customer.');
-                if (formData.mobile) {
-                  // Format mobile number to remove any non-digit characters and ensure it starts with country code if needed (assuming India 91 if length is 10)
-                  let phoneNumber = formData.mobile.replace(/\D/g, '');
-                  if (phoneNumber.length === 10) {
-                    phoneNumber = '91' + phoneNumber;
-                  }
-                  const message = encodeURIComponent(`Hello ${formData.customerName || ''},\n\nPlease use the following link to upload your documents for building approval:\n${link}`);
-                  window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
-                } else {
-                  toast.error('Please enter a mobile number to share via WhatsApp.');
-                }
-              }}
-              style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '0.5rem', padding: '0.6rem 1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, boxShadow: '0 2px 4px rgba(0,0,0,0.1)', transition: 'background-color 0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-dark)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
-            >
-              <Send size={18} /> Share Upload Link
-            </button>
-          </div>
-
-          {['COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) && (
-             <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '2rem', backgroundColor: applicationStatus === 'Rejected' ? '#fef2f2' : '#f0fdf4', border: applicationStatus === 'Rejected' ? '1px solid #fecaca' : '1px solid #bbf7d0' }}>
-                {applicationStatus === 'Rejected' ? <X size={48} color="#ef4444" style={{ margin: '0 auto 1rem' }} /> : <CheckCircle size={48} color="var(--success-green)" style={{ margin: '0 auto 1rem' }} />}
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Application {applicationStatus.toUpperCase()}</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>This application process has been completely verified and finalized.</p>
-             </div>
-          )}
-          {renderStepIndicator()}
-          <div style={{ marginBottom: '2rem' }}>
-            {currentStep === 1 && renderStep1()}
-            {currentStep === 2 && renderStep2()}
-            {currentStep === 3 && renderStep3()}
-            {currentStep === 4 && renderStep4()}
-          </div>
-          {currentStep < 4 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <button onClick={handlePrev} disabled={currentStep === 1} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: currentStep === 1 ? 'var(--bg-secondary)' : 'var(--bg-surface)', border: '1px solid var(--border-color)', color: currentStep === 1 ? 'var(--text-secondary)' : 'var(--primary-dark)', fontWeight: 600, cursor: currentStep === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <ArrowLeft size={18} /> Back
-              </button>
-              <button onClick={handleNext} className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                Next <ArrowRight size={18} />
-              </button>
+                    
+                    toast.success('Upload link copied! Share this with the customer.');
+                    if (formData.mobile) {
+                      let phoneNumber = formData.mobile.replace(/\D/g, '');
+                      if (phoneNumber.length === 10) phoneNumber = '91' + phoneNumber;
+                      const message = encodeURIComponent(`Hello ${formData.customerName || ''},\n\nPlease use the following link to upload your documents for building approval:\n${link}`);
+                      window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+                    } else {
+                      toast.error('Please enter a mobile number to share via WhatsApp.');
+                    }
+                  }}
+                  style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '0.5rem', padding: '0.6rem 1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, boxShadow: '0 2px 4px rgba(0,0,0,0.1)', transition: 'background-color 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-dark)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
+                >
+                  <Send size={18} /> Share Upload Link
+                </button>
+              </div>
             </div>
-          )}
-          {currentStep === 4 && (
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '1rem', backgroundColor: 'transparent' }}>
-              <button onClick={handlePrev} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--primary-dark)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <ArrowLeft size={18} /> Back to Fees Details
-              </button>
-            </div>
-          )}
-        </>
-      ) : (
-        <div style={{ marginBottom: '2rem' }}>
-          {applicationStatus === 'DOCUMENTS_VERIFICATION' && renderDocumentVerificationScreen()}
-          {applicationStatus === 'DOCUMENTS_VERIFIED' && renderReceiptUploadScreen()}
-          {applicationStatus === 'SUBMITTED_FOR_APPROVAL' && renderFinalApprovalScreen()}
 
-        </div>
-      )}
+            {/* Submitted Status Banner */}
+            {['SUBMITTED', 'Submitted'].includes(applicationStatus) && (
+              <div className="card" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem', backgroundColor: '#f5f3ff', border: '1px solid #ddd6fe', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <CheckCircle size={24} color="#7e22ce" />
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#6b21a8' }}>Status: SUBMITTED</h4>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: '#7e22ce' }}>Application has been submitted and is currently in review. Review application details or uploaded documents below.</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setCurrentStep(4)} 
+                  style={{ padding: '0.5rem 1rem', borderRadius: '0.375rem', backgroundColor: '#7e22ce', color: 'white', border: 'none', fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <FileText size={16} /> View Documents (Step 4)
+                </button>
+              </div>
+            )}
+
+            {/* Completed / Approved / Rejected Banner */}
+            {['COMPLETED', 'Completed', 'Approved', 'Rejected'].includes(applicationStatus) && (
+               <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '2rem', backgroundColor: applicationStatus === 'Rejected' ? '#fef2f2' : '#f0fdf4', border: applicationStatus === 'Rejected' ? '1px solid #fecaca' : '1px solid #bbf7d0' }}>
+                  {applicationStatus === 'Rejected' ? <X size={48} color="#ef4444" style={{ margin: '0 auto 1rem' }} /> : <CheckCircle size={48} color="var(--success-green)" style={{ margin: '0 auto 1rem' }} />}
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>Application {applicationStatus.toUpperCase()}</h3>
+                  <p style={{ color: 'var(--text-secondary)' }}>This application process has been completely verified and finalized.</p>
+               </div>
+            )}
+
+            {renderStepIndicator()}
+            <div style={{ marginBottom: '2rem' }}>
+              {currentStep === 1 && renderStep1()}
+              {currentStep === 2 && renderStep2()}
+              {currentStep === 3 && renderStep3()}
+              {currentStep === 4 && renderStep4()}
+            </div>
+            {currentStep < 4 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <button onClick={handlePrev} disabled={currentStep === 1} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: currentStep === 1 ? 'var(--bg-secondary)' : 'var(--bg-surface)', border: '1px solid var(--border-color)', color: currentStep === 1 ? 'var(--text-secondary)' : 'var(--primary-dark)', fontWeight: 600, cursor: currentStep === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ArrowLeft size={18} /> Back
+                </button>
+                <button onClick={handleNext} className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  Next <ArrowRight size={18} />
+                </button>
+              </div>
+            )}
+            {currentStep === 4 && (
+              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '1rem', backgroundColor: 'transparent' }}>
+                <button onClick={handlePrev} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', color: 'var(--primary-dark)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ArrowLeft size={18} /> Back to Fees Details
+                </button>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {renderUploadModal()}
       

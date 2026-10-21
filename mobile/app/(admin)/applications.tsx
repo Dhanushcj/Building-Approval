@@ -8,6 +8,7 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { router } from 'expo-router';
 import { MobileHeader } from '../../components/MobileHeader';
@@ -61,6 +62,21 @@ export default function ApplicationsListScreen() {
     if (selectedFilter === 'REJECTED') return st.includes('REJECT');
     return true;
   });
+
+  const handleQuickWhatsApp = (item: Case, e: any) => {
+    e.stopPropagation();
+    const appNum = item.application_number || item.id;
+    const uploadLink = `https://building-approval.vercel.app/upload/${appNum}`;
+    const custName = item.property?.owner_name || item.fullData?.customerName || 'Customer';
+    const rawPhone = item.property?.owner_phone || item.fullData?.mobile || '';
+    let cleanPhone = rawPhone.replace(/\D/g, '');
+    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+    const msg = `Hello ${custName},\n\nPlease use the following link to upload your required documents for building approval application ${appNum}:\n${uploadLink}`;
+    const waUrl = cleanPhone
+      ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    Linking.openURL(waUrl);
+  };
 
   return (
     <View style={styles.container}>
@@ -154,10 +170,20 @@ export default function ApplicationsListScreen() {
               </View>
 
               <View style={styles.cardFooter}>
-                <Text style={styles.typeText}>{item.approval_type || 'Building Plan Approval'}</Text>
-                <Text style={styles.dateText}>
-                  {item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB') : 'Recent'}
-                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.typeText}>{item.approval_type || 'Building Plan Approval'}</Text>
+                  <Text style={styles.dateText}>
+                    {item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB') : 'Recent'}
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.cardWaBtn}
+                  onPress={(e) => handleQuickWhatsApp(item, e)}
+                >
+                  <Ionicons name="logo-whatsapp" size={14} color="#FFFFFF" />
+                  <Text style={styles.cardWaText}>Upload Link</Text>
+                </TouchableOpacity>
               </View>
             </TouchableOpacity>
           )}
@@ -284,6 +310,20 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 11,
     color: Colors.textMuted,
+  },
+  cardWaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#25D366',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
+  },
+  cardWaText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 10,
   },
   emptyContainer: {
     alignItems: 'center',

@@ -9,9 +9,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 interface MobileHeaderProps {
   title: string;
   showBack?: boolean;
+  rightAction?: React.ReactNode;
 }
 
-export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, showBack = false }) => {
+export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, showBack = false, rightAction }) => {
   const { user, logout } = useAuth();
 
   return (
@@ -29,7 +30,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, showBack = fa
               resizeMode="contain"
             />
           )}
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.title} numberOfLines={1}>{title}</Text>
             {user && (
               <Text style={styles.subtitle} numberOfLines={1}>
@@ -39,9 +40,12 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, showBack = fa
           </View>
         </View>
 
-        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={20} color={Colors.bgSurface} />
-        </TouchableOpacity>
+        <View style={styles.rightRow}>
+          {rightAction}
+          <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={20} color={Colors.bgSurface} />
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -88,6 +92,11 @@ const styles = StyleSheet.create({
     color: Colors.bgSecondary,
     fontWeight: '500',
     marginTop: 1,
+  },
+  rightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   logoutButton: {
     padding: 8,

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { getApplicationStatus } from '../../utils/statusHelper';
 
@@ -20,6 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const ApplicationStatusChart: React.FC = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState<{name: string, value: number, color: string}[]>([]);
 
   useEffect(() => {
@@ -64,10 +66,29 @@ const ApplicationStatusChart: React.FC = () => {
   // Fallback for empty state (pie needs at least one non-zero value to render)
   const chartData = data.length > 0 ? data : [{ name: 'No Data', value: 1, color: 'var(--bg-secondary)' }];
 
+  const handleStatusClick = (statusName: string) => {
+    if (!statusName || statusName === 'No Data') return;
+    navigate(`/admin/applications?status=${encodeURIComponent(statusName)}`);
+  };
+
   return (
     <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ marginBottom: '1rem' }}>
+      <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)' }}>Application Status Overview</h3>
+        <button
+          onClick={() => navigate('/admin/applications?filter=all')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--accent)',
+            fontSize: '0.8125rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            padding: 0
+          }}
+        >
+          View All
+        </button>
       </div>
       
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center', flex: 1 }}>
@@ -85,9 +106,15 @@ const ApplicationStatusChart: React.FC = () => {
                 dataKey="value"
                 stroke="var(--bg-surface)"
                 strokeWidth={2}
+                cursor="pointer"
+                onClick={(entry: any) => {
+                  if (entry && entry.name) {
+                    handleStatusClick(entry.name);
+                  }
+                }}
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell key={`cell-${index}`} fill={entry.color} style={{ cursor: 'pointer' }} />
                 ))}
               </Pie>
               <Tooltip 
@@ -97,27 +124,71 @@ const ApplicationStatusChart: React.FC = () => {
               />
             </PieChart>
           </ResponsiveContainer>
-          {/* Inner Text */}
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+          {/* Inner Text (Clickable to view all) */}
+          <div 
+            onClick={() => navigate('/admin/applications?filter=all')}
+            role="button"
+            tabIndex={0}
+            title="Click to view all applications"
+            style={{ 
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)', 
+              textAlign: 'center',
+              cursor: 'pointer',
+              padding: '0.5rem',
+              borderRadius: '50%',
+              transition: 'transform 0.15s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.08)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)'}
+          >
             <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', lineHeight: 1.2 }}>{total}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</div>
           </div>
         </div>
 
         {/* Legend */}
-        <div style={{ flex: '1 1 200px', display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem', maxHeight: '250px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+        <div style={{ flex: '1 1 200px', display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem', maxHeight: '250px', overflowY: 'auto', paddingRight: '0.5rem' }}>
           {data.length === 0 ? (
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center', padding: '2rem 0' }}>
               No applications yet
             </div>
           ) : (
             data.map((item, index) => (
-              <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+              <div 
+                key={index} 
+                onClick={() => handleStatusClick(item.name)}
+                role="button"
+                tabIndex={0}
+                title={`Click to filter applications by ${item.name}`}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: '0.4rem 0.6rem',
+                  borderRadius: '0.375rem',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                  e.currentTarget.style.transform = 'translateX(3px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: item.color, flexShrink: 0 }}></div>
                   <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{item.name}</span>
                 </div>
-                <span style={{ fontWeight: 700, color: 'var(--primary-dark)' }}>{item.value}</span>
+                <span style={{ fontWeight: 700, color: 'var(--primary-dark)', padding: '0.1rem 0.5rem', borderRadius: '1rem', backgroundColor: 'var(--bg-secondary)', fontSize: '0.8125rem' }}>
+                  {item.value}
+                </span>
               </div>
             ))
           )}

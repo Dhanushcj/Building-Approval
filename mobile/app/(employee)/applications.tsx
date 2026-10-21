@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -53,6 +54,21 @@ export default function EmployeeApplicationsScreen() {
     return matchesSearch && matchesFilter;
   });
 
+  const handleQuickWhatsApp = (item: Case, e: any) => {
+    e.stopPropagation();
+    const appNum = item.applicationNumber || item.application_number || item.id;
+    const uploadLink = `https://building-approval.vercel.app/upload/${appNum}`;
+    const custName = item.clientName || item.property?.owner_name || 'Customer';
+    const rawPhone = item.property?.owner_phone || (item as any).phone || '';
+    let cleanPhone = rawPhone.replace(/\D/g, '');
+    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+    const msg = `Hello ${custName},\n\nPlease use the following link to upload your required documents for application ${appNum}:\n${uploadLink}`;
+    const waUrl = cleanPhone
+      ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    Linking.openURL(waUrl);
+  };
+
   const renderItem = ({ item }: { item: Case }) => (
     <TouchableOpacity
       style={styles.card}
@@ -87,10 +103,14 @@ export default function EmployeeApplicationsScreen() {
       </View>
 
       <View style={styles.cardFooter}>
-        <Text style={styles.docsCount}>
-          <Ionicons name="document-attach-outline" size={14} color={colors.primary} />{' '}
-          {item.documents?.length || 0} Documents
-        </Text>
+        <TouchableOpacity
+          style={styles.cardWaBtn}
+          onPress={(e) => handleQuickWhatsApp(item, e)}
+        >
+          <Ionicons name="logo-whatsapp" size={14} color="#FFFFFF" />
+          <Text style={styles.cardWaText}>WhatsApp Link</Text>
+        </TouchableOpacity>
+
         <View style={styles.actionPrompt}>
           <Text style={styles.actionPromptText}>Review / Update</Text>
           <Ionicons name="chevron-forward" size={16} color={colors.primary} />
@@ -102,15 +122,23 @@ export default function EmployeeApplicationsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.searchSection}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={colors.textMuted} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search application number, client..."
-            placeholderTextColor={colors.textMuted}
-            value={search}
-            onChangeText={setSearch}
-          />
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          <View style={[styles.searchBar, { flex: 1 }]}>
+            <Ionicons name="search" size={20} color={colors.textMuted} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search application number, client..."
+              placeholderTextColor={colors.textMuted}
+              value={search}
+              onChangeText={setSearch}
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.newAppBtn}
+            onPress={() => router.push('/(admin)/new-application')}
+          >
+            <Ionicons name="add" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
 
         <FlatList
@@ -298,5 +326,27 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     fontSize: 14,
     color: colors.textMuted,
+  },
+  cardWaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#25D366',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: borderRadius.sm,
+  },
+  cardWaText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 11,
+  },
+  newAppBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
